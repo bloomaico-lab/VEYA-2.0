@@ -61,7 +61,7 @@
       const d = await call('/api/admin/summary');
       document.getElementById('err').textContent = '';
       document.getElementById('dash').hidden = false;
-      const revenue = d.orders.filter((o) => o.status !== 'cancelled').reduce((s, o) => s + o.total, 0);
+      const revenue = d.orders.filter((o) => o.paid_at && o.status !== 'cancelled').reduce((s, o) => s + o.total, 0);
       document.getElementById('stats').innerHTML = [
         ['Orders', d.orders.length], ['Revenue', `$${revenue.toLocaleString()}`],
         ['Accounts', d.users], ['VIP subscribers', d.subscribers.length],
@@ -71,8 +71,8 @@
         <td>${esc(o.name)}<br>${esc(o.email)}<br><span class="mono">${esc(o.address)}, ${esc(o.city)} ${esc(o.postal_code)}, ${esc(o.country)}</span></td>
         <td>${o.items.map((i) => `${i.qty}× ${esc(i.name)} (${esc(i.color)}, ${esc(i.size)})`).join('<br>')}</td>
         <td>$${o.total.toLocaleString()}</td>
-        <td><select data-order="${esc(o.number)}">${['confirmed', 'shipped', 'delivered', 'cancelled']
-          .map((s) => `<option ${s === o.status ? 'selected' : ''}>${s}</option>`).join('')}</select></td></tr>`).join('')
+        <td><select data-order="${esc(o.number)}">${(o.status === 'pending_payment' ? ['pending_payment'] : []).concat(['confirmed', 'shipped', 'delivered', 'cancelled'])
+          .map((s) => `<option ${s === o.status ? 'selected' : ''} ${s === 'pending_payment' ? 'disabled' : ''}>${s}</option>`).join('')}</select></td></tr>`).join('')
         || '<tr><td colspan="5">No orders yet.</td></tr>';
       document.getElementById('inventory').innerHTML = d.inventory.map((p) => `<tr>
         <td>${esc(p.name)}</td><td>$${(p.price_cents / 100).toLocaleString()}</td>

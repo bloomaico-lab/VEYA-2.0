@@ -333,19 +333,52 @@
     btn.disabled = true;
     try {
       const order = await api('/api/checkout', { method: 'POST', body: data });
+      if (order.redirectUrl) {
+        // Stripe-hosted payment page; we come back to ?checkout=success|cancelled.
+        window.location.assign(order.redirectUrl);
+        return;
+      }
       form.reset();
-      form.classList.add('hidden');
-      $('#checkout-title').textContent = 'Thank You';
-      $('#success-number').textContent = order.number;
-      $('#success-email').textContent = order.email;
-      $('#checkout-success').classList.remove('hidden');
-      await Promise.all([loadCart(), loadProducts()]);
+      await showOrderConfirmed(order);
     } catch (err) {
       $('#checkout-error').textContent = err.message;
-    } finally {
-      btn.disabled = false;
     }
+    btn.disabled = false;
   });
+
+  async function showOrderConfirmed(order) {
+    $('#checkout-form').classList.add('hidden');
+    $('#checkout-title').textContent = 'Thank You';
+    $('#success-number').textContent = order.number;
+    $('#success-email').textContent = order.email;
+    $('#checkout-success').classList.remove('hidden');
+    if (!$('#checkout-overlay').classList.contains('open')) openOverlay('checkout-overlay');
+    await Promise.all([loadCart(), loadProducts()]);
+  }
+
+  // Returning from the Stripe payment page.
+  async function handleCheckoutReturn() {
+    const params = new URLSearchParams(window.location.search);
+    const outcome = params.get('checkout');
+    if (!outcome) return;
+    window.history.replaceState(null, '', window.location.pathname + window.location.hash);
+    if (outcome === 'cancelled') { toast('Payment cancelled. Your bag is saved.'); return; }
+    try {
+      const order = await api(`/api/checkout/confirm?session_id=${encodeURIComponent(params.get('session_id') || '')}`);
+      if (order.status === 'pending_payment') toast('Payment is processing. We will email you once it clears.');
+      else await showOrderConfirmed(order);
+    } catch (err) { toast(err.message); }
+  }
+
+  async function loadConfig() {
+    try {
+      const { payments } = await api('/api/config');
+      if (payments === 'stripe') {
+        $('#checkout-mode-note').textContent = 'You will complete payment securely on Stripe.';
+        $('#checkout-submit-label').textContent = 'Continue to Payment';
+      }
+    } catch { /* keep demo copy */ }
+  }
 
   // ---------- account ----------
 
@@ -554,5 +587,7 @@
 
   loadProducts();
   loadCart();
+  loadConfig();
+  handleCheckoutReturn();
   api('/api/auth/me').then(({ user }) => { state.user = user; renderAccount(); }).catch(() => {});
 })();

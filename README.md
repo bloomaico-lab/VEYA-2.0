@@ -20,6 +20,9 @@ Data is stored in `data/veya.db`, which is created and seeded with the catalog o
 | `DB_FILE`     | `data/veya.db`   | SQLite file location (point at a persistent disk)    |
 | `ADMIN_TOKEN` | _(unset)_        | Enables the admin dashboard at `/admin`              |
 | `NODE_ENV`    | —                | Set to `production` for secure (HTTPS-only) cookies  |
+| `STRIPE_SECRET_KEY` | _(unset)_  | Turns on real card payments via Stripe Checkout      |
+| `STRIPE_WEBHOOK_SECRET` | _(unset)_ | Verifies Stripe webhook calls                     |
+| `PUBLIC_URL`  | _(auto)_         | Site address used in Stripe return links (set automatically on Render) |
 
 ## What works
 
@@ -43,8 +46,40 @@ Data is stored in `data/veya.db`, which is created and seeded with the catalog o
 | Mobile menu (☰)                               | Nav for small screens (the design hides the nav on phones)       |
 
 Prices, stock and totals are always calculated on the server. Shipping is $25, or free over $500.
-**Payments run in demo mode**: orders are recorded but no card is charged. To take real money,
-connect a provider such as Stripe Checkout in `POST /api/checkout`.
+
+## Payments (Stripe)
+
+Without `STRIPE_SECRET_KEY` the store runs in **demo mode**: orders are saved but no card is charged.
+
+With a key set, checkout sends the customer to Stripe's hosted payment page. The order is saved
+as `pending_payment`. Stock is only taken, and the bag only emptied, once Stripe confirms payment.
+That confirmation arrives on the return redirect or via webhook, whichever comes first, and is
+never applied twice. Abandoned payments are cancelled when Stripe expires the session, and the
+customer keeps their bag.
+
+1. In the [Stripe dashboard](https://dashboard.stripe.com/apikeys), copy the **secret key**
+   (`sk_test_…` while testing, `sk_live_…` to take real money) into `STRIPE_SECRET_KEY`.
+2. Under **Developers → Webhooks**, add the endpoint `https://YOUR-SITE/api/stripe/webhook` with events
+   `checkout.session.completed`, `checkout.session.async_payment_succeeded`,
+   `checkout.session.async_payment_failed` and `checkout.session.expired`. Copy its signing secret
+   (`whsec_…`) into `STRIPE_WEBHOOK_SECRET`.
+3. In test mode, pay with card `4242 4242 4242 4242`, any future expiry date and any CVC.
+
+## Deploy
+
+**Render (recommended):** in Render choose **New → Blueprint** and pick this repository. `render.yaml`
+sets up the web service with a persistent disk for the database and generates an `ADMIN_TOKEN`. It
+will ask for your Stripe keys, which you can leave blank to launch in demo mode. The admin token is
+under the service's **Environment** tab.
+
+**Anywhere with Docker:**
+
+```bash
+docker build -t veya .
+docker run -p 3000:3000 -v veya-data:/data -e ADMIN_TOKEN=change-me veya
+```
+
+Keep the database (`DB_FILE`) on persistent storage, or orders and accounts are lost on redeploy.
 
 ## Admin
 
@@ -68,7 +103,7 @@ GET    /api/admin/summary   PATCH /api/admin/orders/:number   PATCH /api/admin/p
 
 ```bash
 npm run dev          # restart on change
-npm test             # API tests (in-memory database)
+npm test             # API + Stripe flow tests (in-memory database, fake Stripe client)
 npm run build:css    # rebuild public/styles.css after changing classes
 ```
 

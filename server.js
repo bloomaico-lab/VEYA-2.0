@@ -2,6 +2,7 @@
 const path = require('node:path');
 const crypto = require('node:crypto');
 const express = require('express');
+const Stripe = require('stripe');
 const { openDb, transaction } = require('./db');
 const seed = require('./seed');
 
@@ -78,10 +79,40 @@ function orderNumber() {
 
 // ---------- app ----------
 
-function createApp(db = openDb()) {
+function defaultStripe() {
+  const key = process.env.STRIPE_SECRET_KEY;
+  return key ? new Stripe(key) : null;
+}
+
+function createApp(db = openDb(), { stripe = defaultStripe() } = {}) {
   const app = express();
   const isProd = process.env.NODE_ENV === 'production';
   app.disable('x-powered-by');
+  if (isProd) app.set('trust proxy', 1);
+
+  // Stripe webhook: needs the raw body for signature checks, so it is registered before express.json().
+  app.post('/api/stripe/webhook', express.raw({ type: 'application/json', limit: '1mb' }), (req, res) => {
+    const secret = process.env.STRIPE_WEBHOOK_SECRET;
+    if (!stripe || !secret) return res.status(400).json({ error: 'Webhooks are not configured.' });
+    let event;
+    try {
+      event = stripe.webhooks.constructEvent(req.body, req.headers['stripe-signature'], secret);
+    } catch (err) {
+      return res.status(400).json({ error: `Webhook signature verification failed: ${err.message}` });
+    }
+    const session = event.data.object;
+    const number = session.metadata?.order_number;
+    if (number) {
+      if (['checkout.session.completed', 'checkout.session.async_payment_succeeded'].includes(event.type)
+        && session.payment_status === 'paid') {
+        app.locals.finalizeOrder(number);
+      } else if (['checkout.session.expired', 'checkout.session.async_payment_failed'].includes(event.type)) {
+        app.locals.cancelPendingOrder(number);
+      }
+    }
+    res.json({ received: true });
+  });
+
   app.use(express.json({ limit: '20kb' }));
 
   // Every API visitor gets an anonymous session (holds their bag); logging in attaches a user to it.
@@ -220,10 +251,12 @@ function createApp(db = openDb()) {
   });
 
   // ----- checkout -----
+  // Orders are created as `pending_payment`, then finalized (stock taken, bag cleared) once paid:
+  // immediately in demo mode, or after Stripe confirms payment (redirect or webhook).
 
-  app.post('/api/checkout', (req, res) => {
+  function checkoutDetails(req) {
     const body = req.body || {};
-    const details = {
+    return {
       email: cleanEmail(body.email ?? req.user?.email),
       name: cleanString(body.name, 'Name', { max: 120 }),
       address: cleanString(body.address, 'Address'),
@@ -231,10 +264,12 @@ function createApp(db = openDb()) {
       postalCode: cleanString(body.postalCode, 'Postal code', { max: 20 }),
       country: cleanString(body.country, 'Country', { max: 60 }),
     };
+  }
 
-    const order = transaction(db, () => {
+  function createPendingOrder(req, details) {
+    return transaction(db, () => {
       const lines = db.prepare(`
-        SELECT c.product_id, c.size, c.color, c.qty, p.name, p.price_cents, p.stock
+        SELECT c.product_id, c.size, c.color, c.qty, p.name, p.image, p.price_cents, p.stock
         FROM cart_items c JOIN products p ON p.id = c.product_id WHERE c.session_id = ?`).all(req.session.id);
       if (lines.length === 0) throw new HttpError(400, 'Your bag is empty.');
 
@@ -248,23 +283,117 @@ function createApp(db = openDb()) {
       const shipping = subtotal >= FREE_SHIPPING_CENTS ? 0 : SHIPPING_CENTS;
       const number = orderNumber();
 
-      const { lastInsertRowid: orderId } = db.prepare(`INSERT INTO orders
-        (number, user_id, email, name, address, city, postal_code, country, subtotal_cents, shipping_cents, total_cents)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
+      const { lastInsertRowid: id } = db.prepare(`INSERT INTO orders
+        (number, user_id, email, name, address, city, postal_code, country, subtotal_cents, shipping_cents,
+         total_cents, status, cart_session_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending_payment', ?)`).run(
         number, req.user?.id ?? null, details.email, details.name, details.address, details.city,
-        details.postalCode, details.country, subtotal, shipping, subtotal + shipping,
+        details.postalCode, details.country, subtotal, shipping, subtotal + shipping, req.session.id,
       );
       const addItem = db.prepare(`INSERT INTO order_items
         (order_id, product_id, name, size, color, qty, unit_price_cents) VALUES (?, ?, ?, ?, ?, ?, ?)`);
-      for (const l of lines) addItem.run(orderId, l.product_id, l.name, l.size, l.color, l.qty, l.price_cents);
-      for (const [id, qty] of Object.entries(needed)) {
-        db.prepare('UPDATE products SET stock = stock - ? WHERE id = ?').run(qty, id);
-      }
-      db.prepare('DELETE FROM cart_items WHERE session_id = ?').run(req.session.id);
-      return { number, total: (subtotal + shipping) / 100, email: details.email };
+      for (const l of lines) addItem.run(id, l.product_id, l.name, l.size, l.color, l.qty, l.price_cents);
+      return { id: Number(id), number, lines, shipping, total: subtotal + shipping, email: details.email };
     });
+  }
 
-    res.status(201).json(order);
+  // Idempotent: only a pending order is finalized, so redirect + webhook can both call it.
+  function finalizeOrder(number) {
+    transaction(db, () => {
+      const order = db.prepare('SELECT * FROM orders WHERE number = ?').get(number);
+      if (!order || order.status !== 'pending_payment') return;
+      db.prepare("UPDATE orders SET status = 'confirmed', paid_at = datetime('now') WHERE id = ?").run(order.id);
+      const items = db.prepare('SELECT product_id, qty FROM order_items WHERE order_id = ?').all(order.id);
+      for (const i of items) {
+        db.prepare('UPDATE products SET stock = MAX(stock - ?, 0) WHERE id = ?').run(i.qty, i.product_id);
+      }
+      if (order.cart_session_id) db.prepare('DELETE FROM cart_items WHERE session_id = ?').run(order.cart_session_id);
+    });
+  }
+
+  function cancelPendingOrder(number) {
+    db.prepare("UPDATE orders SET status = 'cancelled' WHERE number = ? AND status = 'pending_payment'").run(number);
+  }
+
+  function orderSummary(number) {
+    const o = db.prepare('SELECT number, email, total_cents, status FROM orders WHERE number = ?').get(number);
+    return o && { number: o.number, email: o.email, total: o.total_cents / 100, status: o.status };
+  }
+
+  function publicUrl(req) {
+    return (process.env.PUBLIC_URL || process.env.RENDER_EXTERNAL_URL || `${req.protocol}://${req.get('host')}`)
+      .replace(/\/$/, '');
+  }
+
+  app.locals.finalizeOrder = finalizeOrder;
+  app.locals.cancelPendingOrder = cancelPendingOrder;
+
+  app.get('/api/config', (req, res) => res.json({ payments: stripe ? 'stripe' : 'demo' }));
+
+  app.post('/api/checkout', async (req, res, next) => {
+    try {
+      const order = createPendingOrder(req, checkoutDetails(req));
+      if (!stripe) {
+        finalizeOrder(order.number);
+        return res.status(201).json(orderSummary(order.number));
+      }
+
+      const base = publicUrl(req);
+      let session;
+      try {
+        session = await stripe.checkout.sessions.create({
+          mode: 'payment',
+          customer_email: order.email,
+          client_reference_id: order.number,
+          metadata: { order_number: order.number },
+          line_items: order.lines.map((l) => ({
+            quantity: l.qty,
+            price_data: {
+              currency: 'usd',
+              unit_amount: l.price_cents,
+              product_data: {
+                name: l.name,
+                description: `${l.color} · Size ${l.size}`,
+                // Stripe can only show images it can fetch from a public https URL.
+                ...(base.startsWith('https://') ? { images: [base + l.image] } : {}),
+              },
+            },
+          })),
+          shipping_options: [{
+            shipping_rate_data: {
+              type: 'fixed_amount',
+              display_name: order.shipping ? 'Express shipping' : 'Complimentary express shipping',
+              fixed_amount: { amount: order.shipping, currency: 'usd' },
+            },
+          }],
+          success_url: `${base}/?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+          cancel_url: `${base}/?checkout=cancelled`,
+        });
+      } catch (err) {
+        cancelPendingOrder(order.number);
+        console.error('Stripe checkout error:', err.message);
+        throw new HttpError(502, 'Payment provider is unavailable. Please try again.');
+      }
+      db.prepare('UPDATE orders SET stripe_session_id = ? WHERE id = ?').run(session.id, order.id);
+      res.status(201).json({ number: order.number, redirectUrl: session.url });
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  // Customer lands here after paying on Stripe; confirms with Stripe directly rather than trusting the URL.
+  app.get('/api/checkout/confirm', async (req, res, next) => {
+    try {
+      if (!stripe) throw new HttpError(400, 'Online payments are not enabled.');
+      const sessionId = String(req.query.session_id || '');
+      const order = sessionId && db.prepare('SELECT number FROM orders WHERE stripe_session_id = ?').get(sessionId);
+      if (!order) throw new HttpError(404, 'Order not found.');
+      const session = await stripe.checkout.sessions.retrieve(sessionId);
+      if (session.payment_status === 'paid') finalizeOrder(order.number);
+      res.json(orderSummary(order.number));
+    } catch (err) {
+      next(err);
+    }
   });
 
   // ----- accounts -----
@@ -317,7 +446,7 @@ function createApp(db = openDb()) {
 
   app.get('/api/orders', (req, res) => {
     const user = requireUser(req);
-    const orders = db.prepare('SELECT * FROM orders WHERE user_id = ? ORDER BY id DESC').all(user.id);
+    const orders = db.prepare('SELECT * FROM orders WHERE user_id = ? AND paid_at IS NOT NULL ORDER BY id DESC').all(user.id);
     const itemsFor = db.prepare('SELECT name, size, color, qty, unit_price_cents FROM order_items WHERE order_id = ?');
     res.json(orders.map((o) => ({
       number: o.number,

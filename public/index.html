@@ -595,10 +595,10 @@
 <span class="font-label-md text-on-surface-variant uppercase tracking-widest">Order total</span>
 <span id="checkout-total" class="font-headline-sm text-headline-sm text-primary">$0</span>
 </div>
-<p class="font-label-sm text-outline tracking-wider uppercase">Demo mode — no card is charged. Payment provider can be connected later.</p>
+<p id="checkout-mode-note" class="font-label-sm text-outline tracking-wider uppercase">Demo mode — no card is charged.</p>
 <p id="checkout-error" class="font-label-md text-error min-h-[16px]" aria-live="polite"></p>
 <button type="submit" class="w-full h-[52px] rounded-full bg-primary text-on-primary font-headline-sm text-headline-sm flex items-center justify-center gap-2 hover:bg-secondary transition-colors duration-300 amber-glow-hover disabled:opacity-40">
-<span>Place Order</span><span class="material-symbols-outlined text-[18px]">lock</span>
+<span id="checkout-submit-label">Place Order</span><span class="material-symbols-outlined text-[18px]">lock</span>
 </button>
 </form>
 <div id="checkout-success" class="hidden text-center space-y-4 py-6">

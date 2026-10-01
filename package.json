@@ -15,7 +15,8 @@
     "test": "node --no-warnings=ExperimentalWarning --test test/*.test.js"
   },
   "dependencies": {
-    "express": "^4.21.2"
+    "express": "^4.21.2",
+    "stripe": "^22.6.2"
   },
   "devDependencies": {
     "@tailwindcss/container-queries": "^0.1.1",

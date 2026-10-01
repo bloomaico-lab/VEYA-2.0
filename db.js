@@ -60,7 +60,10 @@ function openDb(file = process.env.DB_FILE || path.join(__dirname, 'data', 'veya
       shipping_cents INTEGER NOT NULL,
       total_cents INTEGER NOT NULL,
       status TEXT NOT NULL DEFAULT 'confirmed',
-      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      paid_at TEXT,
+      cart_session_id TEXT,
+      stripe_session_id TEXT
     );
     CREATE TABLE IF NOT EXISTS order_items (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -78,6 +81,13 @@ function openDb(file = process.env.DB_FILE || path.join(__dirname, 'data', 'veya
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
   `);
+
+  // Columns added after the first release; add them to databases created before then.
+  const orderCols = db.prepare('PRAGMA table_info(orders)').all().map((c) => c.name);
+  for (const col of ['paid_at', 'cart_session_id', 'stripe_session_id']) {
+    if (!orderCols.includes(col)) db.exec(`ALTER TABLE orders ADD COLUMN ${col} TEXT`);
+  }
+  db.exec('CREATE INDEX IF NOT EXISTS orders_stripe_session ON orders (stripe_session_id)');
 
   const count = db.prepare('SELECT COUNT(*) AS n FROM products').get().n;
   if (count === 0) {
