@@ -7,8 +7,8 @@ const { openDb, transaction } = require('./db');
 const seed = require('./seed');
 
 const SESSION_COOKIE = 'veya_sid';
-const FREE_SHIPPING_CENTS = 50000;
-const SHIPPING_CENTS = 2500;
+const FREE_SHIPPING_CENTS = 20000;
+const SHIPPING_CENTS = 1200;
 const MAX_QTY = 10;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 

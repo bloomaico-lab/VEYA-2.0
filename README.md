@@ -1,6 +1,6 @@
 # VEYA — Technical Luxury Apparel
 
-Working storefront for the **VEYA Active Luxury UI** design from Google Stitch
+Working storefront for VEYA, everyday Tokyo city clothing, built from the **VEYA Active Luxury UI** design from Google Stitch
 (project `11128318004927957051`). The front end keeps the Stitch markup and theme. A small
 Node/Express + SQLite backend makes every button work.
 
@@ -28,7 +28,7 @@ Data is stored in `data/veya.db`, which is created and seeded with the catalog o
 
 | Design element                                | Behaviour                                                        |
 | --------------------------------------------- | ---------------------------------------------------------------- |
-| Nav: Collections / Transit / Performance / Expedition | Filters the collection and scrolls to it                 |
+| Nav: Collections / Commute / Studio / Weekend | Filters the collection and scrolls to it                         |
 | Nav: Fabric Lab, Editorial                    | Scrolls to the lab / opens the Editorial page                    |
 | Search icon                                   | Live product search, opens the product on click                 |
 | Account                                       | Sign in / create account, order history, sign out                |
@@ -45,7 +45,7 @@ Data is stored in `data/veya.db`, which is created and seeded with the catalog o
 | Request Access                                | Joins the VIP club list (no duplicate signups)                   |
 | Mobile menu (☰)                               | Nav for small screens (the design hides the nav on phones)       |
 
-Prices, stock and totals are always calculated on the server. Shipping is $25, or free over $500.
+Prices, stock and totals are always calculated on the server. Shipping is $12, or free over $200.
 
 ## Payments (Stripe)
 

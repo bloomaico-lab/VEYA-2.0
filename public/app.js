@@ -475,7 +475,7 @@
   async function renderSearch(q) {
     const box = $('#search-results');
     if (!q) {
-      box.innerHTML = '<p class="px-3 py-2 font-label-sm text-on-surface-variant uppercase tracking-widest">Try “merino”, “shell” or “transit”</p>';
+      box.innerHTML = '<p class="px-3 py-2 font-label-sm text-on-surface-variant uppercase tracking-widest">Try “merino”, “denim” or “commute”</p>';
       return;
     }
     try {

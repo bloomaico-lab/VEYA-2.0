@@ -3,7 +3,7 @@
 <html class="dark" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>VEYA — Technical Luxury Apparel | Built For More</title>
+<title>VEYA — Tokyo Everyday Wear | Built For More</title>
 <!-- Google Fonts: Bodoni Moda (Editorial Display), Hanken Grotesk (Body & Headings), JetBrains Mono (Technical Spec) -->
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
@@ -65,9 +65,9 @@
 <!-- Navigation Links (Active mapping: 'Collections' closest to flagship home) -->
 <nav class="hidden lg:flex items-center gap-8">
 <a class="nav-link text-primary dark:text-primary border-b border-secondary pb-1 tracking-widest font-label-md uppercase" href="#collections" data-filter="all">Collections</a>
-<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary tracking-widest font-label-md uppercase transition-colors duration-200 nav-link border-b border-transparent pb-1" href="#collections" data-filter="transit">Transit</a>
-<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary tracking-widest font-label-md uppercase transition-colors duration-200 nav-link border-b border-transparent pb-1" href="#collections" data-filter="performance">Performance</a>
-<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary tracking-widest font-label-md uppercase transition-colors duration-200 nav-link border-b border-transparent pb-1" href="#collections" data-filter="expedition">Expedition</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary tracking-widest font-label-md uppercase transition-colors duration-200 nav-link border-b border-transparent pb-1" href="#collections" data-filter="commute">Commute</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary tracking-widest font-label-md uppercase transition-colors duration-200 nav-link border-b border-transparent pb-1" href="#collections" data-filter="studio">Studio</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary tracking-widest font-label-md uppercase transition-colors duration-200 nav-link border-b border-transparent pb-1" href="#collections" data-filter="weekend">Weekend</a>
 <a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary tracking-widest font-label-md uppercase transition-colors duration-200" href="#fabric-lab">Fabric Lab</a>
 <a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary tracking-widest font-label-md uppercase transition-colors duration-200" href="#editorial" data-page="editorial">Editorial</a>
 </nav>
@@ -95,7 +95,7 @@
 <section class="relative min-h-[942px] flex flex-col justify-end px-6 md:px-12 pb-16 pt-24 max-w-7xl mx-auto overflow-hidden">
 <!-- Atmospheric Backdrop Image with Vignette -->
 <div class="absolute inset-0 -z-10 bg-surface-container-lowest">
-<img class="w-full h-full object-cover opacity-45 scale-105 filter contrast-125" data-alt="Cinematic atmospheric landscape capturing a modern athlete walking along an architectural concrete bridge overlooking misty alpine peaks at twilight. The scene is bathed in brooding charcoal shadows, slate grey mists, and faint morning gold dawn lighting reflecting across high-tech water-resistant fabric textures. Ultra-minimal luxury mood, clean geometry, quiet power." src="/images/hero.jpg" alt=""/>
+<img class="w-full h-full object-cover opacity-45 scale-105 filter contrast-125" src="/images/hero.jpg" alt="A person in a black mac coat and wide trousers walking down a quiet Shibuya side street at blue hour"/>
 <div class="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent"></div>
 <div class="absolute inset-0 bg-gradient-to-r from-background/80 via-transparent to-background/80"></div>
 </div>
@@ -103,27 +103,27 @@
 <div class="flex flex-wrap items-center justify-between gap-4 mb-8">
 <div class="inline-flex items-center gap-3 px-3 py-1.5 rounded-full bg-surface-container-lowest/80 border border-outline-variant/30 backdrop-blur-md">
 <span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
-<span id="telemetry-label" class="font-label-sm uppercase tracking-widest text-on-surface-variant">ATMOSPHERIC TELEMETRY: TOKYO / SHIBUYA 40M</span>
+<span id="telemetry-label" class="font-label-sm uppercase tracking-widest text-on-surface-variant">CITY TELEMETRY: TOKYO / SHIBUYA STATION</span>
 <span class="text-outline-variant">|</span>
-<span id="telemetry-reading" class="font-label-sm text-primary tracking-wider">11°C PRECIP 62%</span>
+<span id="telemetry-reading" class="font-label-sm text-primary tracking-wider">14°C PRECIP 60%</span>
 </div>
 <!-- Environmental Switcher Pills -->
 <div class="flex items-center gap-1.5 p-1 rounded-full bg-surface-container-lowest/80 border border-outline-variant/30 backdrop-blur-md">
-<button type="button" data-env="urban" class="env-pill chip-active px-3.5 py-1 rounded-full text-on-surface-variant hover:text-primary text-label-sm font-label-sm tracking-widest uppercase transition-all duration-200">Urban Transit</button>
-<button type="button" data-env="studio" class="env-pill px-3.5 py-1 rounded-full text-on-surface-variant hover:text-primary text-label-sm font-label-sm tracking-widest uppercase transition-all duration-200">Studio &amp; Track</button>
-<button type="button" data-env="alpine" class="env-pill px-3.5 py-1 rounded-full text-on-surface-variant hover:text-primary text-label-sm font-label-sm tracking-widest uppercase transition-all duration-200">Alpine Peak</button>
+<button type="button" data-env="commute" class="env-pill chip-active px-3.5 py-1 rounded-full text-on-surface-variant hover:text-primary text-label-sm font-label-sm tracking-widest uppercase transition-all duration-200">Commute</button>
+<button type="button" data-env="studio" class="env-pill px-3.5 py-1 rounded-full text-on-surface-variant hover:text-primary text-label-sm font-label-sm tracking-widest uppercase transition-all duration-200">Studio</button>
+<button type="button" data-env="weekend" class="env-pill px-3.5 py-1 rounded-full text-on-surface-variant hover:text-primary text-label-sm font-label-sm tracking-widest uppercase transition-all duration-200">Weekend</button>
 </div>
 </div>
 <!-- Hero Headline & Core Manifesto -->
 <div class="max-w-4xl space-y-6">
 <div class="inline-block">
-<span class="text-label-md font-label-md tracking-[0.25em] text-secondary uppercase block mb-3">System Architecture 2025</span>
+<span class="text-label-md font-label-md tracking-[0.25em] text-secondary uppercase block mb-3">Tokyo Collection 2026</span>
 <h1 class="font-headline-lg md:font-display text-headline-lg md:text-display text-primary leading-none tracking-tight">
-            FROM THE METROPOLIS TO THE MASSIF — BUILT FOR MORE.
+            FROM THE FIRST TRAIN TO THE LAST — BUILT FOR MORE.
           </h1>
 </div>
 <p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl font-light leading-relaxed">
-          Fluid apparel engineered at the intersection of monolithic tailoring and high-altitude survivability. Designed for the rhythm of transcontinental movement.
+          Everyday clothing made with specialist mills across Japan, cut for the rhythm of the city. Pieces you can wear from the morning commute to a late dinner, every day of the week.
         </p>
 <!-- Primary Dual Actions -->
 <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-4">
@@ -142,7 +142,7 @@
 <div>
 <span class="font-label-sm text-secondary uppercase tracking-widest block mb-1">01 / PILLAR</span>
 <p class="font-label-md uppercase tracking-wider text-primary">PREMIUM FABRICS</p>
-<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Superfine natural thermals bonded with Japanese technical filaments.</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Woven and knitted by specialist mills in Okayama, Wakayama and Osaka.</p>
 </div>
 <div>
 <span class="font-label-sm text-secondary uppercase tracking-widest block mb-1">02 / CRAFT</span>
@@ -152,7 +152,7 @@
 <div>
 <span class="font-label-sm text-secondary uppercase tracking-widest block mb-1">03 / ENDURANCE</span>
 <p class="font-label-md uppercase tracking-wider text-primary">BUILT FOR MORE</p>
-<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Lab-certified tensile thresholds tested in high-strain alpine weather chambers.</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Wear-tested through 30 days of daily Tokyo commuting before release.</p>
 </div>
 </div>
 </section>
@@ -167,18 +167,18 @@
 <h2 class="font-headline-lg text-headline-lg text-primary">One System. Three Realities.</h2>
 </div>
 <p class="font-body-md text-body-md text-on-surface-variant max-w-md">
-          A seamless wardrobe calibrated to eliminate gear-switching between corporate downtown transit, aggressive conditioning, and unpredictable backcountry terrain.
+          One wardrobe for the whole week: the morning commute, the studio class and the slow weekend, without changing your style.
         </p>
 </div>
 <!-- Bento Cards Grid -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-<!-- Card 1: Metropolitan Commute -->
-<div role="button" tabindex="0" aria-label="Shop Transit" data-filter="transit" id="transit" class="group relative rounded-xl overflow-hidden bg-surface-container-low border border-outline-variant/30 transition-all duration-500 hover:border-secondary/40 flex flex-col">
+<!-- Card 1: Daily Commute -->
+<div role="button" tabindex="0" aria-label="Shop Commute" data-filter="commute" id="commute" class="group relative rounded-xl overflow-hidden bg-surface-container-low border border-outline-variant/30 transition-all duration-500 hover:border-secondary/40 flex flex-col">
 <div class="relative aspect-[4/5] overflow-hidden bg-surface-container-lowest">
-<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="Editorial lookbook photograph of a male model dressed in an obsidian black tailored technical overcoat walking purposefully past contemporary glass architecture in rain-drenched Tokyo. Soft amber city lights reflect on wet pavement. The fabric displays subtle water beading on the shoulders with hidden magnetic seam pockets." src="/images/transit.jpg" alt=""/>
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="/images/commute.jpg" alt="A commuter in a stone coat and pleated trousers on a Tokyo Metro platform"/>
 <div class="absolute top-4 left-4">
 <span class="px-2.5 py-1 rounded bg-surface-container-lowest/80 border border-outline-variant/30 backdrop-blur-md font-label-sm text-secondary uppercase tracking-widest">
-                Transit City
+                Commute
               </span>
 </div>
 <div class="absolute bottom-4 right-4">
@@ -190,24 +190,24 @@
 <div class="p-6 flex flex-col justify-between flex-grow bg-surface-container-low/80 backdrop-blur-md">
 <div>
 <span class="font-label-sm text-on-surface-variant uppercase tracking-widest block mb-1">MODULE A — 01</span>
-<h3 class="font-headline-md text-headline-md text-primary mb-2">The Metropolitan Commute</h3>
+<h3 class="font-headline-md text-headline-md text-primary mb-2">The Daily Commute</h3>
 <p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed mb-4">
-                Structured elegance cut from water-shedding Australian wool blends. Internal laser-cut passport vault, headphone routing, and discreet magnetic flaps.
+                A water-repellent coat over pleated trousers and a merino crew. Smart enough for the office, easy enough for a packed train.
               </p>
 </div>
 <div class="pt-4 border-t border-outline-variant/20 flex items-center justify-between text-label-sm font-label-sm text-on-surface-variant">
-<span>WEIGHT: 340 GSM</span>
-<span class="text-secondary">DWR RESISTANT</span>
+<span>RAIN-READY</span>
+<span class="text-secondary">OFFICE TO EVENING</span>
 </div>
 </div>
 </div>
-<!-- Card 2: High-Output Performance -->
-<div role="button" tabindex="0" aria-label="Shop Performance" data-filter="performance" id="performance" class="group relative rounded-xl overflow-hidden bg-surface-container-low border border-outline-variant/30 transition-all duration-500 hover:border-secondary/40 flex flex-col">
+<!-- Card 2: The Studio Session -->
+<div role="button" tabindex="0" aria-label="Shop Studio" data-filter="studio" id="studio" class="group relative rounded-xl overflow-hidden bg-surface-container-low border border-outline-variant/30 transition-all duration-500 hover:border-secondary/40 flex flex-col">
 <div class="relative aspect-[4/5] overflow-hidden bg-surface-container-lowest">
-<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="High-intensity training editorial shot of a woman in sculpted graphite grey compression gear sprinting in a brutalist industrial gym facility. Dramatic directional studio strobe lighting accentuating muscular definition and hyper-breathable laser-cut micro-ventilation panels along the spine and ribs. Minimalist, premium, athletic intensity." src="/images/performance.jpg" alt=""/>
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="/images/studio.jpg" alt="A person in a black half-zip and track pants stretching in a concrete studio in Ebisu"/>
 <div class="absolute top-4 left-4">
 <span class="px-2.5 py-1 rounded bg-surface-container-lowest/80 border border-outline-variant/30 backdrop-blur-md font-label-sm text-secondary uppercase tracking-widest">
-                Conditioning
+                Studio
               </span>
 </div>
 <div class="absolute bottom-4 right-4">
@@ -219,24 +219,24 @@
 <div class="p-6 flex flex-col justify-between flex-grow bg-surface-container-low/80 backdrop-blur-md">
 <div>
 <span class="font-label-sm text-on-surface-variant uppercase tracking-widest block mb-1">MODULE B — 02</span>
-<h3 class="font-headline-md text-headline-md text-primary mb-2">High-Output Performance</h3>
+<h3 class="font-headline-md text-headline-md text-primary mb-2">The Studio Session</h3>
 <p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed mb-4">
-                Hyper-breathable 4-way mechanical stretch fabric. Ergonomic thermal mapped cooling channels along the spine that open as body temperature elevates.
+                A brushed half-zip and four-way stretch track pants that move through a morning class and still look sharp at the café after.
               </p>
 </div>
 <div class="pt-4 border-t border-outline-variant/20 flex items-center justify-between text-label-sm font-label-sm text-on-surface-variant">
-<span>FLEX: 360° MATRIX</span>
-<span class="text-secondary">ACTIVE COOLING</span>
+<span>4-WAY STRETCH</span>
+<span class="text-secondary">QUICK-DRY</span>
 </div>
 </div>
 </div>
-<!-- Card 3: Alpine Ascent -->
-<div role="button" tabindex="0" aria-label="Shop Expedition" data-filter="expedition" id="expedition" class="group relative rounded-xl overflow-hidden bg-surface-container-low border border-outline-variant/30 transition-all duration-500 hover:border-secondary/40 flex flex-col">
+<!-- Card 3: The Slow Weekend -->
+<div role="button" tabindex="0" aria-label="Shop Weekend" data-filter="weekend" id="weekend" class="group relative rounded-xl overflow-hidden bg-surface-container-low border border-outline-variant/30 transition-all duration-500 hover:border-secondary/40 flex flex-col">
 <div class="relative aspect-[4/5] overflow-hidden bg-surface-container-lowest">
-<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="Technical mountaineering shot of a lone alpinist traversing a frozen granite ridge at high elevation surrounded by sub-zero cloud banks. The climber wears an arctic-proof slate and amber technical shell jacket with taped watertight seam accents and an integrated storm storm-hood. Cold blue atmosphere contrasted with warm amber gear accents." src="/images/expedition.jpg" alt=""/>
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="/images/weekend.jpg" alt="A person in a grey hoodie and selvedge denim with a coffee by the Meguro River"/>
 <div class="absolute top-4 left-4">
 <span class="px-2.5 py-1 rounded bg-surface-container-lowest/80 border border-outline-variant/30 backdrop-blur-md font-label-sm text-secondary uppercase tracking-widest">
-                Expedition
+                Weekend
               </span>
 </div>
 <div class="absolute bottom-4 right-4">
@@ -248,14 +248,14 @@
 <div class="p-6 flex flex-col justify-between flex-grow bg-surface-container-low/80 backdrop-blur-md">
 <div>
 <span class="font-label-sm text-on-surface-variant uppercase tracking-widest block mb-1">MODULE C — 03</span>
-<h3 class="font-headline-md text-headline-md text-primary mb-2">Alpine Ascent</h3>
+<h3 class="font-headline-md text-headline-md text-primary mb-2">The Slow Weekend</h3>
 <p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed mb-4">
-                Multi-layer membrane shielding against 20,000mm hydrostatic head pressures. Ultra-light packable thermal core without the bulk of traditional down.
+                Loopwheel fleece, a heavyweight tee and Okayama selvedge denim for canal walks, record stores and long lunches.
               </p>
 </div>
 <div class="pt-4 border-t border-outline-variant/20 flex items-center justify-between text-label-sm font-label-sm text-on-surface-variant">
-<span>WATERPROOF: 20K/20K</span>
-<span class="text-secondary">-15°C RATED</span>
+<span>MADE IN JAPAN</span>
+<span class="text-secondary">BETTER WITH WEAR</span>
 </div>
 </div>
 </div>
@@ -295,23 +295,23 @@
 </div>
 </div>
 <!-- Textile 2 -->
-<div role="button" tabindex="0" data-fabric="v-shell-bi-stretch" class="fabric-card p-5 rounded-lg border border-outline-variant/30 bg-surface-container-low/40 hover:border-outline-variant/60 transition-all duration-300">
+<div role="button" tabindex="0" data-fabric="city-shell" class="fabric-card p-5 rounded-lg border border-outline-variant/30 bg-surface-container-low/40 hover:border-outline-variant/60 transition-all duration-300">
 <div class="flex items-center justify-between mb-2">
-<h4 class="font-label-lg text-label-lg text-primary tracking-wider uppercase">V-SHELL BI-STRETCH</h4>
-<span class="font-label-sm text-on-surface-variant uppercase tracking-wider">WEATHER SHIELD</span>
+<h4 class="font-label-lg text-label-lg text-primary tracking-wider uppercase">CITY SHELL</h4>
+<span class="font-label-sm text-on-surface-variant uppercase tracking-wider">RAIN-READY</span>
 </div>
 <p class="font-body-sm text-body-sm text-on-surface-variant">
-                  A high-gauge woven membrane impregnated with fluorine-free eco-DWR. Deflects gale-force winds up to 70mph while moving with silent zero-rustle acoustics.
+                  Dense Japanese cotton-nylon with a fluorine-free water-repellent finish. Shrugs off a sudden shower on the walk to the station and still looks like a classic mac.
                 </p>
 </div>
 <!-- Textile 3 -->
-<div role="button" tabindex="0" data-fabric="kinetic-matrix" class="fabric-card p-5 rounded-lg border border-outline-variant/30 bg-surface-container-low/40 hover:border-outline-variant/60 transition-all duration-300">
+<div role="button" tabindex="0" data-fabric="loopwheel-fleece" class="fabric-card p-5 rounded-lg border border-outline-variant/30 bg-surface-container-low/40 hover:border-outline-variant/60 transition-all duration-300">
 <div class="flex items-center justify-between mb-2">
-<h4 class="font-label-lg text-label-lg text-primary tracking-wider uppercase">KINETIC MATRIX</h4>
-<span class="font-label-sm text-on-surface-variant uppercase tracking-wider">ERGONOMIC ARTICULATION</span>
+<h4 class="font-label-lg text-label-lg text-primary tracking-wider uppercase">LOOPWHEEL FLEECE</h4>
+<span class="font-label-sm text-on-surface-variant uppercase tracking-wider">WAKAYAMA KNIT</span>
 </div>
 <p class="font-body-sm text-body-sm text-on-surface-variant">
-                  Articulated radial gusset pattern geometry designed directly from 3D anatomical scans, permitting full overhead reach without hem elevation.
+                  Knitted slowly on vintage tension-free loopwheel machines in Wakayama, so the fleece stays soft and keeps its shape for years.
                 </p>
 </div>
 </div>
@@ -344,7 +344,7 @@
 <span class="w-3 h-3 rounded-full bg-secondary animate-ping"></span>
 <div>
 <p id="hud-focus-title" class="font-label-sm uppercase tracking-widest text-primary">Micro-filament Cross-section</p>
-<p id="hud-focus-text" class="font-body-sm text-body-sm text-on-surface-variant">Zero-wicking yarn geometry prevents saturation under 6hr downpours.</p>
+<p id="hud-focus-text" class="font-body-sm text-body-sm text-on-surface-variant">Breathes on a packed rush-hour train and stays fresh into the evening.</p>
 </div>
 </div>
 <span class="font-label-sm text-secondary border border-secondary/30 px-3 py-1 rounded">LAB VERIFIED</span>
@@ -363,9 +363,9 @@
 <h2 class="font-headline-lg text-headline-lg text-primary">The Continuous Wardrobe</h2>
 <div id="filter-chips" class="flex flex-wrap items-center gap-1.5 mt-5">
 <button type="button" data-chip="all" class="chip chip-active px-3.5 py-1 rounded-full border border-outline-variant/30 text-on-surface-variant hover:text-primary font-label-sm text-label-sm tracking-widest uppercase transition-all duration-200">All</button>
-<button type="button" data-chip="transit" class="chip px-3.5 py-1 rounded-full border border-outline-variant/30 text-on-surface-variant hover:text-primary font-label-sm text-label-sm tracking-widest uppercase transition-all duration-200">Transit</button>
-<button type="button" data-chip="performance" class="chip px-3.5 py-1 rounded-full border border-outline-variant/30 text-on-surface-variant hover:text-primary font-label-sm text-label-sm tracking-widest uppercase transition-all duration-200">Performance</button>
-<button type="button" data-chip="expedition" class="chip px-3.5 py-1 rounded-full border border-outline-variant/30 text-on-surface-variant hover:text-primary font-label-sm text-label-sm tracking-widest uppercase transition-all duration-200">Expedition</button>
+<button type="button" data-chip="commute" class="chip px-3.5 py-1 rounded-full border border-outline-variant/30 text-on-surface-variant hover:text-primary font-label-sm text-label-sm tracking-widest uppercase transition-all duration-200">Commute</button>
+<button type="button" data-chip="studio" class="chip px-3.5 py-1 rounded-full border border-outline-variant/30 text-on-surface-variant hover:text-primary font-label-sm text-label-sm tracking-widest uppercase transition-all duration-200">Studio</button>
+<button type="button" data-chip="weekend" class="chip px-3.5 py-1 rounded-full border border-outline-variant/30 text-on-surface-variant hover:text-primary font-label-sm text-label-sm tracking-widest uppercase transition-all duration-200">Weekend</button>
 </div>
 </div>
 <div class="flex items-center gap-3">
@@ -395,7 +395,7 @@
           One Garment, Infinite Horizons.
         </h2>
 <p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto leading-relaxed">
-          VEYA drops are produced in strictly serialized micro-batches to eliminate deadstock and preserve artisanal integrity. Join the VIP Membership Club for early drop access and expedition previews.
+          VEYA drops are produced in strictly serialized micro-batches to eliminate deadstock and preserve artisanal integrity. Join the VIP Membership Club for early access to new drops and invites to store events in Tokyo.
         </p>
 <!-- Newsletter Membership Input Field -->
 <form id="vip-form" class="max-w-md mx-auto flex flex-col sm:flex-row gap-3 pt-4" novalidate>
@@ -427,7 +427,7 @@
             VEYA
           </a>
 <p class="font-body-md text-body-md text-on-surface-variant max-w-sm leading-relaxed">
-            Architectural luxury technical apparel engineering garments that transcend the boundary between metropolitan life and extreme alpine frontiers.
+            Everyday clothing made with Japanese mills and built for city life, from the first train to the last.
           </p>
 <div class="pt-2">
 <span class="font-label-sm text-secondary uppercase tracking-widest block mb-1">MANTRA</span>
@@ -477,17 +477,17 @@
 </ul>
 </div>
 <div>
-<h4 class="text-headline-sm font-headline-sm text-primary dark:text-primary mb-4">Flagship Nodes</h4>
+<h4 class="text-headline-sm font-headline-sm text-primary dark:text-primary mb-4">Flagship Stores</h4>
 <p class="font-body-sm text-body-sm text-on-surface-variant mb-2 hover:text-secondary transition-colors" data-page="stores" role="button" tabindex="0">Tokyo / Shibuya Atelier</p>
-<p class="font-body-sm text-body-sm text-on-surface-variant mb-2 hover:text-secondary transition-colors" data-page="stores" role="button" tabindex="0">Zürich / Bahnhofstrasse Lab</p>
-<p class="font-body-sm text-body-sm text-on-surface-variant hover:text-secondary transition-colors" data-page="stores" role="button" tabindex="0">Vancouver / Gastown Terminal</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-2 hover:text-secondary transition-colors" data-page="stores" role="button" tabindex="0">Tokyo / Nakameguro Store</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant hover:text-secondary transition-colors" data-page="stores" role="button" tabindex="0">Osaka / Nakazakicho Studio</p>
 </div>
 </div>
 </div>
 <!-- Bottom Tier: Legal & Copyright -->
 <div class="pt-8 border-t border-outline-variant/20 flex flex-col sm:flex-row items-center justify-between gap-4">
 <p class="text-label-sm font-label-sm text-on-surface-variant">
-          © 2025 VEYA Technical Apparel. All rights reserved.
+          © 2026 VEYA Tokyo. All rights reserved.
         </p>
 <div class="flex items-center gap-6">
 <span class="font-label-sm text-secondary uppercase tracking-widest flex items-center gap-1.5">
@@ -656,7 +656,7 @@
 <div class="rounded-xl bg-surface-container-low border border-outline-variant/30 p-4" role="dialog" aria-modal="true" aria-label="Search the collection">
 <div class="flex items-center gap-3 px-2">
 <span class="material-symbols-outlined text-secondary">search</span>
-<input id="search-input" class="flex-grow h-12 bg-transparent border-0 focus:ring-0 text-primary font-body-lg placeholder-on-surface-variant/50 outline-none" placeholder="Search parkas, merino, expedition…" autocomplete="off"/>
+<input id="search-input" class="flex-grow h-12 bg-transparent border-0 focus:ring-0 text-primary font-body-lg placeholder-on-surface-variant/50 outline-none" placeholder="Search coats, merino, denim…" autocomplete="off"/>
 <button type="button" data-close aria-label="Close search" class="text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined">close</span></button>
 </div>
 <div id="search-results" class="mt-3 max-h-[60vh] overflow-y-auto space-y-1"></div>
@@ -691,9 +691,9 @@
 </div>
 <nav class="flex flex-col gap-5">
 <a data-close data-filter="all" href="#collections" class="font-label-lg text-label-lg uppercase tracking-widest text-primary">Collections</a>
-<a data-close data-filter="transit" href="#collections" class="font-label-lg text-label-lg uppercase tracking-widest text-on-surface-variant hover:text-primary">Transit</a>
-<a data-close data-filter="performance" href="#collections" class="font-label-lg text-label-lg uppercase tracking-widest text-on-surface-variant hover:text-primary">Performance</a>
-<a data-close data-filter="expedition" href="#collections" class="font-label-lg text-label-lg uppercase tracking-widest text-on-surface-variant hover:text-primary">Expedition</a>
+<a data-close data-filter="commute" href="#collections" class="font-label-lg text-label-lg uppercase tracking-widest text-on-surface-variant hover:text-primary">Commute</a>
+<a data-close data-filter="studio" href="#collections" class="font-label-lg text-label-lg uppercase tracking-widest text-on-surface-variant hover:text-primary">Studio</a>
+<a data-close data-filter="weekend" href="#collections" class="font-label-lg text-label-lg uppercase tracking-widest text-on-surface-variant hover:text-primary">Weekend</a>
 <a data-close href="#fabric-lab" class="font-label-lg text-label-lg uppercase tracking-widest text-on-surface-variant hover:text-primary">Fabric Lab</a>
 <a data-page="editorial" href="#editorial" class="font-label-lg text-label-lg uppercase tracking-widest text-on-surface-variant hover:text-primary">Editorial</a>
 <button id="menu-account-btn" type="button" class="text-left font-label-lg text-label-lg uppercase tracking-widest text-secondary">Account</button>
