@@ -107,6 +107,14 @@ npm test             # API + Stripe flow tests (in-memory database, fake Stripe 
 npm run build:css    # rebuild public/styles.css after changing classes
 ```
 
+To check the Stripe integration against Stripe's API spec without a Stripe account, run Stripe's
+official mock server:
+
+```bash
+go install github.com/stripe/stripe-mock@latest && stripe-mock -http-port 12111
+STRIPE_MOCK_PORT=12111 npm test
+```
+
 Styling uses Tailwind, compiled from `tailwind.config.js` (the Stitch theme tokens) into
 `public/styles.css`. Stitch's export loads the Tailwind Play CDN instead, which Tailwind doesn't
 recommend for production.
