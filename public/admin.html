@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta name="robots" content="noindex"/>
+<title>VEYA Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root { --bg: #111317; --panel: #1a1c1f; --line: #464742; --text: #e2e2e6; --muted: #c7c7bf; --accent: #f9bb72; --err: #ffb4ab; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.5 "Hanken Grotesk", sans-serif; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 32px 16px; }
+  h1 { font-weight: 600; margin: 0 0 4px; } h2 { font-size: 16px; margin: 32px 0 12px; }
+  .mono { font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; } th, td { text-align: left; padding: 8px; border-bottom: 1px solid #2a2c2f; vertical-align: top; }
+  th { font-family: "JetBrains Mono", monospace; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; }
+  input, select, button { font: inherit; color: var(--text); background: #0c0e11; border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; }
+  button { cursor: pointer; } button:hover { border-color: var(--accent); }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+  .stat b { display: block; font-size: 24px; color: #fff; }
+  .err { color: var(--err); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>VEYA Admin</h1>
+  <p class="mono">Orders, inventory and VIP club</p>
+  <form id="login" class="row panel" style="margin-top:16px">
+    <label class="mono" for="token">Admin token</label>
+    <input id="token" type="password" autocomplete="current-password" style="flex:1;min-width:200px"/>
+    <button type="submit">Load dashboard</button>
+    <span id="err" class="err"></span>
+  </form>
+  <div id="dash" hidden>
+    <h2>Overview</h2>
+    <div class="stats" id="stats"></div>
+    <h2>Orders</h2>
+    <div class="panel"><table><thead><tr><th>Order</th><th>Customer</th><th>Items</th><th>Total</th><th>Status</th></tr></thead><tbody id="orders"></tbody></table></div>
+    <h2>Inventory</h2>
+    <div class="panel"><table><thead><tr><th>Product</th><th>Price</th><th>Stock</th></tr></thead><tbody id="inventory"></tbody></table></div>
+    <h2>VIP club subscribers</h2>
+    <div class="panel"><table><thead><tr><th>Email</th><th>Joined</th></tr></thead><tbody id="subs"></tbody></table></div>
+  </div>
+</div>
+<script>
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  let token = '';
+  try { token = sessionStorage.getItem('veya_admin') || ''; } catch {}
+
+  async function call(path, opts = {}) {
+    const res = await fetch(path, { ...opts, headers: { 'Content-Type': 'application/json', 'x-admin-token': token } });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Request failed');
+    return data;
+  }
+
+  async function load() {
+    try {
+      const d = await call('/api/admin/summary');
+      document.getElementById('err').textContent = '';
+      document.getElementById('dash').hidden = false;
+      const revenue = d.orders.filter((o) => o.status !== 'cancelled').reduce((s, o) => s + o.total, 0);
+      document.getElementById('stats').innerHTML = [
+        ['Orders', d.orders.length], ['Revenue', `$${revenue.toLocaleString()}`],
+        ['Accounts', d.users], ['VIP subscribers', d.subscribers.length],
+      ].map(([k, v]) => `<div class="panel stat"><span class="mono">${k}</span><b>${v}</b></div>`).join('');
+      document.getElementById('orders').innerHTML = d.orders.map((o) => `<tr>
+        <td><b>${esc(o.number)}</b><br><span class="mono">${esc(o.created_at)}</span></td>
+        <td>${esc(o.name)}<br>${esc(o.email)}<br><span class="mono">${esc(o.address)}, ${esc(o.city)} ${esc(o.postal_code)}, ${esc(o.country)}</span></td>
+        <td>${o.items.map((i) => `${i.qty}× ${esc(i.name)} (${esc(i.color)}, ${esc(i.size)})`).join('<br>')}</td>
+        <td>$${o.total.toLocaleString()}</td>
+        <td><select data-order="${esc(o.number)}">${['confirmed', 'shipped', 'delivered', 'cancelled']
+          .map((s) => `<option ${s === o.status ? 'selected' : ''}>${s}</option>`).join('')}</select></td></tr>`).join('')
+        || '<tr><td colspan="5">No orders yet.</td></tr>';
+      document.getElementById('inventory').innerHTML = d.inventory.map((p) => `<tr>
+        <td>${esc(p.name)}</td><td>$${(p.price_cents / 100).toLocaleString()}</td>
+        <td class="row"><input type="number" min="0" value="${p.stock}" style="width:90px" data-stock="${esc(p.id)}"/><button data-save="${esc(p.id)}">Save</button></td></tr>`).join('');
+      document.getElementById('subs').innerHTML = d.subscribers.map((s) => `<tr><td>${esc(s.email)}</td><td class="mono">${esc(s.created_at)}</td></tr>`).join('')
+        || '<tr><td colspan="2">No subscribers yet.</td></tr>';
+    } catch (e) {
+      document.getElementById('dash').hidden = true;
+      document.getElementById('err').textContent = e.message;
+    }
+  }
+
+  document.getElementById('login').addEventListener('submit', (e) => {
+    e.preventDefault();
+    token = document.getElementById('token').value;
+    try { sessionStorage.setItem('veya_admin', token); } catch {}
+    load();
+  });
+  document.addEventListener('change', async (e) => {
+    const number = e.target.dataset.order;
+    if (!number) return;
+    try { await call(`/api/admin/orders/${encodeURIComponent(number)}`, { method: 'PATCH', body: JSON.stringify({ status: e.target.value }) }); load(); }
+    catch (err) { alert(err.message); }
+  });
+  document.addEventListener('click', async (e) => {
+    const id = e.target.dataset.save;
+    if (!id) return;
+    const stock = Number(document.querySelector(`[data-stock="${CSS.escape(id)}"]`).value);
+    try { await call(`/api/admin/products/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify({ stock }) }); load(); }
+    catch (err) { alert(err.message); }
+  });
+  if (token) load();
+</script>
+</body></html>

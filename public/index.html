@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VEYA — Technical Luxury Apparel | Built For More</title>
+<!-- Google Fonts: Bodoni Moda (Editorial Display), Hanken Grotesk (Body & Headings), JetBrains Mono (Technical Spec) -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..700&amp;family=Hanken+Grotesk:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Compiled Tailwind (theme tokens in tailwind.config.js; rebuild with npm run build:css) -->
+<link href="/styles.css" rel="stylesheet"/>
+<style>
+    /* Custom refined scrollbar and subtle glowing utilities */
+    ::-webkit-scrollbar {
+      width: 4px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0c0e11;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #333538;
+      border-radius: 2px;
+    }
+    .amber-glow-hover:hover {
+      box-shadow: 0 0 24px -4px rgba(249, 187, 114, 0.25);
+    }
+    .glass-spec-panel {
+      background: rgba(26, 28, 31, 0.65);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      border: 1px solid rgba(243, 241, 236, 0.08);
+    }
+    html { scroll-behavior: smooth; }
+    [id] { scroll-margin-top: 88px; }
+    [data-filter], [data-page], [data-fabric] { cursor: pointer; }
+    .no-scrollbar { scrollbar-width: none; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .overlay { position: fixed; inset: 0; z-index: 60; display: none; }
+    .overlay.open { display: block; }
+    .overlay-backdrop { position: absolute; inset: 0; background: rgba(12, 14, 17, 0.72); backdrop-filter: blur(6px); }
+    .drawer-panel { transform: translateX(100%); transition: transform 300ms ease-out; }
+    .overlay.open .drawer-panel { transform: translateX(0); }
+    .field { width: 100%; height: 48px; padding: 0 1rem; border-radius: 0.5rem; background: #0c0e11; border: 1px solid rgba(70, 71, 66, 0.6); color: #ffffff; font-family: "Hanken Grotesk"; font-size: 14px; outline: none; }
+    .field:focus { border-color: #f9bb72; box-shadow: none; }
+    .field-label { display: block; margin-bottom: 6px; font-family: "JetBrains Mono"; font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: #c7c7bf; }
+    .chip-active { color: #ffffff !important; background: #1e2023; }
+    .swatch-active { outline: 1px solid #f9bb72; outline-offset: 2px; }
+    #toast { transition: opacity 250ms, transform 250ms; }
+  </style>
+</head>
+<body class="bg-background text-on-background selection:bg-secondary selection:text-surface-container-lowest antialiased overflow-x-hidden min-h-screen flex flex-col justify-between">
+<!-- ==========================================
+       SHARED COMPONENT: TopNavBar (Execution)
+       ========================================== -->
+<header class="fixed top-0 inset-x-0 z-50 bg-surface/75 dark:bg-surface/75 backdrop-blur-md shadow-sm backdrop-blur-2xl">
+<div class="flex justify-between items-center w-full px-6 md:px-12 py-4 max-w-7xl mx-auto">
+<!-- Brand Wordmark Anchor -->
+<a class="text-headline-md font-display tracking-tight text-primary dark:text-primary transition-all duration-300 ease-out active:scale-95 flex items-center gap-2" href="#top">
+<span>VEYA</span>
+<span class="inline-block w-1.5 h-1.5 rounded-full bg-secondary"></span>
+</a>
+<!-- Navigation Links (Active mapping: 'Collections' closest to flagship home) -->
+<nav class="hidden lg:flex items-center gap-8">
+<a class="nav-link text-primary dark:text-primary border-b border-secondary pb-1 tracking-widest font-label-md uppercase" href="#collections" data-filter="all">Collections</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary tracking-widest font-label-md uppercase transition-colors duration-200 nav-link border-b border-transparent pb-1" href="#collections" data-filter="transit">Transit</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary tracking-widest font-label-md uppercase transition-colors duration-200 nav-link border-b border-transparent pb-1" href="#collections" data-filter="performance">Performance</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary tracking-widest font-label-md uppercase transition-colors duration-200 nav-link border-b border-transparent pb-1" href="#collections" data-filter="expedition">Expedition</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary tracking-widest font-label-md uppercase transition-colors duration-200" href="#fabric-lab">Fabric Lab</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary tracking-widest font-label-md uppercase transition-colors duration-200" href="#editorial" data-page="editorial">Editorial</a>
+</nav>
+<!-- Trailing Actions & Icons -->
+<div class="flex items-center gap-6">
+<button id="menu-btn" type="button" aria-label="Open menu" class="lg:hidden text-on-surface-variant hover:text-secondary transition-colors duration-200 flex items-center"><span class="material-symbols-outlined text-[22px]">menu</span></button>
+<button id="search-btn" aria-label="Search Collection" class="text-on-surface-variant hover:text-secondary dark:hover:text-secondary transition-colors duration-200 flex items-center" type="button">
+<span class="material-symbols-outlined text-[20px]" data-icon="search">search</span>
+</button>
+<button id="account-btn" class="hidden sm:inline-block text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary tracking-widest font-label-md uppercase transition-colors duration-200" type="button">
+          Account
+        </button>
+<button id="bag-btn" aria-label="Open bag" class="group flex items-center gap-2.5 py-1.5 px-3 rounded-full bg-surface-container-high/60 border border-outline-variant/30 hover:border-secondary/40 transition-all duration-300" type="button">
+<span class="material-symbols-outlined text-[18px] text-secondary group-hover:scale-110 transition-transform duration-200" data-icon="shopping_bag">shopping_bag</span>
+<span id="bag-count" class="font-label-md tracking-wider text-primary">Bag (0)</span>
+</button>
+</div>
+</div>
+</header>
+<!-- ==========================================
+       MAIN CONTENT CANVAS
+       ========================================== -->
+<main id="top" class="w-full pt-20 flex-grow">
+<!-- 1. HERO SECTION -->
+<section class="relative min-h-[942px] flex flex-col justify-end px-6 md:px-12 pb-16 pt-24 max-w-7xl mx-auto overflow-hidden">
+<!-- Atmospheric Backdrop Image with Vignette -->
+<div class="absolute inset-0 -z-10 bg-surface-container-lowest">
+<img class="w-full h-full object-cover opacity-45 scale-105 filter contrast-125" data-alt="Cinematic atmospheric landscape capturing a modern athlete walking along an architectural concrete bridge overlooking misty alpine peaks at twilight. The scene is bathed in brooding charcoal shadows, slate grey mists, and faint morning gold dawn lighting reflecting across high-tech water-resistant fabric textures. Ultra-minimal luxury mood, clean geometry, quiet power." src="/images/hero.jpg" alt=""/>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent"></div>
+<div class="absolute inset-0 bg-gradient-to-r from-background/80 via-transparent to-background/80"></div>
+</div>
+<!-- Telemetry Live Weather Micro-Header -->
+<div class="flex flex-wrap items-center justify-between gap-4 mb-8">
+<div class="inline-flex items-center gap-3 px-3 py-1.5 rounded-full bg-surface-container-lowest/80 border border-outline-variant/30 backdrop-blur-md">
+<span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+<span id="telemetry-label" class="font-label-sm uppercase tracking-widest text-on-surface-variant">ATMOSPHERIC TELEMETRY: TOKYO / SHIBUYA 40M</span>
+<span class="text-outline-variant">|</span>
+<span id="telemetry-reading" class="font-label-sm text-primary tracking-wider">11°C PRECIP 62%</span>
+</div>
+<!-- Environmental Switcher Pills -->
+<div class="flex items-center gap-1.5 p-1 rounded-full bg-surface-container-lowest/80 border border-outline-variant/30 backdrop-blur-md">
+<button type="button" data-env="urban" class="env-pill chip-active px-3.5 py-1 rounded-full text-on-surface-variant hover:text-primary text-label-sm font-label-sm tracking-widest uppercase transition-all duration-200">Urban Transit</button>
+<button type="button" data-env="studio" class="env-pill px-3.5 py-1 rounded-full text-on-surface-variant hover:text-primary text-label-sm font-label-sm tracking-widest uppercase transition-all duration-200">Studio &amp; Track</button>
+<button type="button" data-env="alpine" class="env-pill px-3.5 py-1 rounded-full text-on-surface-variant hover:text-primary text-label-sm font-label-sm tracking-widest uppercase transition-all duration-200">Alpine Peak</button>
+</div>
+</div>
+<!-- Hero Headline & Core Manifesto -->
+<div class="max-w-4xl space-y-6">
+<div class="inline-block">
+<span class="text-label-md font-label-md tracking-[0.25em] text-secondary uppercase block mb-3">System Architecture 2025</span>
+<h1 class="font-headline-lg md:font-display text-headline-lg md:text-display text-primary leading-none tracking-tight">
+            FROM THE METROPOLIS TO THE MASSIF — BUILT FOR MORE.
+          </h1>
+</div>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl font-light leading-relaxed">
+          Fluid apparel engineered at the intersection of monolithic tailoring and high-altitude survivability. Designed for the rhythm of transcontinental movement.
+        </p>
+<!-- Primary Dual Actions -->
+<div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-4">
+<a class="h-[52px] px-8 rounded-full bg-primary text-on-primary font-headline-sm text-headline-sm flex items-center justify-center gap-3 transition-colors duration-300 hover:bg-secondary amber-glow-hover" href="#collections" data-filter="all">
+<span>Explore Collection</span>
+<span class="material-symbols-outlined text-[18px]" data-icon="north_east">north_east</span>
+</a>
+<a class="h-[52px] px-8 rounded-full bg-surface-container-high/40 hover:bg-surface-container-high/80 border border-primary/10 text-primary font-headline-sm text-headline-sm flex items-center justify-center gap-2 backdrop-blur-md transition-all duration-300" href="#fabric-lab">
+<span>The Fabric Innovation Lab</span>
+<span class="material-symbols-outlined text-[18px] text-secondary" data-icon="science">science</span>
+</a>
+</div>
+</div>
+<!-- Bottom Minimal Mantra Strip -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-16 mt-16 border-t border-outline-variant/20">
+<div>
+<span class="font-label-sm text-secondary uppercase tracking-widest block mb-1">01 / PILLAR</span>
+<p class="font-label-md uppercase tracking-wider text-primary">PREMIUM FABRICS</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Superfine natural thermals bonded with Japanese technical filaments.</p>
+</div>
+<div>
+<span class="font-label-sm text-secondary uppercase tracking-widest block mb-1">02 / CRAFT</span>
+<p class="font-label-md uppercase tracking-wider text-primary">TIMELESS DESIGNS</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Sculptural silhouettes stripped of gratuitous hardware and excess volume.</p>
+</div>
+<div>
+<span class="font-label-sm text-secondary uppercase tracking-widest block mb-1">03 / ENDURANCE</span>
+<p class="font-label-md uppercase tracking-wider text-primary">BUILT FOR MORE</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Lab-certified tensile thresholds tested in high-strain alpine weather chambers.</p>
+</div>
+</div>
+</section>
+<!-- 2. TRIPLE ENVIRONMENT SHOWCASE ("The Fluid Spectrum") -->
+<section class="py-24 px-6 md:px-12 max-w-7xl mx-auto border-t border-outline-variant/20" id="spectrum">
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+<div>
+<div class="flex items-center gap-2 mb-3">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span class="font-label-sm text-secondary uppercase tracking-widest">THE FLUID SPECTRUM</span>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-primary">One System. Three Realities.</h2>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-md">
+          A seamless wardrobe calibrated to eliminate gear-switching between corporate downtown transit, aggressive conditioning, and unpredictable backcountry terrain.
+        </p>
+</div>
+<!-- Bento Cards Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<!-- Card 1: Metropolitan Commute -->
+<div role="button" tabindex="0" aria-label="Shop Transit" data-filter="transit" id="transit" class="group relative rounded-xl overflow-hidden bg-surface-container-low border border-outline-variant/30 transition-all duration-500 hover:border-secondary/40 flex flex-col">
+<div class="relative aspect-[4/5] overflow-hidden bg-surface-container-lowest">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="Editorial lookbook photograph of a male model dressed in an obsidian black tailored technical overcoat walking purposefully past contemporary glass architecture in rain-drenched Tokyo. Soft amber city lights reflect on wet pavement. The fabric displays subtle water beading on the shoulders with hidden magnetic seam pockets." src="/images/transit.jpg" alt=""/>
+<div class="absolute top-4 left-4">
+<span class="px-2.5 py-1 rounded bg-surface-container-lowest/80 border border-outline-variant/30 backdrop-blur-md font-label-sm text-secondary uppercase tracking-widest">
+                Transit City
+              </span>
+</div>
+<div class="absolute bottom-4 right-4">
+<span class="w-8 h-8 rounded-full bg-surface-container-lowest/90 border border-outline-variant/40 flex items-center justify-center text-primary group-hover:text-secondary group-hover:border-secondary transition-colors duration-200">
+<span class="material-symbols-outlined text-[16px]" data-icon="north_east">north_east</span>
+</span>
+</div>
+</div>
+<div class="p-6 flex flex-col justify-between flex-grow bg-surface-container-low/80 backdrop-blur-md">
+<div>
+<span class="font-label-sm text-on-surface-variant uppercase tracking-widest block mb-1">MODULE A — 01</span>
+<h3 class="font-headline-md text-headline-md text-primary mb-2">The Metropolitan Commute</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed mb-4">
+                Structured elegance cut from water-shedding Australian wool blends. Internal laser-cut passport vault, headphone routing, and discreet magnetic flaps.
+              </p>
+</div>
+<div class="pt-4 border-t border-outline-variant/20 flex items-center justify-between text-label-sm font-label-sm text-on-surface-variant">
+<span>WEIGHT: 340 GSM</span>
+<span class="text-secondary">DWR RESISTANT</span>
+</div>
+</div>
+</div>
+<!-- Card 2: High-Output Performance -->
+<div role="button" tabindex="0" aria-label="Shop Performance" data-filter="performance" id="performance" class="group relative rounded-xl overflow-hidden bg-surface-container-low border border-outline-variant/30 transition-all duration-500 hover:border-secondary/40 flex flex-col">
+<div class="relative aspect-[4/5] overflow-hidden bg-surface-container-lowest">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="High-intensity training editorial shot of a woman in sculpted graphite grey compression gear sprinting in a brutalist industrial gym facility. Dramatic directional studio strobe lighting accentuating muscular definition and hyper-breathable laser-cut micro-ventilation panels along the spine and ribs. Minimalist, premium, athletic intensity." src="/images/performance.jpg" alt=""/>
+<div class="absolute top-4 left-4">
+<span class="px-2.5 py-1 rounded bg-surface-container-lowest/80 border border-outline-variant/30 backdrop-blur-md font-label-sm text-secondary uppercase tracking-widest">
+                Conditioning
+              </span>
+</div>
+<div class="absolute bottom-4 right-4">
+<span class="w-8 h-8 rounded-full bg-surface-container-lowest/90 border border-outline-variant/40 flex items-center justify-center text-primary group-hover:text-secondary group-hover:border-secondary transition-colors duration-200">
+<span class="material-symbols-outlined text-[16px]" data-icon="north_east">north_east</span>
+</span>
+</div>
+</div>
+<div class="p-6 flex flex-col justify-between flex-grow bg-surface-container-low/80 backdrop-blur-md">
+<div>
+<span class="font-label-sm text-on-surface-variant uppercase tracking-widest block mb-1">MODULE B — 02</span>
+<h3 class="font-headline-md text-headline-md text-primary mb-2">High-Output Performance</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed mb-4">
+                Hyper-breathable 4-way mechanical stretch fabric. Ergonomic thermal mapped cooling channels along the spine that open as body temperature elevates.
+              </p>
+</div>
+<div class="pt-4 border-t border-outline-variant/20 flex items-center justify-between text-label-sm font-label-sm text-on-surface-variant">
+<span>FLEX: 360° MATRIX</span>
+<span class="text-secondary">ACTIVE COOLING</span>
+</div>
+</div>
+</div>
+<!-- Card 3: Alpine Ascent -->
+<div role="button" tabindex="0" aria-label="Shop Expedition" data-filter="expedition" id="expedition" class="group relative rounded-xl overflow-hidden bg-surface-container-low border border-outline-variant/30 transition-all duration-500 hover:border-secondary/40 flex flex-col">
+<div class="relative aspect-[4/5] overflow-hidden bg-surface-container-lowest">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="Technical mountaineering shot of a lone alpinist traversing a frozen granite ridge at high elevation surrounded by sub-zero cloud banks. The climber wears an arctic-proof slate and amber technical shell jacket with taped watertight seam accents and an integrated storm storm-hood. Cold blue atmosphere contrasted with warm amber gear accents." src="/images/expedition.jpg" alt=""/>
+<div class="absolute top-4 left-4">
+<span class="px-2.5 py-1 rounded bg-surface-container-lowest/80 border border-outline-variant/30 backdrop-blur-md font-label-sm text-secondary uppercase tracking-widest">
+                Expedition
+              </span>
+</div>
+<div class="absolute bottom-4 right-4">
+<span class="w-8 h-8 rounded-full bg-surface-container-lowest/90 border border-outline-variant/40 flex items-center justify-center text-primary group-hover:text-secondary group-hover:border-secondary transition-colors duration-200">
+<span class="material-symbols-outlined text-[16px]" data-icon="north_east">north_east</span>
+</span>
+</div>
+</div>
+<div class="p-6 flex flex-col justify-between flex-grow bg-surface-container-low/80 backdrop-blur-md">
+<div>
+<span class="font-label-sm text-on-surface-variant uppercase tracking-widest block mb-1">MODULE C — 03</span>
+<h3 class="font-headline-md text-headline-md text-primary mb-2">Alpine Ascent</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed mb-4">
+                Multi-layer membrane shielding against 20,000mm hydrostatic head pressures. Ultra-light packable thermal core without the bulk of traditional down.
+              </p>
+</div>
+<div class="pt-4 border-t border-outline-variant/20 flex items-center justify-between text-label-sm font-label-sm text-on-surface-variant">
+<span>WATERPROOF: 20K/20K</span>
+<span class="text-secondary">-15°C RATED</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 3. FABRIC INNOVATION LAB ("Tactile Engineering") -->
+<section class="py-24 px-6 md:px-12 bg-surface-container-lowest border-y border-outline-variant/20" id="fabric-lab">
+<div class="max-w-7xl mx-auto">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+<!-- Text and Technical Details -->
+<div class="lg:col-span-5 space-y-8">
+<div>
+<div class="inline-flex items-center gap-2 mb-3">
+<span class="material-symbols-outlined text-secondary text-[16px]" data-icon="biotech">biotech</span>
+<span class="font-label-sm text-secondary uppercase tracking-widest">TACTILE ENGINEERING LAB</span>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-primary mb-4">The Molecular Architecture.</h2>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                Rather than relying on generic synthetics, our textile laboratory in Kyoto pioneers proprietary blends woven at microscopically dense fiber cadences.
+              </p>
+</div>
+<!-- Accordion / Textile Switcher -->
+<div class="space-y-4">
+<!-- Textile 1 -->
+<div role="button" tabindex="0" data-fabric="aero-merino-240" class="fabric-card p-5 rounded-lg border border-secondary/40 bg-surface-container/60 transition-all duration-300">
+<div class="flex items-center justify-between mb-2">
+<h4 class="font-label-lg text-label-lg text-primary tracking-wider uppercase">AERO-MERINO 240</h4>
+<span class="font-label-sm text-secondary uppercase tracking-wider">NATURAL COMPOSITE</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-3">
+                  Superfine 17.5-micron Australian merino wrapped helically around a micro-filament nylon core. Inherently odor-neutralizing with 300% faster vapor expulsion.
+                </p>
+<div class="flex items-center gap-4 text-label-sm font-label-sm text-outline">
+<span>TENSILE: +42% OVER STANDARD WOOL</span>
+<span>|</span>
+<span>ORIGIN: TASMANIA / OSAKA</span>
+</div>
+</div>
+<!-- Textile 2 -->
+<div role="button" tabindex="0" data-fabric="v-shell-bi-stretch" class="fabric-card p-5 rounded-lg border border-outline-variant/30 bg-surface-container-low/40 hover:border-outline-variant/60 transition-all duration-300">
+<div class="flex items-center justify-between mb-2">
+<h4 class="font-label-lg text-label-lg text-primary tracking-wider uppercase">V-SHELL BI-STRETCH</h4>
+<span class="font-label-sm text-on-surface-variant uppercase tracking-wider">WEATHER SHIELD</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                  A high-gauge woven membrane impregnated with fluorine-free eco-DWR. Deflects gale-force winds up to 70mph while moving with silent zero-rustle acoustics.
+                </p>
+</div>
+<!-- Textile 3 -->
+<div role="button" tabindex="0" data-fabric="kinetic-matrix" class="fabric-card p-5 rounded-lg border border-outline-variant/30 bg-surface-container-low/40 hover:border-outline-variant/60 transition-all duration-300">
+<div class="flex items-center justify-between mb-2">
+<h4 class="font-label-lg text-label-lg text-primary tracking-wider uppercase">KINETIC MATRIX</h4>
+<span class="font-label-sm text-on-surface-variant uppercase tracking-wider">ERGONOMIC ARTICULATION</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                  Articulated radial gusset pattern geometry designed directly from 3D anatomical scans, permitting full overhead reach without hem elevation.
+                </p>
+</div>
+</div>
+<!-- Lab Data Readout Footer -->
+<div class="flex items-center gap-6 pt-2">
+<a class="font-label-md text-label-md text-secondary hover:underline flex items-center gap-2 uppercase tracking-widest" href="#lab-documentation" data-page="lab-documentation">
+<span>View Full Lab Whitepaper</span>
+<span class="material-symbols-outlined text-[14px]" data-icon="arrow_forward">arrow_forward</span>
+</a>
+</div>
+</div>
+<!-- Microscopic Fiber / Technical Visualization Graphic -->
+<div class="lg:col-span-7">
+<div class="relative rounded-2xl overflow-hidden border border-outline-variant/40 bg-surface-container-low p-2">
+<div class="relative aspect-video rounded-xl overflow-hidden bg-surface-container-lowest">
+<img class="w-full h-full object-cover" data-alt="Macro extreme close-up view of woven technical fabric threads featuring a high-density black and charcoal weave interlaced with micro gold conductive filaments. Dramatic low-key rim lighting reveals the tactile cross-hatch fiber texture, tiny air passages, and microscopic water droplet bead resting on the surface. Hyper-detailed textile lab photography." src="/images/fabric.jpg" alt=""/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-transparent to-transparent"></div>
+<!-- Live Data HUD Elements -->
+<div class="absolute top-6 left-6 flex flex-col gap-2">
+<div class="px-3 py-1 rounded bg-surface-container-lowest/80 border border-outline-variant/40 backdrop-blur-md font-label-sm text-primary tracking-widest" id="hud-specimen">
+                    SPECIMEN: VEYA-TX-9902
+                  </div>
+<div class="px-3 py-1 rounded bg-surface-container-lowest/80 border border-outline-variant/40 backdrop-blur-md font-label-sm text-secondary tracking-widest" id="hud-metric">
+                    VAPOR PERMEABILITY: 28,000 G/M²/24H
+                  </div>
+</div>
+<!-- Interactive Focus Node Points -->
+<div class="absolute bottom-8 left-8 right-8 glass-spec-panel p-4 rounded-xl flex items-center justify-between">
+<div class="flex items-center gap-4">
+<span class="w-3 h-3 rounded-full bg-secondary animate-ping"></span>
+<div>
+<p id="hud-focus-title" class="font-label-sm uppercase tracking-widest text-primary">Micro-filament Cross-section</p>
+<p id="hud-focus-text" class="font-body-sm text-body-sm text-on-surface-variant">Zero-wicking yarn geometry prevents saturation under 6hr downpours.</p>
+</div>
+</div>
+<span class="font-label-sm text-secondary border border-secondary/30 px-3 py-1 rounded">LAB VERIFIED</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 4. CURATED CAPSULE LOOKBOOK ("The Continuous Wardrobe") -->
+<section class="py-24 px-6 md:px-12 max-w-7xl mx-auto" id="collections">
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+<div>
+<span class="font-label-sm text-secondary uppercase tracking-widest block mb-2">CURATED CAPSULE 01</span>
+<h2 class="font-headline-lg text-headline-lg text-primary">The Continuous Wardrobe</h2>
+<div id="filter-chips" class="flex flex-wrap items-center gap-1.5 mt-5">
+<button type="button" data-chip="all" class="chip chip-active px-3.5 py-1 rounded-full border border-outline-variant/30 text-on-surface-variant hover:text-primary font-label-sm text-label-sm tracking-widest uppercase transition-all duration-200">All</button>
+<button type="button" data-chip="transit" class="chip px-3.5 py-1 rounded-full border border-outline-variant/30 text-on-surface-variant hover:text-primary font-label-sm text-label-sm tracking-widest uppercase transition-all duration-200">Transit</button>
+<button type="button" data-chip="performance" class="chip px-3.5 py-1 rounded-full border border-outline-variant/30 text-on-surface-variant hover:text-primary font-label-sm text-label-sm tracking-widest uppercase transition-all duration-200">Performance</button>
+<button type="button" data-chip="expedition" class="chip px-3.5 py-1 rounded-full border border-outline-variant/30 text-on-surface-variant hover:text-primary font-label-sm text-label-sm tracking-widest uppercase transition-all duration-200">Expedition</button>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button id="prev-btn" type="button" aria-label="Previous products" class="w-11 h-11 rounded-full border border-outline-variant/40 flex items-center justify-center text-primary hover:border-secondary hover:text-secondary transition-colors duration-200">
+<span class="material-symbols-outlined text-[20px]" data-icon="west">west</span>
+</button>
+<button id="next-btn" type="button" aria-label="Next products" class="w-11 h-11 rounded-full border border-outline-variant/40 flex items-center justify-center text-primary hover:border-secondary hover:text-secondary transition-colors duration-200">
+<span class="material-symbols-outlined text-[20px]" data-icon="east">east</span>
+</button>
+</div>
+</div>
+<!-- Product Cards Track (rendered from /api/products by app.js) -->
+<div id="product-track" class="no-scrollbar flex gap-6 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-2">
+<p class="font-label-md text-on-surface-variant">LOADING COLLECTION…</p>
+</div>
+</section>
+<!-- 5. COMMUNITY & MANIFESTO CALLOUT -->
+<section id="vip" class="py-24 px-6 md:px-12 bg-surface-container-low relative overflow-hidden border-t border-outline-variant/20">
+<!-- Glow ambient accent -->
+<div class="absolute -top-48 right-0 w-96 h-96 bg-secondary/10 rounded-full blur-3xl pointer-events-none"></div>
+<div class="max-w-4xl mx-auto text-center space-y-8 relative z-10">
+<div class="inline-flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="font-label-sm text-secondary uppercase tracking-[0.25em]">EXCLUSIVE ALLOCATION CLUB</span>
+</div>
+<h2 class="font-headline-lg md:font-display text-headline-lg md:text-display text-primary">
+          One Garment, Infinite Horizons.
+        </h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto leading-relaxed">
+          VEYA drops are produced in strictly serialized micro-batches to eliminate deadstock and preserve artisanal integrity. Join the VIP Membership Club for early drop access and expedition previews.
+        </p>
+<!-- Newsletter Membership Input Field -->
+<form id="vip-form" class="max-w-md mx-auto flex flex-col sm:flex-row gap-3 pt-4" novalidate>
+<div class="relative flex-grow">
+<input class="w-full h-[52px] px-5 rounded-full bg-surface-container-lowest/80 border border-outline-variant/40 text-primary placeholder-on-surface-variant/50 focus:border-secondary focus:ring-0 font-body-md transition-colors duration-200 outline-none" placeholder="Enter your private email..." required="" type="email" name="email" aria-label="Email address"/>
+</div>
+<button class="h-[52px] px-8 rounded-full bg-primary text-on-primary font-headline-sm text-headline-sm hover:bg-secondary transition-colors duration-300 amber-glow-hover whitespace-nowrap flex items-center justify-center gap-2" type="submit">
+<span>Request Access</span>
+<span class="material-symbols-outlined text-[18px]" data-icon="lock_open">lock_open</span>
+</button>
+</form>
+<p id="vip-message" class="font-label-md text-secondary tracking-wider min-h-[16px]" aria-live="polite"></p>
+<p class="font-label-sm text-outline tracking-wider">
+          PRIVACY GUARANTEED. ZERO COMMERCIAL SPAM. 4 DROPS ANNUALLY.
+        </p>
+</div>
+</section>
+</main>
+<!-- ==========================================
+       SHARED COMPONENT: Footer (Execution)
+       ========================================== -->
+<footer class="bg-surface-container-lowest dark:bg-surface-container-lowest border-t border-outline-variant/20 flat no shadows">
+<div class="w-full px-6 md:px-12 py-16 max-w-7xl mx-auto flex flex-col gap-12">
+<!-- Top Tier: Brand Headline and Navigation Columns -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-12">
+<!-- Left: Brand Legacy -->
+<div class="md:col-span-4 space-y-4">
+<a class="text-headline-lg font-display tracking-tighter text-primary dark:text-primary block" href="#top">
+            VEYA
+          </a>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-sm leading-relaxed">
+            Architectural luxury technical apparel engineering garments that transcend the boundary between metropolitan life and extreme alpine frontiers.
+          </p>
+<div class="pt-2">
+<span class="font-label-sm text-secondary uppercase tracking-widest block mb-1">MANTRA</span>
+<p class="font-label-md text-primary tracking-wider">PREMIUM FABRICS. TIMELESS DESIGNS. BUILT FOR MORE.</p>
+</div>
+</div>
+<!-- Middle: Links Columns (Shared Components Exact Links) -->
+<div class="md:col-span-8 grid grid-cols-2 sm:grid-cols-3 gap-8">
+<div>
+<h4 class="text-headline-sm font-headline-sm text-primary dark:text-primary mb-4">Ecosystem</h4>
+<ul class="space-y-3">
+<li>
+<a class="text-label-sm font-label-sm text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary hover:text-secondary dark:hover:text-secondary transition-colors duration-200" href="#vip">
+                  VIP Membership Club
+                </a>
+</li>
+<li>
+<a class="text-label-sm font-label-sm text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary hover:text-secondary dark:hover:text-secondary transition-colors duration-200" href="#sustainability" data-page="sustainability">
+                  Sustainability Manifesto
+                </a>
+</li>
+<li>
+<a class="text-label-sm font-label-sm text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary hover:text-secondary dark:hover:text-secondary transition-colors duration-200" href="#fabric-lab">
+                  Fabric Innovation
+                </a>
+</li>
+</ul>
+</div>
+<div>
+<h4 class="text-headline-sm font-headline-sm text-primary dark:text-primary mb-4">Support &amp; Care</h4>
+<ul class="space-y-3">
+<li>
+<a class="text-label-sm font-label-sm text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary hover:text-secondary dark:hover:text-secondary transition-colors duration-200" href="#care" data-page="care">
+                  Care &amp; Maintenance
+                </a>
+</li>
+<li>
+<a class="text-label-sm font-label-sm text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary hover:text-secondary dark:hover:text-secondary transition-colors duration-200" href="#stores" data-page="stores">
+                  Store Locator
+                </a>
+</li>
+<li>
+<a class="text-label-sm font-label-sm text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary hover:text-secondary dark:hover:text-secondary transition-colors duration-200" href="#privacy" data-page="privacy">
+                  Privacy Policy
+                </a>
+</li>
+</ul>
+</div>
+<div>
+<h4 class="text-headline-sm font-headline-sm text-primary dark:text-primary mb-4">Flagship Nodes</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-2 hover:text-secondary transition-colors" data-page="stores" role="button" tabindex="0">Tokyo / Shibuya Atelier</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-2 hover:text-secondary transition-colors" data-page="stores" role="button" tabindex="0">Zürich / Bahnhofstrasse Lab</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant hover:text-secondary transition-colors" data-page="stores" role="button" tabindex="0">Vancouver / Gastown Terminal</p>
+</div>
+</div>
+</div>
+<!-- Bottom Tier: Legal & Copyright -->
+<div class="pt-8 border-t border-outline-variant/20 flex flex-col sm:flex-row items-center justify-between gap-4">
+<p class="text-label-sm font-label-sm text-on-surface-variant">
+          © 2025 VEYA Technical Apparel. All rights reserved.
+        </p>
+<div class="flex items-center gap-6">
+<span class="font-label-sm text-secondary uppercase tracking-widest flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+            GLOBAL LOGISTICS OPERATIONAL
+          </span>
+<span class="text-label-sm font-label-sm text-outline">EDITION 09.4</span>
+</div>
+</div>
+</div>
+</footer>
+<!-- ==========================================
+       INTERACTIVE OVERLAYS (wired up in app.js)
+       ========================================== -->
+<!-- Bag Drawer -->
+<div id="bag-overlay" class="overlay" aria-hidden="true">
+<div class="overlay-backdrop" data-close></div>
+<aside class="drawer-panel absolute top-0 right-0 h-full w-full max-w-md bg-surface-container-low border-l border-outline-variant/30 flex flex-col" role="dialog" aria-modal="true" aria-labelledby="bag-title">
+<div class="flex items-center justify-between px-6 py-5 border-b border-outline-variant/20">
+<div>
+<span class="font-label-sm text-secondary uppercase tracking-widest block mb-1">ALLOCATION</span>
+<h2 id="bag-title" class="font-headline-md text-headline-md text-primary">Your Bag</h2>
+</div>
+<button type="button" data-close aria-label="Close bag" class="w-9 h-9 rounded-full border border-outline-variant/40 flex items-center justify-center text-primary hover:border-secondary hover:text-secondary transition-colors"><span class="material-symbols-outlined text-[18px]">close</span></button>
+</div>
+<div id="bag-items" class="flex-grow overflow-y-auto px-6 py-4 space-y-4"></div>
+<div class="px-6 py-5 border-t border-outline-variant/20 space-y-3 bg-surface-container-lowest/60">
+<p id="bag-shipping-note" class="font-label-sm text-secondary uppercase tracking-widest"></p>
+<div class="flex justify-between font-body-md text-body-md text-on-surface-variant"><span>Subtotal</span><span id="bag-subtotal">$0</span></div>
+<div class="flex justify-between font-body-md text-body-md text-on-surface-variant"><span>Shipping</span><span id="bag-shipping">$0</span></div>
+<div class="flex justify-between font-headline-sm text-headline-sm text-primary pt-2 border-t border-outline-variant/20"><span>Total</span><span id="bag-total">$0</span></div>
+<button id="checkout-btn" type="button" class="w-full h-[52px] rounded-full bg-primary text-on-primary font-headline-sm text-headline-sm flex items-center justify-center gap-2 hover:bg-secondary transition-colors duration-300 amber-glow-hover disabled:opacity-40 disabled:pointer-events-none">
+<span>Checkout</span><span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</aside>
+</div>
+<!-- Product Detail Modal -->
+<div id="product-overlay" class="overlay" aria-hidden="true">
+<div class="overlay-backdrop" data-close></div>
+<div class="relative h-full w-full flex items-center justify-center p-4 pointer-events-none">
+<div class="pointer-events-auto w-full max-w-4xl max-h-full overflow-y-auto rounded-xl bg-surface-container-low border border-outline-variant/30 grid grid-cols-1 md:grid-cols-2" role="dialog" aria-modal="true" aria-labelledby="pd-name">
+<div class="relative bg-surface-container-lowest aspect-[4/5] md:aspect-auto">
+<img id="pd-image" class="w-full h-full object-cover" src="" alt=""/>
+<span id="pd-temp" class="absolute top-3 left-3 font-label-sm px-2 py-0.5 rounded bg-surface-container-lowest/80 border border-outline-variant/30 text-on-surface-variant uppercase"></span>
+</div>
+<div class="p-6 md:p-8 flex flex-col gap-5">
+<div class="flex items-start justify-between gap-4">
+<div>
+<span id="pd-tagline" class="font-label-sm text-secondary uppercase tracking-widest block mb-1"></span>
+<h2 id="pd-name" class="font-headline-md text-headline-md text-primary"></h2>
+<p id="pd-material" class="font-label-md text-on-surface-variant mt-1"></p>
+</div>
+<button type="button" data-close aria-label="Close" class="shrink-0 w-9 h-9 rounded-full border border-outline-variant/40 flex items-center justify-center text-primary hover:border-secondary hover:text-secondary transition-colors"><span class="material-symbols-outlined text-[18px]">close</span></button>
+</div>
+<p id="pd-price" class="font-label-lg text-label-lg text-primary"></p>
+<p id="pd-description" class="font-body-md text-body-md text-on-surface-variant leading-relaxed"></p>
+<div>
+<span class="field-label">Colour — <span id="pd-color-name" class="text-primary"></span></span>
+<div id="pd-colors" class="flex items-center gap-3"></div>
+</div>
+<div>
+<span class="field-label">Size</span>
+<div id="pd-sizes" class="flex flex-wrap gap-2"></div>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex items-center rounded-full border border-outline-variant/40 h-[52px]">
+<button id="pd-minus" type="button" aria-label="Decrease quantity" class="w-11 h-full flex items-center justify-center text-primary hover:text-secondary"><span class="material-symbols-outlined text-[18px]">remove</span></button>
+<span id="pd-qty" class="w-6 text-center font-label-lg text-primary">1</span>
+<button id="pd-plus" type="button" aria-label="Increase quantity" class="w-11 h-full flex items-center justify-center text-primary hover:text-secondary"><span class="material-symbols-outlined text-[18px]">add</span></button>
+</div>
+<button id="pd-add" type="button" class="flex-grow h-[52px] rounded-full bg-primary text-on-primary font-headline-sm text-headline-sm flex items-center justify-center gap-2 hover:bg-secondary transition-colors duration-300 amber-glow-hover disabled:opacity-40">
+<span>Add to Bag</span><span class="material-symbols-outlined text-[18px]">shopping_bag</span>
+</button>
+</div>
+<p id="pd-error" class="font-label-md text-error min-h-[16px]" aria-live="polite"></p>
+</div>
+</div>
+</div>
+</div>
+<!-- Checkout Modal -->
+<div id="checkout-overlay" class="overlay" aria-hidden="true">
+<div class="overlay-backdrop" data-close></div>
+<div class="relative h-full w-full flex items-center justify-center p-4 pointer-events-none">
+<div class="pointer-events-auto w-full max-w-lg max-h-full overflow-y-auto rounded-xl bg-surface-container-low border border-outline-variant/30 p-6 md:p-8" role="dialog" aria-modal="true" aria-labelledby="checkout-title">
+<div class="flex items-start justify-between mb-6">
+<div>
+<span class="font-label-sm text-secondary uppercase tracking-widest block mb-1">SECURE CHECKOUT</span>
+<h2 id="checkout-title" class="font-headline-md text-headline-md text-primary">Shipping Details</h2>
+</div>
+<button type="button" data-close aria-label="Close" class="w-9 h-9 rounded-full border border-outline-variant/40 flex items-center justify-center text-primary hover:border-secondary hover:text-secondary transition-colors"><span class="material-symbols-outlined text-[18px]">close</span></button>
+</div>
+<form id="checkout-form" class="space-y-4" novalidate>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<label class="block"><span class="field-label">Full name</span><input class="field" name="name" autocomplete="name" required/></label>
+<label class="block"><span class="field-label">Email</span><input class="field" name="email" type="email" autocomplete="email" required/></label>
+</div>
+<label class="block"><span class="field-label">Street address</span><input class="field" name="address" autocomplete="street-address" required/></label>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+<label class="block"><span class="field-label">City</span><input class="field" name="city" autocomplete="address-level2" required/></label>
+<label class="block"><span class="field-label">Postal code</span><input class="field" name="postalCode" autocomplete="postal-code" required/></label>
+<label class="block"><span class="field-label">Country</span><input class="field" name="country" autocomplete="country-name" required/></label>
+</div>
+<div class="rounded-lg border border-outline-variant/30 bg-surface-container-lowest/60 p-4 flex items-center justify-between">
+<span class="font-label-md text-on-surface-variant uppercase tracking-widest">Order total</span>
+<span id="checkout-total" class="font-headline-sm text-headline-sm text-primary">$0</span>
+</div>
+<p class="font-label-sm text-outline tracking-wider uppercase">Demo mode — no card is charged. Payment provider can be connected later.</p>
+<p id="checkout-error" class="font-label-md text-error min-h-[16px]" aria-live="polite"></p>
+<button type="submit" class="w-full h-[52px] rounded-full bg-primary text-on-primary font-headline-sm text-headline-sm flex items-center justify-center gap-2 hover:bg-secondary transition-colors duration-300 amber-glow-hover disabled:opacity-40">
+<span>Place Order</span><span class="material-symbols-outlined text-[18px]">lock</span>
+</button>
+</form>
+<div id="checkout-success" class="hidden text-center space-y-4 py-6">
+<span class="material-symbols-outlined text-secondary text-[40px]">verified</span>
+<h3 class="font-headline-lg text-headline-lg text-primary">Order Confirmed.</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Order <span id="success-number" class="text-primary font-label-lg"></span> is being prepared. A confirmation will be sent to <span id="success-email" class="text-primary"></span>.</p>
+<button type="button" data-close class="h-[52px] px-8 rounded-full bg-surface-container-high/60 border border-primary/10 text-primary font-headline-sm text-headline-sm hover:bg-surface-container-high transition-colors">Continue Exploring</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Account Modal -->
+<div id="account-overlay" class="overlay" aria-hidden="true">
+<div class="overlay-backdrop" data-close></div>
+<div class="relative h-full w-full flex items-center justify-center p-4 pointer-events-none">
+<div class="pointer-events-auto w-full max-w-md max-h-full overflow-y-auto rounded-xl bg-surface-container-low border border-outline-variant/30 p-6 md:p-8" role="dialog" aria-modal="true" aria-labelledby="account-title">
+<div class="flex items-start justify-between mb-6">
+<div>
+<span class="font-label-sm text-secondary uppercase tracking-widest block mb-1">VEYA ACCOUNT</span>
+<h2 id="account-title" class="font-headline-md text-headline-md text-primary">Sign In</h2>
+</div>
+<button type="button" data-close aria-label="Close" class="w-9 h-9 rounded-full border border-outline-variant/40 flex items-center justify-center text-primary hover:border-secondary hover:text-secondary transition-colors"><span class="material-symbols-outlined text-[18px]">close</span></button>
+</div>
+<div id="auth-view">
+<div class="flex items-center gap-1.5 p-1 rounded-full bg-surface-container-lowest/80 border border-outline-variant/30 mb-6 w-fit">
+<button type="button" data-auth-tab="login" class="auth-tab chip-active px-3.5 py-1 rounded-full text-on-surface-variant hover:text-primary font-label-sm text-label-sm tracking-widest uppercase">Sign In</button>
+<button type="button" data-auth-tab="register" class="auth-tab px-3.5 py-1 rounded-full text-on-surface-variant hover:text-primary font-label-sm text-label-sm tracking-widest uppercase">Create Account</button>
+</div>
+<form id="auth-form" class="space-y-4" novalidate>
+<label id="auth-name-row" class="hidden block"><span class="field-label">Full name</span><input class="field" name="name" autocomplete="name"/></label>
+<label class="block"><span class="field-label">Email</span><input class="field" name="email" type="email" autocomplete="email" required/></label>
+<label class="block"><span class="field-label">Password</span><input class="field" name="password" type="password" autocomplete="current-password" minlength="8" required/></label>
+<p id="auth-error" class="font-label-md text-error min-h-[16px]" aria-live="polite"></p>
+<button id="auth-submit" type="submit" class="w-full h-[52px] rounded-full bg-primary text-on-primary font-headline-sm text-headline-sm hover:bg-secondary transition-colors duration-300 amber-glow-hover disabled:opacity-40">Sign In</button>
+</form>
+</div>
+<div id="profile-view" class="hidden space-y-6">
+<div>
+<p class="font-body-lg text-body-lg text-primary" id="profile-name"></p>
+<p class="font-label-md text-on-surface-variant" id="profile-email"></p>
+</div>
+<div>
+<span class="field-label">Order history</span>
+<div id="order-list" class="space-y-3"></div>
+</div>
+<button id="logout-btn" type="button" class="w-full h-[48px] rounded-full border border-outline-variant/40 text-primary font-label-md uppercase tracking-widest hover:border-secondary hover:text-secondary transition-colors">Sign Out</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Search Overlay -->
+<div id="search-overlay" class="overlay" aria-hidden="true">
+<div class="overlay-backdrop" data-close></div>
+<div class="relative w-full max-w-2xl mx-auto mt-24 px-4">
+<div class="rounded-xl bg-surface-container-low border border-outline-variant/30 p-4" role="dialog" aria-modal="true" aria-label="Search the collection">
+<div class="flex items-center gap-3 px-2">
+<span class="material-symbols-outlined text-secondary">search</span>
+<input id="search-input" class="flex-grow h-12 bg-transparent border-0 focus:ring-0 text-primary font-body-lg placeholder-on-surface-variant/50 outline-none" placeholder="Search parkas, merino, expedition…" autocomplete="off"/>
+<button type="button" data-close aria-label="Close search" class="text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined">close</span></button>
+</div>
+<div id="search-results" class="mt-3 max-h-[60vh] overflow-y-auto space-y-1"></div>
+</div>
+</div>
+</div>
+<!-- Content Page Modal -->
+<div id="page-overlay" class="overlay" aria-hidden="true">
+<div class="overlay-backdrop" data-close></div>
+<div class="relative h-full w-full flex items-center justify-center p-4 pointer-events-none">
+<div class="pointer-events-auto w-full max-w-xl max-h-full overflow-y-auto rounded-xl bg-surface-container-low border border-outline-variant/30 p-6 md:p-8" role="dialog" aria-modal="true" aria-labelledby="page-title">
+<div class="flex items-start justify-between mb-6">
+<div>
+<span id="page-kicker" class="font-label-sm text-secondary uppercase tracking-widest block mb-1"></span>
+<h2 id="page-title" class="font-headline-lg text-headline-lg text-primary"></h2>
+</div>
+<button type="button" data-close aria-label="Close" class="shrink-0 w-9 h-9 rounded-full border border-outline-variant/40 flex items-center justify-center text-primary hover:border-secondary hover:text-secondary transition-colors"><span class="material-symbols-outlined text-[18px]">close</span></button>
+</div>
+<div id="page-body" class="space-y-4"></div>
+</div>
+</div>
+</div>
+<!-- Toast -->
+<div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[70] px-5 py-3 rounded-full bg-surface-container-high border border-secondary/40 font-label-md text-primary tracking-wider opacity-0 pointer-events-none translate-y-2" role="status" aria-live="polite"></div>
+<!-- Mobile Menu -->
+<div id="menu-overlay" class="overlay" aria-hidden="true">
+<div class="overlay-backdrop" data-close></div>
+<aside class="drawer-panel absolute top-0 right-0 h-full w-full max-w-xs bg-surface-container-low border-l border-outline-variant/30 flex flex-col p-6 gap-6" role="dialog" aria-modal="true" aria-label="Menu">
+<div class="flex items-center justify-between">
+<span class="text-headline-md font-display text-primary">VEYA</span>
+<button type="button" data-close aria-label="Close menu" class="w-9 h-9 rounded-full border border-outline-variant/40 flex items-center justify-center text-primary"><span class="material-symbols-outlined text-[18px]">close</span></button>
+</div>
+<nav class="flex flex-col gap-5">
+<a data-close data-filter="all" href="#collections" class="font-label-lg text-label-lg uppercase tracking-widest text-primary">Collections</a>
+<a data-close data-filter="transit" href="#collections" class="font-label-lg text-label-lg uppercase tracking-widest text-on-surface-variant hover:text-primary">Transit</a>
+<a data-close data-filter="performance" href="#collections" class="font-label-lg text-label-lg uppercase tracking-widest text-on-surface-variant hover:text-primary">Performance</a>
+<a data-close data-filter="expedition" href="#collections" class="font-label-lg text-label-lg uppercase tracking-widest text-on-surface-variant hover:text-primary">Expedition</a>
+<a data-close href="#fabric-lab" class="font-label-lg text-label-lg uppercase tracking-widest text-on-surface-variant hover:text-primary">Fabric Lab</a>
+<a data-page="editorial" href="#editorial" class="font-label-lg text-label-lg uppercase tracking-widest text-on-surface-variant hover:text-primary">Editorial</a>
+<button id="menu-account-btn" type="button" class="text-left font-label-lg text-label-lg uppercase tracking-widest text-secondary">Account</button>
+</nav>
+</aside>
+</div>
+<script src="/app.js" defer></script>
+</body></html>
