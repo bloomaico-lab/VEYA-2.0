@@ -28,8 +28,8 @@ test('checkout session request is accepted by stripe-mock', { skip: !port && 'ST
       return { status: res.status, body: await res.json() };
     };
     try {
-      await call('/api/cart', { productId: 'shibuya-commuter-coat', size: 'M' });
-      await call('/api/cart', { productId: 'kanda-merino-crew', size: 'L', color: 'Charcoal', qty: 2 });
+      await call('/api/cart', { productId: 'soho-coach-jacket', size: 'M' });
+      await call('/api/cart', { productId: 'chelsea-cotton-crew', size: 'L', color: 'Charcoal', qty: 2 });
       const r = await call('/api/checkout', {
         name: 'Ada', email: 'ada@example.com', address: '1 St', city: 'X', postalCode: '1', country: 'US',
       });

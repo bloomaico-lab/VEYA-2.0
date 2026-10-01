@@ -69,49 +69,49 @@ test('config reports stripe mode', async () => {
 
 test('checkout redirects to Stripe and only finalizes once paid', async () => {
   const api = client();
-  await api('/api/cart', { method: 'POST', body: { productId: 'kissa-heavyweight-tee', size: 'M', qty: 2 } });
-  const stockBefore = stockOf('kissa-heavyweight-tee');
+  await api('/api/cart', { method: 'POST', body: { productId: 'ocean-drive-boxy-tee', size: 'M', qty: 2 } });
+  const stockBefore = stockOf('ocean-drive-boxy-tee');
 
   const r = await api('/api/checkout', { method: 'POST', body: details });
   assert.equal(r.status, 201);
   assert.match(r.body.redirectUrl, /^https:\/\/checkout\.stripe\.test\//);
   const session = [...sessions.values()].at(-1);
-  assert.equal(session.params.line_items[0].price_data.unit_amount, 5800);
+  assert.equal(session.params.line_items[0].price_data.unit_amount, 2200);
   assert.equal(session.params.line_items[0].quantity, 2);
-  assert.equal(session.params.shipping_options[0].shipping_rate_data.fixed_amount.amount, 1200); // $116 is under the $200 free-shipping threshold
+  assert.equal(session.params.shipping_options[0].shipping_rate_data.fixed_amount.amount, 600); // $44 is under the $75 free-shipping threshold
   assert.equal(session.params.customer_email, 'ada@example.com');
 
   // Not paid yet: bag kept, stock untouched, order pending.
   assert.equal((await api('/api/cart')).body.count, 2);
   let confirm = await api(`/api/checkout/confirm?session_id=${session.id}`);
   assert.equal(confirm.body.status, 'pending_payment');
-  assert.equal(stockOf('kissa-heavyweight-tee'), stockBefore);
+  assert.equal(stockOf('ocean-drive-boxy-tee'), stockBefore);
 
   session.payment_status = 'paid';
   confirm = await api(`/api/checkout/confirm?session_id=${session.id}`);
   assert.equal(confirm.body.status, 'confirmed');
   assert.equal(confirm.body.number, r.body.number);
-  assert.equal(stockOf('kissa-heavyweight-tee'), stockBefore - 2);
+  assert.equal(stockOf('ocean-drive-boxy-tee'), stockBefore - 2);
   assert.equal((await api('/api/cart')).body.count, 0);
 
   // A duplicate webhook for the same session must not take stock twice.
   const res = await sendWebhook({ type: 'checkout.session.completed', data: { object: session } });
   assert.equal(res.status, 200);
-  assert.equal(stockOf('kissa-heavyweight-tee'), stockBefore - 2);
+  assert.equal(stockOf('ocean-drive-boxy-tee'), stockBefore - 2);
 });
 
 test('webhook finalizes paid orders and cancels expired ones', async () => {
   const api = client();
-  await api('/api/cart', { method: 'POST', body: { productId: 'shimokita-pleated-trouser', size: '32' } });
+  await api('/api/cart', { method: 'POST', body: { productId: 'bowery-carpenter-pant', size: '32' } });
   const paid = await api('/api/checkout', { method: 'POST', body: details });
   const paidSession = [...sessions.values()].at(-1);
-  const stockBefore = stockOf('shimokita-pleated-trouser');
+  const stockBefore = stockOf('bowery-carpenter-pant');
   paidSession.payment_status = 'paid';
   assert.equal((await sendWebhook({ type: 'checkout.session.completed', data: { object: paidSession } })).status, 200);
   assert.equal(db.prepare('SELECT status FROM orders WHERE number = ?').get(paid.body.number).status, 'confirmed');
-  assert.equal(stockOf('shimokita-pleated-trouser'), stockBefore - 1);
+  assert.equal(stockOf('bowery-carpenter-pant'), stockBefore - 1);
 
-  await api('/api/cart', { method: 'POST', body: { productId: 'shimokita-pleated-trouser', size: '30' } });
+  await api('/api/cart', { method: 'POST', body: { productId: 'bowery-carpenter-pant', size: '30' } });
   const abandoned = await api('/api/checkout', { method: 'POST', body: details });
   const expired = [...sessions.values()].at(-1);
   await sendWebhook({ type: 'checkout.session.expired', data: { object: expired } });
@@ -129,7 +129,7 @@ test('webhook rejects bad signatures', async () => {
 test('unpaid orders stay out of the customer order history', async () => {
   const api = client();
   await api('/api/auth/register', { method: 'POST', body: { name: 'Pat', email: 'pat@example.com', password: 'supersecret' } });
-  await api('/api/cart', { method: 'POST', body: { productId: 'nakameguro-loopwheel-hoodie' } });
+  await api('/api/cart', { method: 'POST', body: { productId: 'bed-stuy-heavyweight-hoodie' } });
   await api('/api/checkout', { method: 'POST', body: details });
   assert.equal((await api('/api/orders')).body.length, 0);
   const session = [...sessions.values()].at(-1);
