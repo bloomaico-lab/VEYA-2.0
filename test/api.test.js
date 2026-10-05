@@ -42,6 +42,7 @@ test('lists, filters and searches products', async () => {
   const all = await api('/api/products');
   assert.equal(all.status, 200);
   assert.equal(all.body.length, 9);
+  assert.ok(all.body.every((p) => p.modelImage.startsWith('/images/model-')), 'every product has an on-model photo');
   const exp = await api('/api/products?category=bottoms');
   assert.ok(exp.body.every((p) => p.category === 'bottoms'));
   const search = await api('/api/products?q=sweatpants');

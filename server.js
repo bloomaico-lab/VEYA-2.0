@@ -67,6 +67,7 @@ function toProduct(row) {
     price: row.price_cents / 100,
     badge: row.badge,
     image: row.image,
+    modelImage: row.model_image || '',
     description: row.description,
     colors: JSON.parse(row.colors),
     sizes: JSON.parse(row.sizes),

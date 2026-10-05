@@ -92,6 +92,7 @@
       <div class="product-card group flex flex-col min-w-0 bg-surface-container-low rounded-xl border border-outline-variant/20 overflow-hidden hover:border-outline-variant/60 transition-all duration-300" data-product="${esc(p.id)}">
         <div class="relative aspect-[4/5] bg-surface-container-lowest overflow-hidden cursor-pointer" data-open-product>
           <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="${esc(p.image)}" alt="${esc(p.name)}" loading="lazy"/>
+          ${p.modelImage ? `<img class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500" src="${esc(p.modelImage)}" alt="${esc(p.name)} being worn" loading="lazy"/>` : ''}
           ${p.badge ? `<div class="absolute top-3 left-3">
             <span class="font-label-sm text-label-sm md:text-label-md px-2 py-0.5 rounded bg-surface-container-lowest/80 border border-outline-variant/30 text-secondary uppercase tracking-widest">${esc(p.badge)}</span>
           </div>` : ''}
@@ -206,8 +207,7 @@
   function openProduct(product) {
     const color = state.cardColors[product.id] || product.colors[0].name;
     state.detail = { product, color, size: null, qty: 1 };
-    $('#pd-image').src = product.image;
-    $('#pd-image').alt = product.name;
+    renderPhotos(product, product.modelImage ? 1 : 0);
     $('#pd-temp').textContent = product.badge || '';
     $('#pd-temp').classList.toggle('hidden', !product.badge);
     $('#pd-tagline').textContent = product.tagline;
@@ -219,6 +219,20 @@
     $('#pd-add').disabled = !product.inStock;
     renderDetail();
     openOverlay('product-overlay');
+  }
+
+  // Product popup photos: the studio shot and, when there is one, the on-model photo (shown first).
+  function renderPhotos(product, index) {
+    const photos = [{ src: product.image, alt: product.name, label: 'Product' }];
+    if (product.modelImage) photos.push({ src: product.modelImage, alt: `${product.name} being worn`, label: 'On model' });
+    const current = photos[index] || photos[0];
+    $('#pd-image').src = current.src;
+    $('#pd-image').alt = current.alt;
+    $('#pd-thumbs').innerHTML = photos.length < 2 ? '' : photos.map((ph, i) => `
+      <button type="button" data-pd-photo="${i}" aria-label="Show ${esc(ph.label.toLowerCase())} photo" aria-pressed="${ph === current}"
+        class="w-12 h-14 rounded-md overflow-hidden border-2 ${ph === current ? 'border-secondary' : 'border-outline-variant/40 opacity-70 hover:opacity-100'} transition">
+        <img src="${esc(ph.src)}" alt="" class="w-full h-full object-cover"/>
+      </button>`).join('');
   }
 
   function renderDetail() {
@@ -235,6 +249,8 @@
 
   $('#product-overlay').addEventListener('click', (e) => {
     if (!state.detail) return;
+    const photo = e.target.closest('[data-pd-photo]');
+    if (photo) { renderPhotos(state.detail.product, Number(photo.dataset.pdPhoto)); return; }
     const c = e.target.closest('[data-pd-color]');
     const s = e.target.closest('[data-pd-size]');
     if (c) state.detail.color = c.dataset.pdColor;

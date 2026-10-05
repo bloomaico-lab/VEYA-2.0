@@ -19,6 +19,7 @@ function openDb(file = process.env.DB_FILE || path.join(__dirname, 'data', 'veya
       price_cents INTEGER NOT NULL,
       badge TEXT NOT NULL DEFAULT '',
       image TEXT NOT NULL,
+      model_image TEXT NOT NULL DEFAULT '',
       description TEXT NOT NULL,
       colors TEXT NOT NULL,
       sizes TEXT NOT NULL,
@@ -95,17 +96,23 @@ function openDb(file = process.env.DB_FILE || path.join(__dirname, 'data', 'veya
   if (db.prepare('PRAGMA table_info(products)').all().some((c) => c.name === 'temp_range')) {
     db.exec('ALTER TABLE products RENAME COLUMN temp_range TO badge');
   }
+  if (!db.prepare('PRAGMA table_info(products)').all().some((c) => c.name === 'model_image')) {
+    db.exec("ALTER TABLE products ADD COLUMN model_image TEXT NOT NULL DEFAULT ''");
+  }
 
   const count = db.prepare('SELECT COUNT(*) AS n FROM products').get().n;
   if (count === 0) {
     const insert = db.prepare(`INSERT INTO products
-      (id, name, tagline, material, category, price_cents, badge, image, description, colors, sizes, stock, sort)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+      (id, name, tagline, material, category, price_cents, badge, image, model_image, description, colors, sizes, stock, sort)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
     seed.products.forEach((p, i) => insert.run(
-      p.id, p.name, p.tagline, p.material, p.category, p.price_cents, p.badge, p.image,
+      p.id, p.name, p.tagline, p.material, p.category, p.price_cents, p.badge, p.image, p.model_image || '',
       p.description, JSON.stringify(p.colors), JSON.stringify(p.sizes), p.stock, i,
     ));
   }
+  // Fill in on-model photos for catalogs seeded before they existed.
+  const setModel = db.prepare("UPDATE products SET model_image = ? WHERE id = ? AND model_image = ''");
+  for (const p of seed.products) if (p.model_image) setModel.run(p.model_image, p.id);
   return db;
 }
 

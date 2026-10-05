@@ -1,5 +1,6 @@
 // Catalog + content seed data. Products are written to the database on first boot;
-// fabrics and pages are served straight from here.
+// fabrics and pages are served straight from here. Each product has a studio shot (image)
+// and an on-model photo (model_image).
 
 const products = [
   {
@@ -11,6 +12,7 @@ const products = [
     price_cents: 2200,
     badge: 'Best Seller',
     image: '/images/tee.jpg',
+    model_image: '/images/model-tee.jpg',
     description: 'A boxy heavyweight tee with a dropped shoulder and a ribbed collar that keeps its shape. Thick enough that it never goes see-through, soft from the first wear.',
     colors: [
       { name: 'Off-White', hex: '#ece8df' },
@@ -29,6 +31,7 @@ const products = [
     price_cents: 5800,
     badge: 'Best Seller',
     image: '/images/hoodie.jpg',
+    model_image: '/images/model-hoodie.jpg',
     description: 'A heavyweight brushed-fleece hoodie with a double-lined hood and a roomy kangaroo pocket. Relaxed through the body and built to survive a lot of washes.',
     colors: [
       { name: 'Heather Grey', hex: '#9a9a98' },
@@ -46,6 +49,7 @@ const products = [
     price_cents: 7800,
     badge: 'New',
     image: '/images/coach-jacket.jpg',
+    model_image: '/images/model-coach-jacket.jpg',
     description: 'A lightweight nylon coach jacket with snap buttons, a corduroy collar and a soft mesh lining. Water-resistant, packable and easy to throw over anything.',
     colors: [
       { name: 'Black', hex: '#111317' },
@@ -63,6 +67,7 @@ const products = [
     price_cents: 5800,
     badge: 'Best Seller',
     image: '/images/sweatpants.jpg',
+    model_image: '/images/model-sweatpants.jpg',
     description: 'Classic heavyweight sweatpants in thick, brushed-back fleece with a roomy, relaxed fit. Deep side pockets, an interior drawcord and elastic cuffs make them the pair you live in all weekend.',
     colors: [
       { name: 'Heather Grey', hex: '#9a9a98' },
@@ -80,6 +85,7 @@ const products = [
     price_cents: 4200,
     badge: 'New',
     image: '/images/camp-shirt.jpg',
+    model_image: '/images/model-camp-shirt.jpg',
     description: 'An airy camp-collar shirt in cotton-linen with a relaxed, boxy fit. Wear it open over a tee on hot days or buttoned up for dinner.',
     colors: [
       { name: 'Cream', hex: '#ece5d3' },
@@ -97,6 +103,7 @@ const products = [
     price_cents: 4800,
     badge: '',
     image: '/images/cotton-crew.jpg',
+    model_image: '/images/model-crew.jpg',
     description: 'A soft cotton crew neck that works on its own or under a jacket. Easy to wash, no itch, and smart enough for the office.',
     colors: [
       { name: 'Oatmeal', hex: '#b9ab95' },
@@ -114,6 +121,7 @@ const products = [
     price_cents: 5200,
     badge: '',
     image: '/images/half-zip.jpg',
+    model_image: '/images/model-half-zip.jpg',
     description: 'A brushed half-zip for workouts, walks and everything after. Breathable, quick-drying and clean enough to keep on all day.',
     colors: [
       { name: 'Black', hex: '#111317' },
@@ -131,6 +139,7 @@ const products = [
     price_cents: 6800,
     badge: 'New',
     image: '/images/jogger.jpg',
+    model_image: '/images/model-jogger.jpg',
     description: 'A sleek, slim-tapered jogger in a smooth stretch knit that is soft on the outside and even softer inside. Polished enough for the office, comfortable enough for the gym, with an elastic drawcord waist, side pockets and tapered cuffs.',
     colors: [
       { name: 'Black', hex: '#111317' },
@@ -149,6 +158,7 @@ const products = [
     price_cents: 3800,
     badge: 'New',
     image: '/images/linen-short.jpg',
+    model_image: '/images/model-linen-short.jpg',
     description: 'Washed linen shorts with a drawstring waist and a 7-inch inseam. Cool, breathable and easy to dress up or down all summer.',
     colors: [
       { name: 'Sand', hex: '#cdbb98' },

@@ -28,6 +28,7 @@ const CATEGORY_KEYWORDS = {
 const PRODUCT_FIELDS = `
   id handle title description productType tags availableForSale
   featuredImage { url altText }
+  images(first: 2) { nodes { url } }
   options { name optionValues { name } }
   priceRange { minVariantPrice { amount currencyCode } }
   variants(first: 100) { nodes { id availableForSale price { amount } selectedOptions { name value } } }
@@ -97,6 +98,8 @@ function toSiteProduct(p) {
     currency: p.priceRange.minVariantPrice.currencyCode,
     badge: badgeFor(p),
     image: p.featuredImage?.url || '',
+    // The product's second image in Shopify is shown as the on-model photo.
+    modelImage: p.images?.nodes?.[1]?.url || '',
     description: p.description,
     colors,
     sizes,

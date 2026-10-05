@@ -14,6 +14,7 @@ const shopifyProduct = {
   tags: ['badge:Best Seller', 'material:14oz Cotton Fleece', 'printful'],
   availableForSale: true,
   featuredImage: { url: 'https://cdn.shopify.com/hoodie.jpg', altText: null },
+  images: { nodes: [{ url: 'https://cdn.shopify.com/hoodie.jpg' }, { url: 'https://cdn.shopify.com/hoodie-on-model.jpg' }] },
   options: [
     { name: 'Color', optionValues: [{ name: 'Black' }, { name: 'Heather Grey' }] },
     { name: 'Size', optionValues: [{ name: 'S' }, { name: 'M' }] },
@@ -36,6 +37,8 @@ test('maps a Shopify product to the storefront shape', () => {
   assert.equal(p.badge, 'Best Seller');
   assert.equal(p.material, '14oz Cotton Fleece');
   assert.equal(p.price, 58);
+  assert.equal(p.modelImage, 'https://cdn.shopify.com/hoodie-on-model.jpg');
+  assert.equal(toSiteProduct({ ...shopifyProduct, images: { nodes: [] } }).modelImage, '');
   assert.deepEqual(p.sizes, ['S', 'M']);
   assert.deepEqual(p.colors.map((c) => c.name), ['Black', 'Heather Grey']);
   assert.equal(p.colors[1].hex, '#9a9a98');
