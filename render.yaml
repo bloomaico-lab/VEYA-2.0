@@ -21,6 +21,10 @@ services:
         value: /var/data/veya.db
       - key: ADMIN_TOKEN
         generateValue: true
+      - key: SHOPIFY_STORE_DOMAIN
+        sync: false
+      - key: SHOPIFY_STOREFRONT_TOKEN
+        sync: false
       - key: STRIPE_SECRET_KEY
         sync: false
       - key: STRIPE_WEBHOOK_SECRET

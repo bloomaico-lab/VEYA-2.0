@@ -1,8 +1,16 @@
-# VEYA — Technical Luxury Apparel
+# VEYA — Everyday Essentials
 
-Working storefront for VEYA, affordable everyday clothing for New York and Miami, built from the **VEYA Active Luxury UI** design from Google Stitch
-(project `11128318004927957051`). The front end keeps the Stitch markup and theme. A small
-Node/Express + SQLite backend makes every button work.
+Online clothing store for VEYA: heavyweight tees, hoodies and everyday layers, made to order.
+It is built on the **VEYA Active Luxury UI** design from Google Stitch (project `11128318004927957051`).
+
+It runs in one of two modes:
+
+- **Shopify mode (recommended):** connect a Shopify store and it becomes the source of products,
+  the bag and checkout. Install a print-on-demand app such as **Printful** or **Printify** in
+  Shopify and every paid order is printed and shipped automatically. See
+  [Shopify + print-on-demand](#shopify--print-on-demand).
+- **Built-in mode:** with no Shopify store connected, a small Node/Express + SQLite backend runs
+  the catalog, bag, checkout (demo or Stripe), accounts and an admin dashboard on its own.
 
 ## Run it
 
@@ -23,33 +31,74 @@ Data is stored in `data/veya.db`, which is created and seeded with the catalog o
 | `STRIPE_SECRET_KEY` | _(unset)_  | Turns on real card payments via Stripe Checkout      |
 | `STRIPE_WEBHOOK_SECRET` | _(unset)_ | Verifies Stripe webhook calls                     |
 | `PUBLIC_URL`  | _(auto)_         | Site address used in Stripe return links (set automatically on Render) |
+| `SHOPIFY_STORE_DOMAIN` | _(unset)_ | Your store, e.g. `veya.myshopify.com`. Turns on Shopify mode (`mock.shop` = Shopify's demo store) |
+| `SHOPIFY_STOREFRONT_TOKEN` | _(unset)_ | Public Storefront API access token from Shopify's Headless channel |
+| `SHOPIFY_API_VERSION` | `2026-10` | Storefront API version |
+
+## Shopify + print-on-demand
+
+How it fits together:
+
+```
+Printful / Printify  ──sync products──▶  Shopify  ◀──Storefront API──  this site
+        ▲                                   │
+        └──────── paid orders are sent ─────┘   (printed, packed and shipped for you)
+```
+
+1. **Create products with your POD app.** In Shopify, install Printful or Printify, design your
+   tees, hoodies and so on, and publish them to Shopify. Give each product **Size** and **Color**
+   options so the size and colour pickers on the site work.
+2. **Get a Storefront API token.** In Shopify admin, install the **Headless** sales channel, create a
+   storefront and copy its **public access token**. Make sure your products are published to the
+   Headless channel.
+3. **Connect the site.** Set `SHOPIFY_STORE_DOMAIN` (for example `veya.myshopify.com`) and
+   `SHOPIFY_STOREFRONT_TOKEN`, then restart. Products, prices, sizes, colours, stock and photos now
+   come from Shopify, refreshed every minute.
+4. **Checkout.** The bag is a real Shopify cart, and the Checkout button sends customers to Shopify's
+   checkout. Shopify handles payment, shipping rates, tax and discount codes, and emails the
+   confirmation and tracking. Configure free-shipping rules and payment methods in Shopify; Stripe
+   is not needed in this mode.
+
+Optional product tags to control how products appear:
+
+| Tag | Effect |
+| --- | --- |
+| `category:tops`, `category:layers`, `category:bottoms` | Puts the product in that category. Without one, it is matched from the product type or title (tee, shirt → Tops; hoodie, jacket → Layers; pants, shorts → Bottoms). |
+| `badge:New`, `badge:Best Seller` (or the tags `new`, `best seller`) | Badge on the product photo |
+| `material:6.5oz Combed Cotton` | Fabric line under the product name |
+
+To try Shopify mode without a store, use Shopify's public demo store:
+
+```bash
+SHOPIFY_STORE_DOMAIN=mock.shop npm start
+```
 
 ## What works
 
-| Design element                                | Behaviour                                                        |
+| Element                                       | Behaviour                                                        |
 | --------------------------------------------- | ---------------------------------------------------------------- |
-| Nav: Collections / Commute / Studio / Weekend | Filters the collection and scrolls to it                         |
-| Nav: Fabric Lab, Editorial                    | Scrolls to the lab / opens the Editorial page                    |
+| Nav: Shop All / Tops / Layers / Bottoms       | Filters the product grid and scrolls to it                       |
+| Nav: Fabrics, Help                            | Scrolls to the fabrics section / opens Shipping & Returns        |
 | Search icon                                   | Live product search, opens the product on click                 |
-| Account                                       | Sign in / create account, order history, sign out                |
+| Account                                       | Sign in / create account, order history, sign out (Shopify mode links to the Shopify account page for orders) |
 | Bag (n)                                       | Bag drawer: change quantity, remove items, see totals, check out |
-| Hero environment pills                        | Switch the telemetry readout and filter the collection           |
-| Explore Collection / Fabric Innovation Lab    | Scroll to the section                                            |
-| “Fluid Spectrum” cards                        | Filter the collection by system                                  |
-| Fabric lab cards                              | Select a textile and update the specimen HUD                     |
-| View Full Lab Whitepaper, footer links        | Open content pages (sustainability, care, stores, privacy)       |
-| Collection arrows / filter chips              | Scroll the product carousel / filter                             |
+| Shop New Arrivals / Find Your Size            | Scroll to the grid / open the size guide                         |
+| Shop by category cards                        | Filter the grid; show live style counts and starting prices      |
+| Filter chips / sort menu                      | Filter by category; sort by featured, price or name              |
+| Fabric cards                                  | Select a fabric and update the detail panel                      |
+| Footer links                                  | Category filters and Help pages (shipping & returns, size guide, fabrics & care, privacy) |
 | Product “+”, colour swatches                  | Quick-add in the chosen colour                                   |
-| Product image / name                          | Product detail: colour, size, quantity, Add to Bag               |
-| Checkout                                      | Validated shipping form → order saved, stock decremented         |
-| Request Access                                | Joins the VIP club list (no duplicate signups)                   |
-| Mobile menu (☰)                               | Nav for small screens (the design hides the nav on phones)       |
+| Product image / name                          | Product detail: colour, size, quantity, size guide, Add to Bag   |
+| Checkout                                      | Shopify mode: Shopify checkout. Built-in mode: shipping form → order saved (demo or Stripe) |
+| Sign Up                                       | Joins the mailing list (no duplicate sign-ups)                   |
+| Mobile menu (☰)                               | Nav for small screens                                            |
 
-Prices, stock and totals are always calculated on the server. Shipping is $6, or free over $75.
+In built-in mode, prices, stock and totals are always calculated on the server. Shipping is $6, or
+free over $75.
 
-## Payments (Stripe)
+## Payments in built-in mode (Stripe)
 
-Without `STRIPE_SECRET_KEY` the store runs in **demo mode**: orders are saved but no card is charged.
+This applies only when Shopify is not connected. Without `STRIPE_SECRET_KEY` the store runs in **demo mode**: orders are saved but no card is charged.
 
 With a key set, checkout sends the customer to Stripe's hosted payment page. The order is saved
 as `pending_payment`. Stock is only taken, and the bag only emptied, once Stripe confirms payment.
@@ -69,7 +118,7 @@ customer keeps their bag.
 
 **Render (recommended):** in Render choose **New → Blueprint** and pick this repository. `render.yaml`
 sets up the web service with a persistent disk for the database and generates an `ADMIN_TOKEN`. It
-will ask for your Stripe keys, which you can leave blank to launch in demo mode. The admin token is
+will ask for your Shopify and Stripe settings; leave them blank to launch the built-in store in demo mode. The admin token is
 under the service's **Environment** tab.
 
 **Anywhere with Docker:**
@@ -95,7 +144,7 @@ PATCH  /api/cart/:itemId {qty}        DELETE /api/cart/:itemId
 POST   /api/checkout {name,email,address,city,postalCode,country}
 POST   /api/auth/register|login|logout   GET /api/auth/me   GET /api/orders
 POST   /api/subscribe {email}
-GET    /api/fabrics  /api/environments/:id  /api/pages/:slug
+GET    /api/config  /api/fabrics  /api/pages/:slug
 GET    /api/admin/summary   PATCH /api/admin/orders/:number   PATCH /api/admin/products/:id
 ```
 
@@ -103,7 +152,8 @@ GET    /api/admin/summary   PATCH /api/admin/orders/:number   PATCH /api/admin/p
 
 ```bash
 npm run dev          # restart on change
-npm test             # API + Stripe flow tests (in-memory database, fake Stripe client)
+npm test             # API, Shopify and Stripe flow tests (in-memory database, fake clients)
+SHOPIFY_LIVE_TEST=1 npm test   # also runs the full flow against Shopify's demo store (mock.shop)
 npm run build:css    # rebuild public/styles.css after changing classes
 ```
 
@@ -122,9 +172,10 @@ recommend for production.
 ## Project layout
 
 ```
-server.js            Express app + API routes
+server.js            Express app + API routes (built-in mode)
+shopify.js           Shopify Storefront API client + Shopify-mode routes
 db.js                SQLite schema and seeding
-seed.js              Catalog, fabric lab, telemetry and content-page data
+seed.js              Built-in catalog, fabrics and Help pages
 public/index.html    Stitch design with interaction hooks
 public/app.js        Front-end logic
 public/admin.html    Admin dashboard

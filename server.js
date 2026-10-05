@@ -3,6 +3,7 @@ const path = require('node:path');
 const crypto = require('node:crypto');
 const express = require('express');
 const Stripe = require('stripe');
+const { shopifyFromEnv, registerShopifyRoutes, ShopifyError } = require('./shopify');
 const { openDb, transaction } = require('./db');
 const seed = require('./seed');
 
@@ -64,7 +65,7 @@ function toProduct(row) {
     material: row.material,
     category: row.category,
     price: row.price_cents / 100,
-    tempRange: row.temp_range,
+    badge: row.badge,
     image: row.image,
     description: row.description,
     colors: JSON.parse(row.colors),
@@ -84,7 +85,7 @@ function defaultStripe() {
   return key ? new Stripe(key) : null;
 }
 
-function createApp(db = openDb(), { stripe = defaultStripe() } = {}) {
+function createApp(db = openDb(), { stripe = defaultStripe(), shopify = shopifyFromEnv() } = {}) {
   const app = express();
   const isProd = process.env.NODE_ENV === 'production';
   app.disable('x-powered-by');
@@ -133,6 +134,10 @@ function createApp(db = openDb(), { stripe = defaultStripe() } = {}) {
       : null;
     next();
   });
+
+  // When a Shopify store is connected it owns the catalog, the bag and checkout. Its routes are
+  // registered first, so they take precedence over the built-in store's routes below.
+  if (shopify) registerShopifyRoutes(app, shopify, db);
 
   function getCart(sessionId) {
     const rows = db.prepare(`
@@ -187,12 +192,6 @@ function createApp(db = openDb(), { stripe = defaultStripe() } = {}) {
   });
 
   app.get('/api/fabrics', (req, res) => res.json(seed.fabrics));
-
-  app.get('/api/environments/:id', (req, res) => {
-    const env = seed.environments[req.params.id];
-    if (!env) throw new HttpError(404, 'Unknown environment.');
-    res.json(env);
-  });
 
   app.get('/api/pages/:slug', (req, res) => {
     const page = Object.hasOwn(seed.pages, req.params.slug) && seed.pages[req.params.slug];
@@ -465,7 +464,7 @@ function createApp(db = openDb(), { stripe = defaultStripe() } = {}) {
     res.status(result.changes ? 201 : 200).json({
       alreadySubscribed: !result.changes,
       message: result.changes
-        ? 'Access requested. You are on the list for the next drop.'
+        ? "You're on the list. We'll email you about the next drop."
         : 'You are already on the list.',
     });
   });
@@ -520,7 +519,7 @@ function createApp(db = openDb(), { stripe = defaultStripe() } = {}) {
 
   // eslint-disable-next-line no-unused-vars
   app.use((err, req, res, next) => {
-    if (err instanceof HttpError) return res.status(err.status).json({ error: err.message });
+    if (err instanceof HttpError || err instanceof ShopifyError) return res.status(err.status).json({ error: err.message });
     if (err.type === 'entity.parse.failed') return res.status(400).json({ error: 'Invalid JSON.' });
     console.error(err);
     res.status(500).json({ error: 'Something went wrong. Please try again.' });

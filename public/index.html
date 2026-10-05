@@ -3,7 +3,7 @@
 <html class="dark" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>VEYA — Everyday City Wear | New York × Miami</title>
+<title>VEYA — Everyday Essentials | Tees, Hoodies &amp; Layers</title>
 <!-- Google Fonts: Bodoni Moda (Editorial Display), Hanken Grotesk (Body & Headings), JetBrains Mono (Technical Spec) -->
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
@@ -53,31 +53,31 @@
 </head>
 <body class="bg-background text-on-background selection:bg-secondary selection:text-surface-container-lowest antialiased overflow-x-hidden min-h-screen flex flex-col justify-between">
 <!-- ==========================================
-       SHARED COMPONENT: TopNavBar (Execution)
+       HEADER: announcement bar + navigation
        ========================================== -->
-<header class="fixed top-0 inset-x-0 z-50 bg-surface/75 dark:bg-surface/75 backdrop-blur-md shadow-sm backdrop-blur-2xl">
+<header class="fixed top-0 inset-x-0 z-50 bg-surface/80 backdrop-blur-2xl shadow-sm">
+<div class="bg-secondary text-on-secondary text-center font-label-sm text-label-sm uppercase tracking-widest px-4 py-2">
+Free shipping over $75 <span class="opacity-60 mx-1">·</span> Made to order <span class="opacity-60 mx-1 hidden sm:inline">·</span> <span class="hidden sm:inline">Free 30-day size exchanges</span>
+</div>
 <div class="flex justify-between items-center w-full px-6 md:px-12 py-4 max-w-7xl mx-auto">
-<!-- Brand Wordmark Anchor -->
-<a class="text-headline-md font-display tracking-tight text-primary dark:text-primary transition-all duration-300 ease-out active:scale-95 flex items-center gap-2" href="#top">
+<a class="text-headline-md font-display tracking-tight text-primary transition-all duration-300 ease-out active:scale-95 flex items-center gap-2" href="#top">
 <span>VEYA</span>
 <span class="inline-block w-1.5 h-1.5 rounded-full bg-secondary"></span>
 </a>
-<!-- Navigation Links (Active mapping: 'Collections' closest to flagship home) -->
-<nav class="hidden lg:flex items-center gap-8">
-<a class="nav-link text-primary dark:text-primary border-b border-secondary pb-1 tracking-widest font-label-md uppercase" href="#collections" data-filter="all">Collections</a>
-<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary tracking-widest font-label-md uppercase transition-colors duration-200 nav-link border-b border-transparent pb-1" href="#collections" data-filter="commute">Commute</a>
-<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary tracking-widest font-label-md uppercase transition-colors duration-200 nav-link border-b border-transparent pb-1" href="#collections" data-filter="studio">Studio</a>
-<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary tracking-widest font-label-md uppercase transition-colors duration-200 nav-link border-b border-transparent pb-1" href="#collections" data-filter="weekend">Weekend</a>
-<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary tracking-widest font-label-md uppercase transition-colors duration-200" href="#fabric-lab">Fabric Lab</a>
-<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary tracking-widest font-label-md uppercase transition-colors duration-200" href="#editorial" data-page="editorial">Editorial</a>
+<nav class="hidden lg:flex items-center gap-8" aria-label="Main">
+<a class="nav-link text-primary border-b border-secondary pb-1 tracking-widest font-label-md uppercase" href="#collections" data-filter="all">Shop All</a>
+<a class="text-on-surface-variant hover:text-primary tracking-widest font-label-md uppercase transition-colors duration-200 nav-link border-b border-transparent pb-1" href="#collections" data-filter="tops">Tops</a>
+<a class="text-on-surface-variant hover:text-primary tracking-widest font-label-md uppercase transition-colors duration-200 nav-link border-b border-transparent pb-1" href="#collections" data-filter="layers">Layers</a>
+<a class="text-on-surface-variant hover:text-primary tracking-widest font-label-md uppercase transition-colors duration-200 nav-link border-b border-transparent pb-1" href="#collections" data-filter="bottoms">Bottoms</a>
+<a class="text-on-surface-variant hover:text-primary tracking-widest font-label-md uppercase transition-colors duration-200" href="#fabric-lab">Fabrics</a>
+<a class="text-on-surface-variant hover:text-primary tracking-widest font-label-md uppercase transition-colors duration-200" href="#shipping" data-page="shipping">Help</a>
 </nav>
-<!-- Trailing Actions & Icons -->
 <div class="flex items-center gap-6">
 <button id="menu-btn" type="button" aria-label="Open menu" class="lg:hidden text-on-surface-variant hover:text-secondary transition-colors duration-200 flex items-center"><span class="material-symbols-outlined text-[22px]">menu</span></button>
-<button id="search-btn" aria-label="Search Collection" class="text-on-surface-variant hover:text-secondary dark:hover:text-secondary transition-colors duration-200 flex items-center" type="button">
+<button id="search-btn" aria-label="Search products" class="text-on-surface-variant hover:text-secondary transition-colors duration-200 flex items-center" type="button">
 <span class="material-symbols-outlined text-[20px]" data-icon="search">search</span>
 </button>
-<button id="account-btn" class="hidden sm:inline-block text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary tracking-widest font-label-md uppercase transition-colors duration-200" type="button">
+<button id="account-btn" class="hidden sm:inline-block text-on-surface-variant hover:text-primary tracking-widest font-label-md uppercase transition-colors duration-200" type="button">
           Account
         </button>
 <button id="bag-btn" aria-label="Open bag" class="group flex items-center gap-2.5 py-1.5 px-3 rounded-full bg-surface-container-high/60 border border-outline-variant/30 hover:border-secondary/40 transition-all duration-300" type="button">
@@ -88,98 +88,76 @@
 </div>
 </header>
 <!-- ==========================================
-       MAIN CONTENT CANVAS
+       MAIN CONTENT
        ========================================== -->
-<main id="top" class="w-full pt-20 flex-grow">
-<!-- 1. HERO SECTION -->
-<section class="relative min-h-[942px] flex flex-col justify-end px-6 md:px-12 pb-16 pt-24 max-w-7xl mx-auto overflow-hidden">
-<!-- Atmospheric Backdrop Image with Vignette -->
+<main id="top" class="w-full pt-28 flex-grow">
+<!-- 1. HERO -->
+<section class="relative min-h-[640px] md:min-h-[780px] flex flex-col justify-end px-6 md:px-12 pb-16 pt-24 max-w-7xl mx-auto overflow-hidden">
 <div class="absolute inset-0 -z-10 bg-surface-container-lowest">
-<img class="w-full h-full object-cover object-[75%_50%] opacity-45 scale-105 filter contrast-125" src="/images/hero.jpg" alt="A person in a black coach jacket standing on a DUMBO cobblestone street at dusk, the Manhattan Bridge and Empire State Building behind"/>
+<img class="w-full h-full object-cover object-[75%_50%] opacity-45 scale-105 filter contrast-125" src="/images/hero.jpg" alt="A person in a black coach jacket, white tee and carpenter pants standing on a cobblestone street at dusk"/>
 <div class="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent"></div>
 <div class="absolute inset-0 bg-gradient-to-r from-background/80 via-transparent to-background/80"></div>
 </div>
-<!-- Telemetry Live Weather Micro-Header -->
-<div class="flex flex-wrap items-center justify-between gap-4 mb-8">
-<div class="inline-flex items-center gap-3 px-3 py-1.5 rounded-full bg-surface-container-lowest/80 border border-outline-variant/30 backdrop-blur-md">
-<span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
-<span id="telemetry-label" class="font-label-sm uppercase tracking-widest text-on-surface-variant">CITY TELEMETRY: NEW YORK / CANAL ST STATION</span>
-<span class="text-outline-variant">|</span>
-<span id="telemetry-reading" class="font-label-sm text-primary tracking-wider">58°F RAIN 40%</span>
-</div>
-<!-- Environmental Switcher Pills -->
-<div class="flex items-center gap-1.5 p-1 rounded-full bg-surface-container-lowest/80 border border-outline-variant/30 backdrop-blur-md">
-<button type="button" data-env="commute" class="env-pill chip-active px-3.5 py-1 rounded-full text-on-surface-variant hover:text-primary text-label-sm font-label-sm tracking-widest uppercase transition-all duration-200">Commute</button>
-<button type="button" data-env="studio" class="env-pill px-3.5 py-1 rounded-full text-on-surface-variant hover:text-primary text-label-sm font-label-sm tracking-widest uppercase transition-all duration-200">Studio</button>
-<button type="button" data-env="weekend" class="env-pill px-3.5 py-1 rounded-full text-on-surface-variant hover:text-primary text-label-sm font-label-sm tracking-widest uppercase transition-all duration-200">Weekend</button>
-</div>
-</div>
-<!-- Hero Headline & Core Manifesto -->
 <div class="max-w-4xl space-y-6">
-<div class="inline-block">
-<span class="text-label-md font-label-md tracking-[0.25em] text-secondary uppercase block mb-3">New York × Miami 2026</span>
+<span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container-lowest/80 border border-outline-variant/30 backdrop-blur-md font-label-sm text-label-sm text-secondary uppercase tracking-widest">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>New season · Fall 2026
+</span>
 <h1 class="font-headline-lg md:font-display text-headline-lg md:text-display text-primary leading-none tracking-tight">
-            FROM THE FIRST TRAIN TO THE LAST — BUILT FOR MORE.
+            EVERYDAY ESSENTIALS. BUILT FOR MORE.
           </h1>
-</div>
 <p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl font-light leading-relaxed">
-          Everyday clothing for the rhythm of the city, from a New York commute to a Miami weekend. Pieces you can wear every day, at prices that make sense.
+          Heavyweight tees, hoodies and easy layers, made to order and shipped to your door. Everyday clothing at prices that make sense.
         </p>
-<!-- Primary Dual Actions -->
-<div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-4">
+<div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-2">
 <a class="h-[52px] px-8 rounded-full bg-primary text-on-primary font-headline-sm text-headline-sm flex items-center justify-center gap-3 transition-colors duration-300 hover:bg-secondary amber-glow-hover" href="#collections" data-filter="all">
-<span>Explore Collection</span>
-<span class="material-symbols-outlined text-[18px]" data-icon="north_east">north_east</span>
+<span>Shop New Arrivals</span>
+<span class="material-symbols-outlined text-[18px]" data-icon="arrow_forward">arrow_forward</span>
 </a>
-<a class="h-[52px] px-8 rounded-full bg-surface-container-high/40 hover:bg-surface-container-high/80 border border-primary/10 text-primary font-headline-sm text-headline-sm flex items-center justify-center gap-2 backdrop-blur-md transition-all duration-300" href="#fabric-lab">
-<span>The Fabric Innovation Lab</span>
-<span class="material-symbols-outlined text-[18px] text-secondary" data-icon="science">science</span>
+<a class="h-[52px] px-8 rounded-full bg-surface-container-high/40 hover:bg-surface-container-high/80 border border-primary/10 text-primary font-headline-sm text-headline-sm flex items-center justify-center gap-2 backdrop-blur-md transition-all duration-300" href="#size-guide" data-page="size-guide">
+<span>Find Your Size</span>
+<span class="material-symbols-outlined text-[18px] text-secondary" data-icon="straighten">straighten</span>
 </a>
 </div>
 </div>
-<!-- Bottom Minimal Mantra Strip -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-16 mt-16 border-t border-outline-variant/20">
-<div>
-<span class="font-label-sm text-secondary uppercase tracking-widest block mb-1">01 / PILLAR</span>
-<p class="font-label-md uppercase tracking-wider text-primary">PREMIUM FABRICS</p>
-<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Heavyweight cotton, washed linen and stretch canvas, picked to last.</p>
+<!-- Store perks -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-12 mt-12 border-t border-outline-variant/20">
+<div class="flex gap-3">
+<span class="material-symbols-outlined text-secondary text-[22px]" data-icon="local_shipping">local_shipping</span>
+<div><p class="font-label-md uppercase tracking-wider text-primary">Free shipping</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Free on orders over $75, and $6 on everything else.</p></div>
 </div>
-<div>
-<span class="font-label-sm text-secondary uppercase tracking-widest block mb-1">02 / CRAFT</span>
-<p class="font-label-md uppercase tracking-wider text-primary">TIMELESS DESIGNS</p>
-<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Sculptural silhouettes stripped of gratuitous hardware and excess volume.</p>
+<div class="flex gap-3">
+<span class="material-symbols-outlined text-secondary text-[22px]" data-icon="checkroom">checkroom</span>
+<div><p class="font-label-md uppercase tracking-wider text-primary">Made to order</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Every piece is made when you order it, so nothing goes to waste.</p></div>
 </div>
-<div>
-<span class="font-label-sm text-secondary uppercase tracking-widest block mb-1">03 / ENDURANCE</span>
-<p class="font-label-md uppercase tracking-wider text-primary">BUILT FOR MORE</p>
-<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Wear-tested through 30 days of New York commutes and Miami summers.</p>
+<div class="flex gap-3">
+<span class="material-symbols-outlined text-secondary text-[22px]" data-icon="sync_alt">sync_alt</span>
+<div><p class="font-label-md uppercase tracking-wider text-primary">Easy exchanges</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Wrong size? Exchange it free within 30 days.</p></div>
 </div>
 </div>
 </section>
-<!-- 2. TRIPLE ENVIRONMENT SHOWCASE ("The Fluid Spectrum") -->
-<section class="py-24 px-6 md:px-12 max-w-7xl mx-auto border-t border-outline-variant/20" id="spectrum">
-<div class="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+<!-- 2. SHOP BY CATEGORY -->
+<section class="py-24 px-6 md:px-12 max-w-7xl mx-auto border-t border-outline-variant/20" id="categories">
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
 <div>
 <div class="flex items-center gap-2 mb-3">
 <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
-<span class="font-label-sm text-secondary uppercase tracking-widest">THE FLUID SPECTRUM</span>
+<span class="font-label-sm text-secondary uppercase tracking-widest">SHOP BY CATEGORY</span>
 </div>
-<h2 class="font-headline-lg text-headline-lg text-primary">One System. Three Realities.</h2>
+<h2 class="font-headline-lg text-headline-lg text-primary">Find your everyday fit.</h2>
 </div>
 <p class="font-body-md text-body-md text-on-surface-variant max-w-md">
-          One wardrobe for the whole week: the morning commute, the studio class and the slow weekend, without changing your style.
+          A small range of basics that work together: tops, layers and bottoms you will wear on repeat.
         </p>
 </div>
-<!-- Bento Cards Grid -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-<!-- Card 1: Daily Commute -->
-<div role="button" tabindex="0" aria-label="Shop Commute" data-filter="commute" id="commute" class="group relative rounded-xl overflow-hidden bg-surface-container-low border border-outline-variant/30 transition-all duration-500 hover:border-secondary/40 flex flex-col">
+<div role="button" tabindex="0" aria-label="Shop Tops" data-filter="tops" class="group relative rounded-xl overflow-hidden bg-surface-container-low border border-outline-variant/30 transition-all duration-500 hover:border-secondary/40 flex flex-col">
 <div class="relative aspect-[4/5] overflow-hidden bg-surface-container-lowest">
-<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="/images/commute.jpg" alt="A commuter in a loose black jacket heading down into a New York subway entrance on a windy evening"/>
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="/images/tops.jpg" alt="A person in an open linen shirt over a white tee walking along the shoreline at golden hour" loading="lazy"/>
 <div class="absolute top-4 left-4">
-<span class="px-2.5 py-1 rounded bg-surface-container-lowest/80 border border-outline-variant/30 backdrop-blur-md font-label-sm text-secondary uppercase tracking-widest">
-                Commute
-              </span>
+<span class="px-2.5 py-1 rounded bg-surface-container-lowest/80 border border-outline-variant/30 backdrop-blur-md font-label-sm text-secondary uppercase tracking-widest">Tees · Shirts · Knits</span>
 </div>
 <div class="absolute bottom-4 right-4">
 <span class="w-8 h-8 rounded-full bg-surface-container-lowest/90 border border-outline-variant/40 flex items-center justify-center text-primary group-hover:text-secondary group-hover:border-secondary transition-colors duration-200">
@@ -189,26 +167,20 @@
 </div>
 <div class="p-6 flex flex-col justify-between flex-grow bg-surface-container-low/80 backdrop-blur-md">
 <div>
-<span class="font-label-sm text-on-surface-variant uppercase tracking-widest block mb-1">MODULE A — 01</span>
-<h3 class="font-headline-md text-headline-md text-primary mb-2">The Daily Commute</h3>
-<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed mb-4">
-                A coach jacket over carpenter pants and a cotton crew. Smart enough for the office, easy enough for a packed L train.
-              </p>
+<h3 class="font-headline-md text-headline-md text-primary mb-2">Shop Tops</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed mb-4">Heavyweight tees, camp-collar shirts and soft crews for every day.</p>
 </div>
-<div class="pt-4 border-t border-outline-variant/20 flex items-center justify-between text-label-sm font-label-sm text-on-surface-variant">
-<span>RAIN-READY</span>
-<span class="text-secondary">OFFICE TO EVENING</span>
+<div class="pt-4 border-t border-outline-variant/20 flex items-center justify-between text-label-sm font-label-sm text-on-surface-variant uppercase">
+<span data-cat-count="tops">&nbsp;</span>
+<span class="text-secondary" data-cat-from="tops">&nbsp;</span>
 </div>
 </div>
 </div>
-<!-- Card 2: The Studio Session -->
-<div role="button" tabindex="0" aria-label="Shop Studio" data-filter="studio" id="studio" class="group relative rounded-xl overflow-hidden bg-surface-container-low border border-outline-variant/30 transition-all duration-500 hover:border-secondary/40 flex flex-col">
+<div role="button" tabindex="0" aria-label="Shop Layers" data-filter="layers" class="group relative rounded-xl overflow-hidden bg-surface-container-low border border-outline-variant/30 transition-all duration-500 hover:border-secondary/40 flex flex-col">
 <div class="relative aspect-[4/5] overflow-hidden bg-surface-container-lowest">
-<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="/images/studio.jpg" alt="A person in a black half-zip and track pants moving through a stretch on a Brooklyn rooftop at sunrise"/>
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="/images/layers.jpg" alt="A person in a loose black jacket heading down subway steps on a windy evening" loading="lazy"/>
 <div class="absolute top-4 left-4">
-<span class="px-2.5 py-1 rounded bg-surface-container-lowest/80 border border-outline-variant/30 backdrop-blur-md font-label-sm text-secondary uppercase tracking-widest">
-                Studio
-              </span>
+<span class="px-2.5 py-1 rounded bg-surface-container-lowest/80 border border-outline-variant/30 backdrop-blur-md font-label-sm text-secondary uppercase tracking-widest">Hoodies · Jackets</span>
 </div>
 <div class="absolute bottom-4 right-4">
 <span class="w-8 h-8 rounded-full bg-surface-container-lowest/90 border border-outline-variant/40 flex items-center justify-center text-primary group-hover:text-secondary group-hover:border-secondary transition-colors duration-200">
@@ -218,26 +190,20 @@
 </div>
 <div class="p-6 flex flex-col justify-between flex-grow bg-surface-container-low/80 backdrop-blur-md">
 <div>
-<span class="font-label-sm text-on-surface-variant uppercase tracking-widest block mb-1">MODULE B — 02</span>
-<h3 class="font-headline-md text-headline-md text-primary mb-2">The Studio Session</h3>
-<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed mb-4">
-                A brushed half-zip and four-way stretch track pants that move through a morning class and still look sharp at the coffee shop after.
-              </p>
+<h3 class="font-headline-md text-headline-md text-primary mb-2">Shop Layers</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed mb-4">Easy layers to throw on over anything, all year round.</p>
 </div>
-<div class="pt-4 border-t border-outline-variant/20 flex items-center justify-between text-label-sm font-label-sm text-on-surface-variant">
-<span>4-WAY STRETCH</span>
-<span class="text-secondary">QUICK-DRY</span>
+<div class="pt-4 border-t border-outline-variant/20 flex items-center justify-between text-label-sm font-label-sm text-on-surface-variant uppercase">
+<span data-cat-count="layers">&nbsp;</span>
+<span class="text-secondary" data-cat-from="layers">&nbsp;</span>
 </div>
 </div>
 </div>
-<!-- Card 3: The Slow Weekend -->
-<div role="button" tabindex="0" aria-label="Shop Weekend" data-filter="weekend" id="weekend" class="group relative rounded-xl overflow-hidden bg-surface-container-low border border-outline-variant/30 transition-all duration-500 hover:border-secondary/40 flex flex-col">
+<div role="button" tabindex="0" aria-label="Shop Bottoms" data-filter="bottoms" class="group relative rounded-xl overflow-hidden bg-surface-container-low border border-outline-variant/30 transition-all duration-500 hover:border-secondary/40 flex flex-col">
 <div class="relative aspect-[4/5] overflow-hidden bg-surface-container-lowest">
-<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="/images/weekend.jpg" alt="A person in an open linen shirt and shorts walking along the shoreline in Miami Beach at golden hour"/>
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="/images/bottoms.jpg" alt="A person mid-stride in washed black carpenter pants and white sneakers on a sunny sidewalk" loading="lazy"/>
 <div class="absolute top-4 left-4">
-<span class="px-2.5 py-1 rounded bg-surface-container-lowest/80 border border-outline-variant/30 backdrop-blur-md font-label-sm text-secondary uppercase tracking-widest">
-                Weekend
-              </span>
+<span class="px-2.5 py-1 rounded bg-surface-container-lowest/80 border border-outline-variant/30 backdrop-blur-md font-label-sm text-secondary uppercase tracking-widest">Pants · Track · Shorts</span>
 </div>
 <div class="absolute bottom-4 right-4">
 <span class="w-8 h-8 rounded-full bg-surface-container-lowest/90 border border-outline-variant/40 flex items-center justify-center text-primary group-hover:text-secondary group-hover:border-secondary transition-colors duration-200">
@@ -247,21 +213,47 @@
 </div>
 <div class="p-6 flex flex-col justify-between flex-grow bg-surface-container-low/80 backdrop-blur-md">
 <div>
-<span class="font-label-sm text-on-surface-variant uppercase tracking-widest block mb-1">MODULE C — 03</span>
-<h3 class="font-headline-md text-headline-md text-primary mb-2">The Slow Weekend</h3>
-<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed mb-4">
-                A camp-collar shirt, linen shorts and a boxy tee for beach walks, Wynwood afternoons and long lunches.
-              </p>
+<h3 class="font-headline-md text-headline-md text-primary mb-2">Shop Bottoms</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed mb-4">Relaxed carpenter pants, track pants and linen shorts.</p>
 </div>
-<div class="pt-4 border-t border-outline-variant/20 flex items-center justify-between text-label-sm font-label-sm text-on-surface-variant">
-<span>BREATHABLE LINEN</span>
-<span class="text-secondary">BUILT FOR HEAT</span>
+<div class="pt-4 border-t border-outline-variant/20 flex items-center justify-between text-label-sm font-label-sm text-on-surface-variant uppercase">
+<span data-cat-count="bottoms">&nbsp;</span>
+<span class="text-secondary" data-cat-from="bottoms">&nbsp;</span>
 </div>
 </div>
 </div>
 </div>
 </section>
-<!-- 3. FABRIC INNOVATION LAB ("Tactile Engineering") -->
+<!-- 3. PRODUCT GRID -->
+<section class="py-24 px-6 md:px-12 max-w-7xl mx-auto border-t border-outline-variant/20" id="collections">
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
+<div>
+<span class="font-label-sm text-secondary uppercase tracking-widest block mb-2">THE COLLECTION</span>
+<h2 id="collection-title" class="font-headline-lg text-headline-lg text-primary">Shop All</h2>
+<div id="filter-chips" class="flex flex-wrap items-center gap-1.5 mt-5">
+<button type="button" data-chip="all" class="chip px-3.5 py-1 rounded-full border border-outline-variant/30 text-on-surface-variant hover:text-primary font-label-sm text-label-sm tracking-widest uppercase transition-all duration-200 chip-active">All</button>
+<button type="button" data-chip="tops" class="chip px-3.5 py-1 rounded-full border border-outline-variant/30 text-on-surface-variant hover:text-primary font-label-sm text-label-sm tracking-widest uppercase transition-all duration-200">Tops</button>
+<button type="button" data-chip="layers" class="chip px-3.5 py-1 rounded-full border border-outline-variant/30 text-on-surface-variant hover:text-primary font-label-sm text-label-sm tracking-widest uppercase transition-all duration-200">Layers</button>
+<button type="button" data-chip="bottoms" class="chip px-3.5 py-1 rounded-full border border-outline-variant/30 text-on-surface-variant hover:text-primary font-label-sm text-label-sm tracking-widest uppercase transition-all duration-200">Bottoms</button>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<span id="result-count" class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest"></span>
+<label class="sr-only" for="sort-select">Sort products</label>
+<select id="sort-select" class="h-10 pl-4 pr-9 rounded-full bg-surface-container-lowest border border-outline-variant/40 text-primary font-label-md text-label-md uppercase tracking-wider focus:border-secondary focus:ring-0">
+<option value="featured">Featured</option>
+<option value="price-asc">Price: Low to High</option>
+<option value="price-desc">Price: High to Low</option>
+<option value="name">Name: A–Z</option>
+</select>
+</div>
+</div>
+<!-- Product grid (rendered from /api/products by app.js) -->
+<div id="product-track" class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+<p class="col-span-full font-label-md text-on-surface-variant">LOADING COLLECTION…</p>
+</div>
+</section>
+<!-- 4. FABRICS -->
 <section class="py-24 px-6 md:px-12 bg-surface-container-lowest border-y border-outline-variant/20" id="fabric-lab">
 <div class="max-w-7xl mx-auto">
 <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
@@ -269,10 +261,10 @@
 <div class="lg:col-span-5 space-y-8">
 <div>
 <div class="inline-flex items-center gap-2 mb-3">
-<span class="material-symbols-outlined text-secondary text-[16px]" data-icon="biotech">biotech</span>
-<span class="font-label-sm text-secondary uppercase tracking-widest">TACTILE ENGINEERING LAB</span>
+<span class="material-symbols-outlined text-secondary text-[16px]" data-icon="texture">texture</span>
+<span class="font-label-sm text-secondary uppercase tracking-widest">THE FABRICS</span>
 </div>
-<h2 class="font-headline-lg text-headline-lg text-primary mb-4">The Molecular Architecture.</h2>
+<h2 class="font-headline-lg text-headline-lg text-primary mb-4">Made to wear every day.</h2>
 <p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
                 We pick a few fabrics and get them right: cotton that keeps its shape, nylon that handles the rain, and linen that handles the heat.
               </p>
@@ -297,28 +289,28 @@
 <!-- Textile 2 -->
 <div role="button" tabindex="0" data-fabric="city-shell" class="fabric-card p-5 rounded-lg border border-outline-variant/30 bg-surface-container-low/40 hover:border-outline-variant/60 transition-all duration-300">
 <div class="flex items-center justify-between mb-2">
-<h4 class="font-label-lg text-label-lg text-primary tracking-wider uppercase">CITY SHELL</h4>
+<h4 class="font-label-lg text-label-lg text-primary tracking-wider uppercase">RIPSTOP SHELL</h4>
 <span class="font-label-sm text-on-surface-variant uppercase tracking-wider">RAIN-READY</span>
 </div>
 <p class="font-body-sm text-body-sm text-on-surface-variant">
-                  Lightweight ripstop nylon with a fluorine-free water-resistant finish. Handles a downpour between subway stops and packs into a tote.
+                  Lightweight ripstop nylon with a fluorine-free water-resistant finish. Handles a sudden downpour and packs down into a tote.
                 </p>
 </div>
 <!-- Textile 3 -->
 <div role="button" tabindex="0" data-fabric="washed-linen" class="fabric-card p-5 rounded-lg border border-outline-variant/30 bg-surface-container-low/40 hover:border-outline-variant/60 transition-all duration-300">
 <div class="flex items-center justify-between mb-2">
 <h4 class="font-label-lg text-label-lg text-primary tracking-wider uppercase">WASHED LINEN</h4>
-<span class="font-label-sm text-on-surface-variant uppercase tracking-wider">MIAMI-READY</span>
+<span class="font-label-sm text-on-surface-variant uppercase tracking-wider">SUMMER-READY</span>
 </div>
 <p class="font-body-sm text-body-sm text-on-surface-variant">
-                  Open-weave linen, stone-washed so it starts soft and stays cool through Miami heat and humidity.
+                  Open-weave linen, stone-washed so it starts soft and stays cool through summer heat and humidity.
                 </p>
 </div>
 </div>
 <!-- Lab Data Readout Footer -->
 <div class="flex items-center gap-6 pt-2">
 <a class="font-label-md text-label-md text-secondary hover:underline flex items-center gap-2 uppercase tracking-widest" href="#lab-documentation" data-page="lab-documentation">
-<span>View Full Lab Whitepaper</span>
+<span>Fabrics &amp; Care Guide</span>
 <span class="material-symbols-outlined text-[14px]" data-icon="arrow_forward">arrow_forward</span>
 </a>
 </div>
@@ -355,147 +347,84 @@
 </div>
 </div>
 </section>
-<!-- 4. CURATED CAPSULE LOOKBOOK ("The Continuous Wardrobe") -->
-<section class="py-24 px-6 md:px-12 max-w-7xl mx-auto" id="collections">
-<div class="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
-<div>
-<span class="font-label-sm text-secondary uppercase tracking-widest block mb-2">CURATED CAPSULE 01</span>
-<h2 class="font-headline-lg text-headline-lg text-primary">The Continuous Wardrobe</h2>
-<div id="filter-chips" class="flex flex-wrap items-center gap-1.5 mt-5">
-<button type="button" data-chip="all" class="chip chip-active px-3.5 py-1 rounded-full border border-outline-variant/30 text-on-surface-variant hover:text-primary font-label-sm text-label-sm tracking-widest uppercase transition-all duration-200">All</button>
-<button type="button" data-chip="commute" class="chip px-3.5 py-1 rounded-full border border-outline-variant/30 text-on-surface-variant hover:text-primary font-label-sm text-label-sm tracking-widest uppercase transition-all duration-200">Commute</button>
-<button type="button" data-chip="studio" class="chip px-3.5 py-1 rounded-full border border-outline-variant/30 text-on-surface-variant hover:text-primary font-label-sm text-label-sm tracking-widest uppercase transition-all duration-200">Studio</button>
-<button type="button" data-chip="weekend" class="chip px-3.5 py-1 rounded-full border border-outline-variant/30 text-on-surface-variant hover:text-primary font-label-sm text-label-sm tracking-widest uppercase transition-all duration-200">Weekend</button>
-</div>
-</div>
-<div class="flex items-center gap-3">
-<button id="prev-btn" type="button" aria-label="Previous products" class="w-11 h-11 rounded-full border border-outline-variant/40 flex items-center justify-center text-primary hover:border-secondary hover:text-secondary transition-colors duration-200">
-<span class="material-symbols-outlined text-[20px]" data-icon="west">west</span>
-</button>
-<button id="next-btn" type="button" aria-label="Next products" class="w-11 h-11 rounded-full border border-outline-variant/40 flex items-center justify-center text-primary hover:border-secondary hover:text-secondary transition-colors duration-200">
-<span class="material-symbols-outlined text-[20px]" data-icon="east">east</span>
-</button>
-</div>
-</div>
-<!-- Product Cards Track (rendered from /api/products by app.js) -->
-<div id="product-track" class="no-scrollbar flex gap-6 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-2">
-<p class="font-label-md text-on-surface-variant">LOADING COLLECTION…</p>
-</div>
-</section>
-<!-- 5. COMMUNITY & MANIFESTO CALLOUT -->
+<!-- 5. NEWSLETTER -->
 <section id="vip" class="py-24 px-6 md:px-12 bg-surface-container-low relative overflow-hidden border-t border-outline-variant/20">
-<!-- Glow ambient accent -->
 <div class="absolute -top-48 right-0 w-96 h-96 bg-secondary/10 rounded-full blur-3xl pointer-events-none"></div>
 <div class="max-w-4xl mx-auto text-center space-y-8 relative z-10">
 <div class="inline-flex items-center gap-2">
 <span class="w-2 h-2 rounded-full bg-secondary"></span>
-<span class="font-label-sm text-secondary uppercase tracking-[0.25em]">EXCLUSIVE ALLOCATION CLUB</span>
+<span class="font-label-sm text-secondary uppercase tracking-[0.25em]">JOIN THE LIST</span>
 </div>
 <h2 class="font-headline-lg md:font-display text-headline-lg md:text-display text-primary">
-          One Garment, Infinite Horizons.
+          Be first to the next drop.
         </h2>
 <p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto leading-relaxed">
-          VEYA drops are produced in strictly serialized micro-batches to eliminate deadstock and preserve artisanal integrity. Join the VIP Membership Club for early access to new drops and invites to store events in New York and Miami.
+          New releases, restocks and members-only offers, straight to your inbox.
         </p>
-<!-- Newsletter Membership Input Field -->
 <form id="vip-form" class="max-w-md mx-auto flex flex-col sm:flex-row gap-3 pt-4" novalidate>
 <div class="relative flex-grow">
-<input class="w-full h-[52px] px-5 rounded-full bg-surface-container-lowest/80 border border-outline-variant/40 text-primary placeholder-on-surface-variant/50 focus:border-secondary focus:ring-0 font-body-md transition-colors duration-200 outline-none" placeholder="Enter your private email..." required="" type="email" name="email" aria-label="Email address"/>
+<input class="w-full h-[52px] px-5 rounded-full bg-surface-container-lowest/80 border border-outline-variant/40 text-primary placeholder-on-surface-variant/50 focus:border-secondary focus:ring-0 font-body-md transition-colors duration-200 outline-none" placeholder="Your email address" required="" type="email" name="email" aria-label="Email address" autocomplete="email"/>
 </div>
 <button class="h-[52px] px-8 rounded-full bg-primary text-on-primary font-headline-sm text-headline-sm hover:bg-secondary transition-colors duration-300 amber-glow-hover whitespace-nowrap flex items-center justify-center gap-2" type="submit">
-<span>Request Access</span>
-<span class="material-symbols-outlined text-[18px]" data-icon="lock_open">lock_open</span>
+<span>Sign Up</span>
+<span class="material-symbols-outlined text-[18px]" data-icon="arrow_forward">arrow_forward</span>
 </button>
 </form>
 <p id="vip-message" class="font-label-md text-secondary tracking-wider min-h-[16px]" aria-live="polite"></p>
-<p class="font-label-sm text-outline tracking-wider">
-          PRIVACY GUARANTEED. ZERO COMMERCIAL SPAM. 4 DROPS ANNUALLY.
-        </p>
+<p class="font-label-sm text-outline tracking-wider">NO SPAM. UNSUBSCRIBE ANYTIME.</p>
 </div>
 </section>
 </main>
 <!-- ==========================================
-       SHARED COMPONENT: Footer (Execution)
+       FOOTER
        ========================================== -->
-<footer class="bg-surface-container-lowest dark:bg-surface-container-lowest border-t border-outline-variant/20 flat no shadows">
+<footer class="bg-surface-container-lowest border-t border-outline-variant/20">
 <div class="w-full px-6 md:px-12 py-16 max-w-7xl mx-auto flex flex-col gap-12">
-<!-- Top Tier: Brand Headline and Navigation Columns -->
 <div class="grid grid-cols-1 md:grid-cols-12 gap-12">
-<!-- Left: Brand Legacy -->
 <div class="md:col-span-4 space-y-4">
-<a class="text-headline-lg font-display tracking-tighter text-primary dark:text-primary block" href="#top">
-            VEYA
-          </a>
+<a class="text-headline-lg font-display tracking-tighter text-primary block" href="#top">VEYA</a>
 <p class="font-body-md text-body-md text-on-surface-variant max-w-sm leading-relaxed">
-            Everyday clothing for New York and Miami, built for city life from the first train to the last.
+            Everyday clothing, made to order. Heavyweight basics and easy layers at prices that make sense.
           </p>
 <div class="pt-2">
 <span class="font-label-sm text-secondary uppercase tracking-widest block mb-1">MANTRA</span>
 <p class="font-label-md text-primary tracking-wider">PREMIUM FABRICS. TIMELESS DESIGNS. BUILT FOR MORE.</p>
 </div>
 </div>
-<!-- Middle: Links Columns (Shared Components Exact Links) -->
 <div class="md:col-span-8 grid grid-cols-2 sm:grid-cols-3 gap-8">
 <div>
-<h4 class="text-headline-sm font-headline-sm text-primary dark:text-primary mb-4">Ecosystem</h4>
+<h4 class="text-headline-sm font-headline-sm text-primary mb-4">Shop</h4>
 <ul class="space-y-3">
-<li>
-<a class="text-label-sm font-label-sm text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary hover:text-secondary dark:hover:text-secondary transition-colors duration-200" href="#vip">
-                  VIP Membership Club
-                </a>
-</li>
-<li>
-<a class="text-label-sm font-label-sm text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary hover:text-secondary dark:hover:text-secondary transition-colors duration-200" href="#sustainability" data-page="sustainability">
-                  Sustainability Manifesto
-                </a>
-</li>
-<li>
-<a class="text-label-sm font-label-sm text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary hover:text-secondary dark:hover:text-secondary transition-colors duration-200" href="#fabric-lab">
-                  Fabric Innovation
-                </a>
-</li>
+<li><a class="text-label-sm font-label-sm text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#collections" data-filter="all">Shop All</a></li>
+<li><a class="text-label-sm font-label-sm text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#collections" data-filter="tops">Tops</a></li>
+<li><a class="text-label-sm font-label-sm text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#collections" data-filter="layers">Layers</a></li>
+<li><a class="text-label-sm font-label-sm text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#collections" data-filter="bottoms">Bottoms</a></li>
 </ul>
 </div>
 <div>
-<h4 class="text-headline-sm font-headline-sm text-primary dark:text-primary mb-4">Support &amp; Care</h4>
+<h4 class="text-headline-sm font-headline-sm text-primary mb-4">Help</h4>
 <ul class="space-y-3">
-<li>
-<a class="text-label-sm font-label-sm text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary hover:text-secondary dark:hover:text-secondary transition-colors duration-200" href="#care" data-page="care">
-                  Care &amp; Maintenance
-                </a>
-</li>
-<li>
-<a class="text-label-sm font-label-sm text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary hover:text-secondary dark:hover:text-secondary transition-colors duration-200" href="#stores" data-page="stores">
-                  Store Locator
-                </a>
-</li>
-<li>
-<a class="text-label-sm font-label-sm text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary hover:text-secondary dark:hover:text-secondary transition-colors duration-200" href="#privacy" data-page="privacy">
-                  Privacy Policy
-                </a>
-</li>
+<li><a class="text-label-sm font-label-sm text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#shipping" data-page="shipping">Shipping &amp; Returns</a></li>
+<li><a class="text-label-sm font-label-sm text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#size-guide" data-page="size-guide">Size Guide</a></li>
+<li><a class="text-label-sm font-label-sm text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#lab-documentation" data-page="lab-documentation">Fabrics &amp; Care</a></li>
+<li><a class="text-label-sm font-label-sm text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#privacy" data-page="privacy">Privacy Policy</a></li>
 </ul>
 </div>
 <div>
-<h4 class="text-headline-sm font-headline-sm text-primary dark:text-primary mb-4">Flagship Stores</h4>
-<p class="font-body-sm text-body-sm text-on-surface-variant mb-2 hover:text-secondary transition-colors" data-page="stores" role="button" tabindex="0">New York / SoHo</p>
-<p class="font-body-sm text-body-sm text-on-surface-variant mb-2 hover:text-secondary transition-colors" data-page="stores" role="button" tabindex="0">Brooklyn / Williamsburg</p>
-<p class="font-body-sm text-body-sm text-on-surface-variant hover:text-secondary transition-colors" data-page="stores" role="button" tabindex="0">Miami / Wynwood</p>
+<h4 class="text-headline-sm font-headline-sm text-primary mb-4">About</h4>
+<ul class="space-y-3">
+<li><a class="text-label-sm font-label-sm text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#sustainability" data-page="sustainability">Our Approach</a></li>
+<li><a class="text-label-sm font-label-sm text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#fabric-lab">The Fabrics</a></li>
+<li><a class="text-label-sm font-label-sm text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#vip">Join the List</a></li>
+</ul>
 </div>
 </div>
 </div>
-<!-- Bottom Tier: Legal & Copyright -->
 <div class="pt-8 border-t border-outline-variant/20 flex flex-col sm:flex-row items-center justify-between gap-4">
-<p class="text-label-sm font-label-sm text-on-surface-variant">
-          © 2026 VEYA. All rights reserved.
-        </p>
-<div class="flex items-center gap-6">
+<p class="text-label-sm font-label-sm text-on-surface-variant">© 2026 VEYA. All rights reserved.</p>
 <span class="font-label-sm text-secondary uppercase tracking-widest flex items-center gap-1.5">
-<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
-            GLOBAL LOGISTICS OPERATIONAL
-          </span>
-<span class="text-label-sm font-label-sm text-outline">EDITION 09.4</span>
-</div>
+<span class="material-symbols-outlined text-[14px]" data-icon="lock">lock</span>Secure checkout
+</span>
 </div>
 </div>
 </footer>
@@ -544,13 +473,14 @@
 <button type="button" data-close aria-label="Close" class="shrink-0 w-9 h-9 rounded-full border border-outline-variant/40 flex items-center justify-center text-primary hover:border-secondary hover:text-secondary transition-colors"><span class="material-symbols-outlined text-[18px]">close</span></button>
 </div>
 <p id="pd-price" class="font-label-lg text-label-lg text-primary"></p>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-secondary">schedule</span>Made to order · Ships in 3–7 business days</p>
 <p id="pd-description" class="font-body-md text-body-md text-on-surface-variant leading-relaxed"></p>
 <div>
 <span class="field-label">Colour — <span id="pd-color-name" class="text-primary"></span></span>
 <div id="pd-colors" class="flex items-center gap-3"></div>
 </div>
 <div>
-<span class="field-label">Size</span>
+<div class="flex items-center justify-between"><span class="field-label">Size</span><button type="button" data-page="size-guide" class="field-label text-secondary hover:underline">Size guide</button></div>
 <div id="pd-sizes" class="flex flex-wrap gap-2"></div>
 </div>
 <div class="flex items-center gap-3">
@@ -690,12 +620,12 @@
 <button type="button" data-close aria-label="Close menu" class="w-9 h-9 rounded-full border border-outline-variant/40 flex items-center justify-center text-primary"><span class="material-symbols-outlined text-[18px]">close</span></button>
 </div>
 <nav class="flex flex-col gap-5">
-<a data-close data-filter="all" href="#collections" class="font-label-lg text-label-lg uppercase tracking-widest text-primary">Collections</a>
-<a data-close data-filter="commute" href="#collections" class="font-label-lg text-label-lg uppercase tracking-widest text-on-surface-variant hover:text-primary">Commute</a>
-<a data-close data-filter="studio" href="#collections" class="font-label-lg text-label-lg uppercase tracking-widest text-on-surface-variant hover:text-primary">Studio</a>
-<a data-close data-filter="weekend" href="#collections" class="font-label-lg text-label-lg uppercase tracking-widest text-on-surface-variant hover:text-primary">Weekend</a>
-<a data-close href="#fabric-lab" class="font-label-lg text-label-lg uppercase tracking-widest text-on-surface-variant hover:text-primary">Fabric Lab</a>
-<a data-page="editorial" href="#editorial" class="font-label-lg text-label-lg uppercase tracking-widest text-on-surface-variant hover:text-primary">Editorial</a>
+<a data-close data-filter="all" href="#collections" class="font-label-lg text-label-lg uppercase tracking-widest text-primary">Shop All</a>
+<a data-close data-filter="tops" href="#collections" class="font-label-lg text-label-lg uppercase tracking-widest text-on-surface-variant hover:text-primary">Tops</a>
+<a data-close data-filter="layers" href="#collections" class="font-label-lg text-label-lg uppercase tracking-widest text-on-surface-variant hover:text-primary">Layers</a>
+<a data-close data-filter="bottoms" href="#collections" class="font-label-lg text-label-lg uppercase tracking-widest text-on-surface-variant hover:text-primary">Bottoms</a>
+<a data-close href="#fabric-lab" class="font-label-lg text-label-lg uppercase tracking-widest text-on-surface-variant hover:text-primary">Fabrics</a>
+<a data-page="shipping" href="#shipping" class="font-label-lg text-label-lg uppercase tracking-widest text-on-surface-variant hover:text-primary">Help</a>
 <button id="menu-account-btn" type="button" class="text-left font-label-lg text-label-lg uppercase tracking-widest text-secondary">Account</button>
 </nav>
 </aside>

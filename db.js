@@ -17,7 +17,7 @@ function openDb(file = process.env.DB_FILE || path.join(__dirname, 'data', 'veya
       material TEXT NOT NULL,
       category TEXT NOT NULL,
       price_cents INTEGER NOT NULL,
-      temp_range TEXT NOT NULL,
+      badge TEXT NOT NULL DEFAULT '',
       image TEXT NOT NULL,
       description TEXT NOT NULL,
       colors TEXT NOT NULL,
@@ -35,6 +35,7 @@ function openDb(file = process.env.DB_FILE || path.join(__dirname, 'data', 'veya
     CREATE TABLE IF NOT EXISTS sessions (
       id TEXT PRIMARY KEY,
       user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      shopify_cart_id TEXT,
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
     CREATE TABLE IF NOT EXISTS cart_items (
@@ -88,14 +89,20 @@ function openDb(file = process.env.DB_FILE || path.join(__dirname, 'data', 'veya
     if (!orderCols.includes(col)) db.exec(`ALTER TABLE orders ADD COLUMN ${col} TEXT`);
   }
   db.exec('CREATE INDEX IF NOT EXISTS orders_stripe_session ON orders (stripe_session_id)');
+  if (!db.prepare('PRAGMA table_info(sessions)').all().some((c) => c.name === 'shopify_cart_id')) {
+    db.exec('ALTER TABLE sessions ADD COLUMN shopify_cart_id TEXT');
+  }
+  if (db.prepare('PRAGMA table_info(products)').all().some((c) => c.name === 'temp_range')) {
+    db.exec('ALTER TABLE products RENAME COLUMN temp_range TO badge');
+  }
 
   const count = db.prepare('SELECT COUNT(*) AS n FROM products').get().n;
   if (count === 0) {
     const insert = db.prepare(`INSERT INTO products
-      (id, name, tagline, material, category, price_cents, temp_range, image, description, colors, sizes, stock, sort)
+      (id, name, tagline, material, category, price_cents, badge, image, description, colors, sizes, stock, sort)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
     seed.products.forEach((p, i) => insert.run(
-      p.id, p.name, p.tagline, p.material, p.category, p.price_cents, p.temp_range, p.image,
+      p.id, p.name, p.tagline, p.material, p.category, p.price_cents, p.badge, p.image,
       p.description, JSON.stringify(p.colors), JSON.stringify(p.sizes), p.stock, i,
     ));
   }

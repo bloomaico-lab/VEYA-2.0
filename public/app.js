@@ -6,6 +6,8 @@
   const state = {
     products: [],
     filter: 'all',
+    sort: 'featured',
+    config: { payments: 'demo' },
     cart: null,
     user: null,
     authMode: 'login',
@@ -29,6 +31,9 @@
   }
 
   const money = (n) => `$${n.toLocaleString('en-US', { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 })}`;
+  // Prices show their currency only when it isn't USD (a Shopify store can sell in any currency).
+  const price = (n, currency) => (currency && currency !== 'USD' ? `${money(n)} ${currency}` : money(n));
+  const CATEGORY_NAMES = { all: 'Shop All', tops: 'Tops', layers: 'Layers', bottoms: 'Bottoms' };
 
   function esc(s) {
     return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -84,37 +89,47 @@
       <button type="button" class="swatch w-3 h-3 rounded-full border border-outline-variant ${c.name === selected ? 'swatch-active' : ''}"
         style="background:${esc(c.hex)}" title="${esc(c.name)}" aria-label="${esc(c.name)}" data-swatch="${esc(c.name)}"></button>`).join('');
     return `
-      <div class="product-card snap-start shrink-0 w-[82%] sm:w-[calc((100%-1.5rem)/2)] lg:w-[calc((100%-4.5rem)/4)] group flex flex-col bg-surface-container-low rounded-xl border border-outline-variant/20 overflow-hidden hover:border-outline-variant/60 transition-all duration-300" data-product="${esc(p.id)}">
+      <div class="product-card group flex flex-col min-w-0 bg-surface-container-low rounded-xl border border-outline-variant/20 overflow-hidden hover:border-outline-variant/60 transition-all duration-300" data-product="${esc(p.id)}">
         <div class="relative aspect-[4/5] bg-surface-container-lowest overflow-hidden cursor-pointer" data-open-product>
           <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="${esc(p.image)}" alt="${esc(p.name)}" loading="lazy"/>
-          <div class="absolute top-3 left-3">
-            <span class="font-label-sm px-2 py-0.5 rounded bg-surface-container-lowest/80 border border-outline-variant/30 text-on-surface-variant uppercase">${esc(p.tempRange)}</span>
-          </div>
+          ${p.badge ? `<div class="absolute top-3 left-3">
+            <span class="font-label-sm text-label-sm md:text-label-md px-2 py-0.5 rounded bg-surface-container-lowest/80 border border-outline-variant/30 text-secondary uppercase tracking-widest">${esc(p.badge)}</span>
+          </div>` : ''}
           <button type="button" data-quick-add aria-label="Add ${esc(p.name)} to bag" class="absolute bottom-3 right-3 w-9 h-9 rounded-full bg-surface-container-lowest/90 border border-outline-variant/40 flex items-center justify-center text-primary hover:bg-secondary hover:text-surface-container-lowest transition-colors duration-200 ${p.inStock ? '' : 'hidden'}">
             <span class="material-symbols-outlined text-[18px]">add</span>
           </button>
         </div>
-        <div class="p-5 flex flex-col justify-between flex-grow">
+        <div class="p-3 md:p-5 flex flex-col justify-between flex-grow">
           <div class="cursor-pointer" data-open-product>
-            <span class="font-label-sm text-secondary uppercase tracking-widest block mb-1">${esc(p.tagline)}</span>
-            <h3 class="font-headline-sm text-headline-sm text-primary mb-1">${esc(p.name)}</h3>
-            <p class="font-label-md text-on-surface-variant font-normal">${esc(p.material)}</p>
+            <span class="font-label-sm text-label-sm md:text-label-md text-secondary uppercase tracking-widest block mb-1">${esc(p.tagline)}</span>
+            <h3 class="font-headline-sm text-[15px] md:text-headline-sm text-primary mb-1">${esc(p.name)}</h3>
+            ${p.material ? `<p class="hidden md:block font-label-md text-on-surface-variant font-normal">${esc(p.material)}</p>` : ''}
           </div>
-          <div class="mt-4 pt-3 border-t border-outline-variant/20 flex items-center justify-between">
-            <span class="font-label-md text-primary">${p.inStock ? `${money(p.price)} USD` : 'SOLD OUT'}</span>
+          <div class="mt-3 md:mt-4 pt-3 border-t border-outline-variant/20 flex flex-wrap gap-2 items-center justify-between">
+            <span class="font-label-md text-primary">${p.inStock ? price(p.price, p.currency) : 'SOLD OUT'}</span>
             <div class="flex items-center gap-1.5">${swatches}</div>
           </div>
         </div>
       </div>`;
   }
 
+  function sortedProducts(list) {
+    const sorted = [...list];
+    if (state.sort === 'price-asc') sorted.sort((x, y) => x.price - y.price);
+    else if (state.sort === 'price-desc') sorted.sort((x, y) => y.price - x.price);
+    else if (state.sort === 'name') sorted.sort((x, y) => x.name.localeCompare(y.name));
+    // Sold-out pieces always go last (stable sort keeps the chosen order otherwise).
+    return sorted.sort((x, y) => Number(y.inStock) - Number(x.inStock));
+  }
+
   function renderProducts() {
     const track = $('#product-track');
-    const list = state.filter === 'all' ? state.products : state.products.filter((p) => p.category === state.filter);
+    const list = sortedProducts(state.filter === 'all' ? state.products : state.products.filter((p) => p.category === state.filter));
     track.innerHTML = list.length
       ? list.map(productCard).join('')
-      : '<p class="font-label-md text-on-surface-variant">NO PIECES IN THIS SYSTEM YET.</p>';
-    track.scrollLeft = 0;
+      : '<p class="col-span-full font-label-md text-on-surface-variant">NOTHING HERE YET. CHECK BACK SOON.</p>';
+    $('#collection-title').textContent = CATEGORY_NAMES[state.filter] || 'Shop All';
+    $('#result-count').textContent = `${list.length} ${list.length === 1 ? 'item' : 'items'}`;
     $$('#filter-chips .chip').forEach((c) => c.classList.toggle('chip-active', c.dataset.chip === state.filter));
     $$('.nav-link').forEach((a) => {
       const active = a.dataset.filter === state.filter;
@@ -122,6 +137,17 @@
       a.classList.toggle('border-secondary', active);
       a.classList.toggle('border-transparent', !active);
       a.classList.toggle('text-on-surface-variant', !active);
+    });
+  }
+
+  // "Shop by category" cards show live style counts and starting prices.
+  function renderCategoryStats() {
+    $$('[data-cat-count]').forEach((el) => {
+      const items = state.products.filter((p) => p.category === el.dataset.catCount);
+      el.textContent = `${items.length} ${items.length === 1 ? 'style' : 'styles'}`;
+      const from = items.length ? Math.min(...items.map((p) => p.price)) : null;
+      const fromEl = $(`[data-cat-from="${el.dataset.catCount}"]`);
+      if (fromEl) fromEl.textContent = from === null ? '' : `From ${price(from, items[0].currency)}`;
     });
   }
 
@@ -135,12 +161,15 @@
     try {
       state.products = await api('/api/products');
       renderProducts();
+      renderCategoryStats();
     } catch (err) {
-      $('#product-track').innerHTML = `<p class="font-label-md text-error">${esc(err.message)}</p>`;
+      $('#product-track').innerHTML = `<p class="col-span-full font-label-md text-error">${esc(err.message)}</p>`;
     }
   }
 
-  // Filter triggers: nav links, spectrum cards, hero CTA, chips.
+  $('#sort-select').addEventListener('change', (e) => { state.sort = e.target.value; renderProducts(); });
+
+  // Filter triggers: nav links, category cards, hero CTA, chips.
   document.addEventListener('click', (e) => {
     const trigger = e.target.closest('[data-filter]');
     if (trigger) {
@@ -153,20 +182,6 @@
   $$('[data-filter][role=button]').forEach((el) => el.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setFilter(el.dataset.filter); }
   }));
-
-  // Carousel arrows scroll the product track one card at a time.
-  function scrollTrack(dir) {
-    const track = $('#product-track');
-    const card = $('.product-card', track);
-    const step = card ? card.getBoundingClientRect().width + 24 : track.clientWidth;
-    const atEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
-    const atStart = track.scrollLeft <= 4;
-    if (dir > 0 && atEnd) track.scrollTo({ left: 0, behavior: 'smooth' });
-    else if (dir < 0 && atStart) track.scrollTo({ left: track.scrollWidth, behavior: 'smooth' });
-    else track.scrollBy({ left: dir * step, behavior: 'smooth' });
-  }
-  $('#prev-btn').addEventListener('click', () => scrollTrack(-1));
-  $('#next-btn').addEventListener('click', () => scrollTrack(1));
 
   // Product card interactions.
   $('#product-track').addEventListener('click', async (e) => {
@@ -193,11 +208,12 @@
     state.detail = { product, color, size: null, qty: 1 };
     $('#pd-image').src = product.image;
     $('#pd-image').alt = product.name;
-    $('#pd-temp').textContent = product.tempRange;
+    $('#pd-temp').textContent = product.badge || '';
+    $('#pd-temp').classList.toggle('hidden', !product.badge);
     $('#pd-tagline').textContent = product.tagline;
     $('#pd-name').textContent = product.name;
     $('#pd-material').textContent = product.material;
-    $('#pd-price').textContent = product.inStock ? `${money(product.price)} USD` : 'SOLD OUT';
+    $('#pd-price').textContent = product.inStock ? price(product.price, product.currency) : 'SOLD OUT';
     $('#pd-description').textContent = product.description;
     $('#pd-error').textContent = '';
     $('#pd-add').disabled = !product.inStock;
@@ -241,16 +257,17 @@
     if (!cart) return;
     $('#bag-count').textContent = `Bag (${cart.count})`;
     $('#bag-subtotal').textContent = money(cart.subtotal);
-    $('#bag-shipping').textContent = cart.count ? (cart.shipping ? money(cart.shipping) : 'Complimentary') : '—';
+    $('#bag-shipping').textContent = !cart.count ? '—'
+      : cart.shippingAtCheckout ? 'Calculated at checkout' : cart.shipping ? money(cart.shipping) : 'Free';
     $('#bag-total').textContent = money(cart.total);
     $('#checkout-total').textContent = money(cart.total);
     $('#checkout-btn').disabled = cart.count === 0;
     const remaining = cart.freeShippingThreshold - cart.subtotal;
-    $('#bag-shipping-note').textContent = !cart.count ? ''
-      : remaining > 0 ? `${money(remaining)} away from complimentary shipping` : 'Complimentary express shipping unlocked';
+    $('#bag-shipping-note').textContent = !cart.count || cart.shippingAtCheckout ? ''
+      : remaining > 0 ? `${money(remaining)} away from free shipping` : 'You get free shipping';
 
     $('#bag-items').innerHTML = cart.items.length ? cart.items.map((i) => `
-      <div class="flex gap-4 p-3 rounded-lg border border-outline-variant/20 bg-surface-container-lowest/50" data-item="${i.id}">
+      <div class="flex gap-4 p-3 rounded-lg border border-outline-variant/20 bg-surface-container-lowest/50" data-item="${esc(i.id)}">
         <img src="${esc(i.image)}" alt="" class="w-20 h-24 object-cover rounded"/>
         <div class="flex-grow flex flex-col justify-between min-w-0">
           <div>
@@ -271,7 +288,7 @@
       : `<div class="text-center py-16 space-y-4">
           <span class="material-symbols-outlined text-[36px] text-outline">shopping_bag</span>
           <p class="font-body-md text-on-surface-variant">Your bag is empty.</p>
-          <button type="button" data-close data-filter="all" class="font-label-md text-secondary uppercase tracking-widest hover:underline">Explore the collection</button>
+          <button type="button" data-close data-filter="all" class="font-label-md text-secondary uppercase tracking-widest hover:underline">Start shopping</button>
         </div>`;
   }
 
@@ -298,7 +315,7 @@
   $('#bag-items').addEventListener('click', async (e) => {
     const row = e.target.closest('[data-item]');
     if (!row) return;
-    const id = row.dataset.item;
+    const id = encodeURIComponent(row.dataset.item);
     try {
       const qtyBtn = e.target.closest('[data-qty]');
       if (qtyBtn) state.cart = await api(`/api/cart/${id}`, { method: 'PATCH', body: { qty: Number(qtyBtn.dataset.qty) } });
@@ -310,7 +327,20 @@
 
   // ---------- checkout ----------
 
-  $('#checkout-btn').addEventListener('click', () => {
+  $('#checkout-btn').addEventListener('click', async () => {
+    if (state.config.payments === 'shopify') {
+      // Shopify hosts checkout (payment, shipping, tax); send the customer there with their bag.
+      const btn = $('#checkout-btn');
+      btn.disabled = true;
+      try {
+        const { redirectUrl } = await api('/api/checkout', { method: 'POST' });
+        window.location.assign(redirectUrl);
+      } catch (err) {
+        toast(err.message);
+        btn.disabled = false;
+      }
+      return;
+    }
     const form = $('#checkout-form');
     form.classList.remove('hidden');
     $('#checkout-success').classList.add('hidden');
@@ -372,7 +402,9 @@
 
   async function loadConfig() {
     try {
-      const { payments } = await api('/api/config');
+      state.config = await api('/api/config');
+      const { payments } = state.config;
+      if (payments === 'shopify') $('#checkout-btn span').textContent = 'Checkout securely';
       if (payments === 'stripe') {
         $('#checkout-mode-note').textContent = 'You will complete payment securely on Stripe.';
         $('#checkout-submit-label').textContent = 'Continue to Payment';
@@ -404,6 +436,12 @@
     $('#profile-name').textContent = state.user.name;
     $('#profile-email').textContent = state.user.email;
     const list = $('#order-list');
+    if (state.config.payments === 'shopify') {
+      list.innerHTML = state.config.accountUrl
+        ? `<a href="${esc(state.config.accountUrl)}" target="_blank" rel="noopener" class="font-label-md text-secondary uppercase tracking-widest hover:underline">View your orders and tracking</a>`
+        : '<p class="font-body-sm text-on-surface-variant">Your orders and tracking links are emailed to you after checkout.</p>';
+      return;
+    }
     list.innerHTML = '<p class="font-label-md text-on-surface-variant">Loading…</p>';
     try {
       const orders = await api('/api/orders');
@@ -503,18 +541,6 @@
     closeOverlay('search-overlay', false);
     openProduct(product);
   });
-
-  // ---------- hero environment pills ----------
-
-  $$('.env-pill').forEach((pill) => pill.addEventListener('click', async () => {
-    $$('.env-pill').forEach((p) => p.classList.toggle('chip-active', p === pill));
-    try {
-      const env = await api(`/api/environments/${pill.dataset.env}`);
-      $('#telemetry-label').textContent = env.label;
-      $('#telemetry-reading').textContent = env.reading;
-      setFilter(env.category, { scroll: false });
-    } catch (err) { toast(err.message); }
-  }));
 
   // ---------- fabric lab ----------
 
