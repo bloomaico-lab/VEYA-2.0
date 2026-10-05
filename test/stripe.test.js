@@ -102,16 +102,16 @@ test('checkout redirects to Stripe and only finalizes once paid', async () => {
 
 test('webhook finalizes paid orders and cancels expired ones', async () => {
   const api = client();
-  await api('/api/cart', { method: 'POST', body: { productId: 'carpenter-pant', size: '32' } });
+  await api('/api/cart', { method: 'POST', body: { productId: 'heavyweight-sweatpants', size: 'M' } });
   const paid = await api('/api/checkout', { method: 'POST', body: details });
   const paidSession = [...sessions.values()].at(-1);
-  const stockBefore = stockOf('carpenter-pant');
+  const stockBefore = stockOf('heavyweight-sweatpants');
   paidSession.payment_status = 'paid';
   assert.equal((await sendWebhook({ type: 'checkout.session.completed', data: { object: paidSession } })).status, 200);
   assert.equal(db.prepare('SELECT status FROM orders WHERE number = ?').get(paid.body.number).status, 'confirmed');
-  assert.equal(stockOf('carpenter-pant'), stockBefore - 1);
+  assert.equal(stockOf('heavyweight-sweatpants'), stockBefore - 1);
 
-  await api('/api/cart', { method: 'POST', body: { productId: 'carpenter-pant', size: '30' } });
+  await api('/api/cart', { method: 'POST', body: { productId: 'heavyweight-sweatpants', size: 'L' } });
   const abandoned = await api('/api/checkout', { method: 'POST', body: details });
   const expired = [...sessions.values()].at(-1);
   await sendWebhook({ type: 'checkout.session.expired', data: { object: expired } });

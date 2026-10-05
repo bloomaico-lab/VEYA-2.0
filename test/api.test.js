@@ -44,8 +44,8 @@ test('lists, filters and searches products', async () => {
   assert.equal(all.body.length, 9);
   const exp = await api('/api/products?category=bottoms');
   assert.ok(exp.body.every((p) => p.category === 'bottoms'));
-  const search = await api('/api/products?q=carpenter');
-  assert.deepEqual(search.body.map((p) => p.id), ['carpenter-pant']);
+  const search = await api('/api/products?q=sweatpants');
+  assert.deepEqual(search.body.map((p) => p.id), ['heavyweight-sweatpants']);
   assert.equal((await api('/api/products/nope')).status, 404);
 });
 
@@ -107,11 +107,11 @@ test('accounts: register, me, orders, logout, login keeps the bag', async () => 
   assert.equal((await api('/api/auth/register', { method: 'POST', body: { name: 'Q', email: 'quinn@example.com', password: 'supersecret' } })).status, 409);
   assert.equal((await api('/api/auth/me')).body.user.name, 'Quinn');
 
-  await api('/api/cart', { method: 'POST', body: { productId: 'carpenter-pant', size: '32', color: 'Washed Black' } });
+  await api('/api/cart', { method: 'POST', body: { productId: 'heavyweight-sweatpants', size: 'M', color: 'Black' } });
   await api('/api/checkout', { method: 'POST', body: { name: 'Quinn', address: '2 Road', city: 'Oslo', postalCode: '0150', country: 'NO' } });
   const orders = await api('/api/orders');
   assert.equal(orders.body.length, 1);
-  assert.equal(orders.body[0].items[0].name, 'Carpenter Pant');
+  assert.equal(orders.body[0].items[0].name, 'Heavyweight Sweatpants');
 
   await api('/api/auth/logout', { method: 'POST' });
   assert.equal((await api('/api/auth/me')).body.user, null);
