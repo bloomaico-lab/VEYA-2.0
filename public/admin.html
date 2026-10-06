@@ -15,7 +15,14 @@
   .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px; overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; } th, td { text-align: left; padding: 8px; border-bottom: 1px solid #2a2c2f; vertical-align: top; }
   th { font-family: "JetBrains Mono", monospace; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; }
-  input, select, button { font: inherit; color: var(--text); background: #0c0e11; border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; }
+  input, select, button, textarea { font: inherit; color: var(--text); background: #0c0e11; border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; }
+  textarea { width: 100%; min-height: 180px; resize: vertical; line-height: 1.5; }
+  label.field { display: block; margin-bottom: 12px; } label.field span { display: block; margin-bottom: 4px; }
+  button.primary { background: #ffffff; color: #111317; border-color: #ffffff; font-weight: 600; }
+  button.danger { background: var(--accent); color: #111317; border-color: var(--accent); font-weight: 600; }
+  button:disabled { opacity: .4; cursor: not-allowed; }
+  .note { color: var(--muted); font-size: 13px; } .ok { color: #9be39b; }
+  iframe { width: 100%; height: 520px; border: 1px solid var(--line); border-radius: 8px; background: #f3f1ec; }
   button { cursor: pointer; } button:hover { border-color: var(--accent); }
   .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
@@ -26,7 +33,7 @@
 <body>
 <div class="wrap">
   <h1>VEYA Admin</h1>
-  <p class="mono">Orders, inventory and VIP club</p>
+  <p class="mono">Orders, inventory and email list</p>
   <form id="login" class="row panel" style="margin-top:16px">
     <label class="mono" for="token">Admin token</label>
     <input id="token" type="password" autocomplete="current-password" style="flex:1;min-width:200px"/>
@@ -40,8 +47,32 @@
     <div class="panel"><table><thead><tr><th>Order</th><th>Customer</th><th>Items</th><th>Total</th><th>Status</th></tr></thead><tbody id="orders"></tbody></table></div>
     <h2>Inventory</h2>
     <div class="panel"><table><thead><tr><th>Product</th><th>Price</th><th>Stock</th></tr></thead><tbody id="inventory"></tbody></table></div>
-    <h2>VIP club subscribers</h2>
-    <div class="panel"><table><thead><tr><th>Email</th><th>Joined</th></tr></thead><tbody id="subs"></tbody></table></div>
+    <h2>Email your subscribers</h2>
+    <div class="panel">
+      <p id="email-setup" class="note"></p>
+      <form id="campaign-form">
+        <label class="field"><span class="mono">Subject</span><input id="c-subject" maxlength="150" style="width:100%" placeholder="New drop: heavyweight hoodies are back"/></label>
+        <label class="field"><span class="mono">Message</span><textarea id="c-body" placeholder="Write your email here. Leave a blank line between paragraphs.&#10;&#10;An unsubscribe link and your mailing address are added to the bottom automatically."></textarea></label>
+        <div class="row">
+          <button type="button" id="c-preview">Preview</button>
+          <input id="c-test-to" type="email" placeholder="you@example.com" style="min-width:220px"/>
+          <button type="button" id="c-test">Send test to me</button>
+          <span style="flex:1"></span>
+          <button type="button" id="c-send" class="primary">Send to all subscribers</button>
+          <button type="button" id="c-confirm" class="danger" hidden></button>
+          <button type="button" id="c-cancel" hidden>Cancel</button>
+        </div>
+        <p id="c-msg" class="note" aria-live="polite"></p>
+      </form>
+      <div id="c-preview-wrap" hidden><iframe id="c-preview-frame" title="Email preview" sandbox=""></iframe></div>
+    </div>
+    <h2>Sent emails</h2>
+    <div class="panel"><table><thead><tr><th>Sent</th><th>Subject</th><th>Status</th><th>Delivered</th></tr></thead><tbody id="campaigns"></tbody></table></div>
+    <h2>Subscribers</h2>
+    <div class="panel">
+      <div class="row" style="margin-bottom:8px"><span id="sub-count" class="note"></span><span style="flex:1"></span><button type="button" id="sub-csv">Download CSV</button></div>
+      <table><thead><tr><th>Email</th><th>Joined</th><th>Status</th></tr></thead><tbody id="subs"></tbody></table>
+    </div>
   </div>
 </div>
 <script>
@@ -64,7 +95,7 @@
       const revenue = d.orders.filter((o) => o.paid_at && o.status !== 'cancelled').reduce((s, o) => s + o.total, 0);
       document.getElementById('stats').innerHTML = [
         ['Orders', d.orders.length], ['Revenue', `$${revenue.toLocaleString()}`],
-        ['Accounts', d.users], ['VIP subscribers', d.subscribers.length],
+        ['Accounts', d.users], ['Subscribers', d.email.activeSubscribers],
       ].map(([k, v]) => `<div class="panel stat"><span class="mono">${k}</span><b>${v}</b></div>`).join('');
       document.getElementById('orders').innerHTML = d.orders.map((o) => `<tr>
         <td><b>${esc(o.number)}</b><br><span class="mono">${esc(o.created_at)}</span></td>
@@ -77,8 +108,10 @@
       document.getElementById('inventory').innerHTML = d.inventory.map((p) => `<tr>
         <td>${esc(p.name)}</td><td>$${(p.price_cents / 100).toLocaleString()}</td>
         <td class="row"><input type="number" min="0" value="${p.stock}" style="width:90px" data-stock="${esc(p.id)}"/><button data-save="${esc(p.id)}">Save</button></td></tr>`).join('');
-      document.getElementById('subs').innerHTML = d.subscribers.map((s) => `<tr><td>${esc(s.email)}</td><td class="mono">${esc(s.created_at)}</td></tr>`).join('')
-        || '<tr><td colspan="2">No subscribers yet.</td></tr>';
+      document.getElementById('subs').innerHTML = d.subscribers.map((s) => `<tr><td>${esc(s.email)}</td><td class="mono">${esc(s.created_at)}</td>
+        <td class="mono">${s.unsubscribed_at ? 'Unsubscribed' : '<span class="ok">Subscribed</span>'}</td></tr>`).join('')
+        || '<tr><td colspan="3">No subscribers yet.</td></tr>';
+      renderEmail(d);
     } catch (e) {
       document.getElementById('dash').hidden = true;
       document.getElementById('err').textContent = e.message;
@@ -104,6 +137,73 @@
     try { await call(`/api/admin/products/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify({ stock }) }); load(); }
     catch (err) { alert(err.message); }
   });
+  // ----- email campaigns -----
+  let emailState = null;
+  let pollTimer = null;
+  const $ = (id) => document.getElementById(id);
+  const msg = (text, cls = 'note') => { $('c-msg').className = cls; $('c-msg').textContent = text; };
+
+  function renderEmail(d) {
+    emailState = d.email;
+    const e = d.email;
+    const missing = [!e.provider && 'RESEND_API_KEY', !e.from && 'EMAIL_FROM', !e.mailingAddress && 'MAILING_ADDRESS'].filter(Boolean);
+    $('email-setup').innerHTML = missing.length
+      ? `Preview mode: nothing will be sent until you add ${missing.map((m) => `<b>${m}</b>`).join(', ')} to the server settings (see README).`
+      : `Sending from <b>${esc(e.from)}</b> through Resend. Footer address: ${esc(e.mailingAddress)}.`;
+    $('c-send').textContent = `Send to all ${e.activeSubscribers} subscriber${e.activeSubscribers === 1 ? '' : 's'}`;
+    $('c-send').disabled = Boolean(missing.length) || e.activeSubscribers === 0;
+    $('c-test').disabled = Boolean(missing.length);
+    $('sub-count').textContent = `${e.activeSubscribers} subscribed · ${d.subscribers.length - e.activeSubscribers} unsubscribed`;
+    $('campaigns').innerHTML = d.campaigns.map((c) => `<tr>
+      <td class="mono">${esc(c.created_at)}</td><td>${esc(c.subject)}</td>
+      <td class="mono ${c.status === 'failed' ? 'err' : c.status === 'sent' ? 'ok' : ''}">${esc(c.status)}${c.error ? `<br>${esc(c.error)}` : ''}</td>
+      <td>${c.sent_count} / ${c.recipients}</td></tr>`).join('') || '<tr><td colspan="4">No emails sent yet.</td></tr>';
+    clearTimeout(pollTimer);
+    if (d.campaigns.some((c) => c.status === 'sending')) pollTimer = setTimeout(load, 3000);
+  }
+
+  const draft = () => ({ subject: $('c-subject').value, body: $('c-body').value });
+  function resetConfirm() { $('c-confirm').hidden = true; $('c-cancel').hidden = true; $('c-send').hidden = false; }
+
+  $('c-preview').addEventListener('click', async () => {
+    try {
+      const { html } = await call('/api/admin/campaigns/preview', { method: 'POST', body: JSON.stringify(draft()) });
+      $('c-preview-frame').srcdoc = html; $('c-preview-wrap').hidden = false; msg('');
+    } catch (err) { msg(err.message, 'err'); }
+  });
+  $('c-test').addEventListener('click', async () => {
+    try {
+      $('c-test').disabled = true; msg('Sending test…');
+      const r = await call('/api/admin/campaigns/test', { method: 'POST', body: JSON.stringify({ ...draft(), to: $('c-test-to').value }) });
+      msg(r.message, 'ok');
+    } catch (err) { msg(err.message, 'err'); } finally { $('c-test').disabled = false; }
+  });
+  $('c-send').addEventListener('click', () => {
+    const d = draft();
+    if (!d.subject.trim() || !d.body.trim()) { msg('Add a subject and a message first.', 'err'); return; }
+    $('c-send').hidden = true; $('c-confirm').hidden = false; $('c-cancel').hidden = false;
+    $('c-confirm').textContent = `Yes, email ${emailState.activeSubscribers} people now`;
+    msg('This sends straight away and cannot be undone. Did you send yourself a test first?');
+  });
+  $('c-cancel').addEventListener('click', () => { resetConfirm(); msg(''); });
+  $('c-confirm').addEventListener('click', async () => {
+    try {
+      $('c-confirm').disabled = true;
+      const r = await call('/api/admin/campaigns', { method: 'POST', body: JSON.stringify(draft()) });
+      msg(`Sending to ${r.recipients} subscribers. Progress shows under Sent emails. Your draft is kept until you clear it.`, 'ok');
+      load();
+    } catch (err) { msg(err.message, 'err'); } finally { $('c-confirm').disabled = false; resetConfirm(); }
+  });
+  $('sub-csv').addEventListener('click', async () => {
+    try {
+      const res = await fetch('/api/admin/subscribers.csv', { headers: { 'x-admin-token': token } });
+      if (!res.ok) throw new Error('Download failed');
+      const url = URL.createObjectURL(await res.blob());
+      const a = Object.assign(document.createElement('a'), { href: url, download: 'veya-subscribers.csv' });
+      document.body.append(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    } catch (err) { alert(err.message); }
+  });
+
   if (token) load();
 </script>
 </body></html>

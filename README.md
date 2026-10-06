@@ -34,6 +34,10 @@ Data is stored in `data/veya.db`, which is created and seeded with the catalog o
 | `SHOPIFY_STORE_DOMAIN` | _(unset)_ | Your store, e.g. `veya.myshopify.com`. Turns on Shopify mode (`mock.shop` = Shopify's demo store) |
 | `SHOPIFY_STOREFRONT_TOKEN` | _(unset)_ | Public Storefront API access token from Shopify's Headless channel |
 | `SHOPIFY_API_VERSION` | `2026-10` | Storefront API version |
+| `RESEND_API_KEY` | _(unset)_ | Turns on newsletter sending through [Resend](https://resend.com) |
+| `EMAIL_FROM` | _(unset)_ | Sender, e.g. `VEYA <news@yourdomain.com>` (domain verified in Resend) |
+| `MAILING_ADDRESS` | _(unset)_ | Your business postal address, printed in every newsletter (legally required) |
+| `EMAIL_REPLY_TO` | _(unset)_ | Optional reply-to address for newsletters |
 
 ## Shopify + print-on-demand
 
@@ -133,7 +137,33 @@ Keep the database (`DB_FILE`) on persistent storage, or orders and accounts are 
 ## Admin
 
 Set `ADMIN_TOKEN`, open `/admin` and enter the token. From there you can view orders and change
-their status, edit stock levels and see VIP subscribers.
+their status, edit stock levels, email your subscribers and download the subscriber list.
+
+## Emailing subscribers
+
+Everyone who signs up with the newsletter form ("Join the list") is stored as a subscriber. In
+`/admin` → **Email your subscribers**:
+
+1. Write a subject and message (leave a blank line between paragraphs).
+2. **Preview** shows the branded email. **Send test to me** sends one copy to you.
+3. **Send to all subscribers** asks you to confirm, then sends in the background. Progress and
+   results appear under **Sent emails**.
+
+Every email includes a personal one-click **unsubscribe link** and your **mailing address**, which
+US anti-spam law (CAN-SPAM) requires and which Gmail and Yahoo require of bulk senders.
+Unsubscribed people are skipped automatically; if they sign up again they are resubscribed.
+**Download CSV** exports the list if you'd rather use another email tool (Klaviyo, Mailchimp,
+Shopify Email).
+
+Setup:
+
+1. Create a free account at [resend.com](https://resend.com) and **verify your domain** (add the DNS
+   records it shows). Emails from an unverified domain land in spam or are refused.
+2. Create an API key and set `RESEND_API_KEY`.
+3. Set `EMAIL_FROM` (e.g. `VEYA <news@yourdomain.com>`, on the verified domain) and
+   `MAILING_ADDRESS` (your business address or a P.O. box).
+
+Until all three are set, the admin screen works in preview mode and nothing is sent.
 
 ## API
 
@@ -143,9 +173,10 @@ GET    /api/cart                      POST /api/cart {productId,size?,color?,qty
 PATCH  /api/cart/:itemId {qty}        DELETE /api/cart/:itemId
 POST   /api/checkout {name,email,address,city,postalCode,country}
 POST   /api/auth/register|login|logout   GET /api/auth/me   GET /api/orders
-POST   /api/subscribe {email}
+POST   /api/subscribe {email}         GET|POST /unsubscribe?token=
 GET    /api/config  /api/fabrics  /api/pages/:slug
 GET    /api/admin/summary   PATCH /api/admin/orders/:number   PATCH /api/admin/products/:id
+POST   /api/admin/campaigns/preview|test   POST /api/admin/campaigns   GET /api/admin/subscribers.csv
 ```
 
 ## Development
@@ -174,6 +205,7 @@ recommend for production.
 ```
 server.js            Express app + API routes (built-in mode)
 shopify.js           Shopify Storefront API client + Shopify-mode routes
+email.js             Newsletter email template and Resend sending
 db.js                SQLite schema and seeding
 seed.js              Built-in catalog, fabrics and Help pages
 public/index.html    Stitch design with interaction hooks

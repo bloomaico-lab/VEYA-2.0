@@ -1,5 +1,6 @@
 // SQLite persistence layer (Node's built-in node:sqlite, no native deps).
 const fs = require('node:fs');
+const crypto = require('node:crypto');
 const path = require('node:path');
 const { DatabaseSync } = require('node:sqlite');
 const seed = require('./seed');
@@ -80,7 +81,20 @@ function openDb(file = process.env.DB_FILE || path.join(__dirname, 'data', 'veya
     CREATE TABLE IF NOT EXISTS subscribers (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       email TEXT NOT NULL UNIQUE,
-      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      unsubscribe_token TEXT,
+      unsubscribed_at TEXT
+    );
+    CREATE TABLE IF NOT EXISTS campaigns (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      subject TEXT NOT NULL,
+      body TEXT NOT NULL,
+      status TEXT NOT NULL,
+      recipients INTEGER NOT NULL DEFAULT 0,
+      sent_count INTEGER NOT NULL DEFAULT 0,
+      error TEXT,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      finished_at TEXT
     );
   `);
 
@@ -110,6 +124,17 @@ function openDb(file = process.env.DB_FILE || path.join(__dirname, 'data', 'veya
       p.description, JSON.stringify(p.colors), JSON.stringify(p.sizes), p.stock, i,
     ));
   }
+  // Newsletter: every subscriber needs a private token for their unsubscribe link.
+  const subCols = db.prepare('PRAGMA table_info(subscribers)').all().map((c) => c.name);
+  for (const col of ['unsubscribe_token', 'unsubscribed_at']) {
+    if (!subCols.includes(col)) db.exec(`ALTER TABLE subscribers ADD COLUMN ${col} TEXT`);
+  }
+  const setToken = db.prepare('UPDATE subscribers SET unsubscribe_token = ? WHERE id = ?');
+  for (const { id } of db.prepare('SELECT id FROM subscribers WHERE unsubscribe_token IS NULL').all()) {
+    setToken.run(crypto.randomBytes(24).toString('hex'), id);
+  }
+  db.exec('CREATE UNIQUE INDEX IF NOT EXISTS subscribers_token ON subscribers (unsubscribe_token)');
+
   // Fill in on-model photos for catalogs seeded before they existed.
   const setModel = db.prepare("UPDATE products SET model_image = ? WHERE id = ? AND model_image = ''");
   for (const p of seed.products) if (p.model_image) setModel.run(p.model_image, p.id);

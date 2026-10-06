@@ -4,6 +4,7 @@ const crypto = require('node:crypto');
 const express = require('express');
 const Stripe = require('stripe');
 const { shopifyFromEnv, registerShopifyRoutes, ShopifyError } = require('./shopify');
+const { mailerFromEnv, renderCampaign } = require('./email');
 const { openDb, transaction } = require('./db');
 const seed = require('./seed');
 
@@ -75,6 +76,10 @@ function toProduct(row) {
   };
 }
 
+const escapeHtml = (s) => String(s).replace(/[&<>"']/g, (c) => ({
+  '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+}[c]));
+
 function orderNumber() {
   return `VEYA-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
 }
@@ -86,7 +91,7 @@ function defaultStripe() {
   return key ? new Stripe(key) : null;
 }
 
-function createApp(db = openDb(), { stripe = defaultStripe(), shopify = shopifyFromEnv() } = {}) {
+function createApp(db = openDb(), { stripe = defaultStripe(), shopify = shopifyFromEnv(), mailer = mailerFromEnv() } = {}) {
   const app = express();
   const isProd = process.env.NODE_ENV === 'production';
   app.disable('x-powered-by');
@@ -115,7 +120,7 @@ function createApp(db = openDb(), { stripe = defaultStripe(), shopify = shopifyF
     res.json({ received: true });
   });
 
-  app.use(express.json({ limit: '20kb' }));
+  app.use(express.json({ limit: '100kb' }));
 
   // Every API visitor gets an anonymous session (holds their bag); logging in attaches a user to it.
   app.use('/api', (req, res, next) => {
@@ -461,13 +466,47 @@ function createApp(db = openDb(), { stripe = defaultStripe(), shopify = shopifyF
 
   app.post('/api/subscribe', (req, res) => {
     const email = cleanEmail(req.body?.email);
-    const result = db.prepare('INSERT OR IGNORE INTO subscribers (email) VALUES (?)').run(email);
-    res.status(result.changes ? 201 : 200).json({
-      alreadySubscribed: !result.changes,
-      message: result.changes
-        ? "You're on the list. We'll email you about the next drop."
-        : 'You are already on the list.',
-    });
+    const existing = db.prepare('SELECT id, unsubscribed_at FROM subscribers WHERE email = ?').get(email);
+    if (existing && !existing.unsubscribed_at) {
+      return res.json({ alreadySubscribed: true, message: 'You are already on the list.' });
+    }
+    if (existing) {
+      db.prepare('UPDATE subscribers SET unsubscribed_at = NULL WHERE id = ?').run(existing.id); // signed up again
+    } else {
+      db.prepare('INSERT INTO subscribers (email, unsubscribe_token) VALUES (?, ?)')
+        .run(email, crypto.randomBytes(24).toString('hex'));
+    }
+    res.status(201).json({ alreadySubscribed: false, message: "You're on the list. We'll email you about the next drop." });
+  });
+
+  // Unsubscribe link from newsletter emails. GET shows a confirm button (so link scanners in
+  // inboxes can't unsubscribe people by accident); POST unsubscribes, including one-click
+  // unsubscribe from Gmail/Apple Mail via the List-Unsubscribe-Post header.
+  function unsubscribePage(title, message, form = '') {
+    return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex"><title>${title} · VEYA</title></head>
+<body style="margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#111317;color:#e2e2e6;font-family:Helvetica,Arial,sans-serif;padding:16px;">
+<main style="max-width:420px;text-align:center;"><p style="font-family:Georgia,serif;font-size:28px;margin:0 0 24px;">VEYA<span style="color:#f9bb72;">.</span></p>
+<h1 style="font-size:20px;font-weight:600;margin:0 0 12px;">${title}</h1><p style="color:#c7c7bf;line-height:1.6;margin:0 0 24px;">${message}</p>${form}
+<p style="margin-top:24px;"><a href="/" style="color:#f9bb72;">Back to the shop</a></p></main></body></html>`;
+  }
+  const subscriberByToken = (token) => (token
+    ? db.prepare('SELECT * FROM subscribers WHERE unsubscribe_token = ?').get(String(token))
+    : null);
+
+  app.get('/unsubscribe', (req, res) => {
+    const sub = subscriberByToken(req.query.token);
+    if (!sub) return res.status(404).send(unsubscribePage('Link not recognised', 'This unsubscribe link is invalid or has expired.'));
+    if (sub.unsubscribed_at) return res.send(unsubscribePage('You are unsubscribed', `${escapeHtml(sub.email)} will not receive VEYA emails.`));
+    res.send(unsubscribePage('Unsubscribe from VEYA emails?', `Stop sending newsletters to ${escapeHtml(sub.email)}.`,
+      `<form method="post"><button type="submit" style="background:#ffffff;color:#111317;border:0;border-radius:999px;padding:12px 28px;font-size:15px;cursor:pointer;">Unsubscribe</button></form>`));
+  });
+
+  app.post('/unsubscribe', (req, res) => {
+    const sub = subscriberByToken(req.query.token);
+    if (!sub) return res.status(404).send(unsubscribePage('Link not recognised', 'This unsubscribe link is invalid or has expired.'));
+    db.prepare("UPDATE subscribers SET unsubscribed_at = COALESCE(unsubscribed_at, datetime('now')) WHERE id = ?").run(sub.id);
+    res.send(unsubscribePage('You are unsubscribed', `${escapeHtml(sub.email)} will no longer receive VEYA emails. Changed your mind? Sign up again any time on the shop.`));
   });
 
   // ----- admin (requires ADMIN_TOKEN) -----
@@ -486,7 +525,9 @@ function createApp(db = openDb(), { stripe = defaultStripe(), shopify = shopifyF
     res.json({
       orders: db.prepare('SELECT * FROM orders ORDER BY id DESC LIMIT 200').all()
         .map((o) => ({ ...o, total: o.total_cents / 100, items: itemsFor.all(o.id) })),
-      subscribers: db.prepare('SELECT email, created_at FROM subscribers ORDER BY id DESC').all(),
+      subscribers: db.prepare('SELECT email, created_at, unsubscribed_at FROM subscribers ORDER BY id DESC').all(),
+      campaigns: db.prepare('SELECT id, subject, status, recipients, sent_count, error, created_at, finished_at FROM campaigns ORDER BY id DESC LIMIT 50').all(),
+      email: emailSettings(),
       users: db.prepare('SELECT COUNT(*) AS n FROM users').get().n,
       inventory: db.prepare('SELECT id, name, stock, price_cents FROM products ORDER BY sort').all(),
     });
@@ -510,6 +551,107 @@ function createApp(db = openDb(), { stripe = defaultStripe(), shopify = shopifyF
     const r = db.prepare('UPDATE products SET stock = ? WHERE id = ?').run(stock, req.params.id);
     if (!r.changes) throw new HttpError(404, 'Product not found.');
     res.json({ id: req.params.id, stock });
+  });
+
+  // ----- newsletter campaigns (admin) -----
+
+  // A send that was cut off by a server restart can't resume; mark it so new sends aren't blocked.
+  db.prepare(`UPDATE campaigns SET status = 'failed', error = 'Interrupted by a server restart. Check how many were delivered before resending.',
+    finished_at = datetime('now') WHERE status = 'sending'`).run();
+
+  function emailSettings() {
+    return {
+      provider: mailer ? 'resend' : null,
+      from: process.env.EMAIL_FROM || '',
+      mailingAddress: process.env.MAILING_ADDRESS || '',
+      activeSubscribers: db.prepare('SELECT COUNT(*) AS n FROM subscribers WHERE unsubscribed_at IS NULL').get().n,
+    };
+  }
+
+  function campaignInput(req) {
+    const subject = cleanString(req.body?.subject, 'Subject', { max: 150 });
+    const body = cleanString(req.body?.body, 'Message', { max: 20000 });
+    return { subject, body };
+  }
+
+  function requireSendingSetup() {
+    if (!mailer) throw new HttpError(400, 'Email sending is not set up. Add RESEND_API_KEY to the server settings.');
+    if (!process.env.EMAIL_FROM) throw new HttpError(400, 'Add EMAIL_FROM (for example "VEYA <news@yourdomain.com>") to the server settings.');
+    if (!process.env.MAILING_ADDRESS) {
+      throw new HttpError(400, 'Add MAILING_ADDRESS (your business postal address) to the server settings. The law requires it in marketing emails.');
+    }
+  }
+
+  function buildMessage({ subject, body }, to, token, base) {
+    const unsubscribeUrl = `${base}/unsubscribe?token=${encodeURIComponent(token)}`;
+    const { html, text } = renderCampaign({
+      subject, body, unsubscribeUrl, siteUrl: `${base}/`,
+      mailingAddress: process.env.MAILING_ADDRESS || '[Your business mailing address]',
+    });
+    return { to, subject, html, text, unsubscribeUrl };
+  }
+
+  // What subscribers will see, rendered without sending anything.
+  app.post('/api/admin/campaigns/preview', (req, res) => {
+    requireAdmin(req);
+    const input = campaignInput(req);
+    res.json({ html: buildMessage(input, 'preview@example.com', 'preview', publicUrl(req)).html });
+  });
+
+  app.post('/api/admin/campaigns/test', async (req, res, next) => {
+    try {
+      requireAdmin(req);
+      requireSendingSetup();
+      const input = campaignInput(req);
+      const to = cleanEmail(req.body?.to);
+      const message = buildMessage({ ...input, subject: `[Test] ${input.subject}` }, to, 'test-preview', publicUrl(req));
+      await mailer.sendAll([message], { idempotencyPrefix: `test-${crypto.randomBytes(8).toString('hex')}` });
+      res.json({ sent: 1, message: `Test email sent to ${to}.` });
+    } catch (err) {
+      next(err instanceof HttpError ? err : new HttpError(502, err.message));
+    }
+  });
+
+  // Sends to every active subscriber. Responds straight away; sending continues in the
+  // background and its progress shows in the campaign history.
+  app.post('/api/admin/campaigns', (req, res) => {
+    requireAdmin(req);
+    requireSendingSetup();
+    const input = campaignInput(req);
+    if (db.prepare("SELECT 1 FROM campaigns WHERE status = 'sending'").get()) {
+      throw new HttpError(409, 'Another email is still sending. Wait for it to finish.');
+    }
+    const recipients = db.prepare('SELECT email, unsubscribe_token FROM subscribers WHERE unsubscribed_at IS NULL ORDER BY id').all();
+    if (!recipients.length) throw new HttpError(400, 'There are no subscribers to email yet.');
+    const { lastInsertRowid } = db.prepare("INSERT INTO campaigns (subject, body, status, recipients) VALUES (?, ?, 'sending', ?)")
+      .run(input.subject, input.body, recipients.length);
+    const id = Number(lastInsertRowid);
+    const base = publicUrl(req);
+    const messages = recipients.map((r) => buildMessage(input, r.email, r.unsubscribe_token, base));
+    const progress = db.prepare('UPDATE campaigns SET sent_count = ? WHERE id = ?');
+    app.locals.campaignJob = mailer.sendAll(messages, {
+      idempotencyPrefix: `campaign-${id}-${crypto.randomBytes(4).toString('hex')}`,
+      onProgress: (sent) => progress.run(sent, id),
+    }).then(() => {
+      db.prepare("UPDATE campaigns SET status = 'sent', finished_at = datetime('now') WHERE id = ?").run(id);
+    }).catch((err) => {
+      console.error('Campaign send failed:', err.message);
+      db.prepare("UPDATE campaigns SET status = 'failed', error = ?, finished_at = datetime('now') WHERE id = ?").run(err.message, id);
+    });
+    res.status(202).json({ id, recipients: recipients.length, status: 'sending' });
+  });
+
+  // Quote every cell, and neutralise values a spreadsheet would run as a formula.
+  const csvCell = (v) => `"${String(v).replace(/^([=+\-@\t\r])/, "'$1").replace(/"/g, '""')}"`;
+
+  // Subscriber list as CSV (for importing into another email tool).
+  app.get('/api/admin/subscribers.csv', (req, res) => {
+    requireAdmin(req);
+    const rows = db.prepare('SELECT email, created_at, unsubscribed_at FROM subscribers ORDER BY id').all();
+    const csv = ['email,signed_up,status']
+      .concat(rows.map((r) => [r.email, r.created_at, r.unsubscribed_at ? 'unsubscribed' : 'subscribed'].map(csvCell).join(',')))
+      .join('\n');
+    res.type('text/csv').attachment('veya-subscribers.csv').send(`${csv}\n`);
   });
 
   app.use('/api', (req, res) => res.status(404).json({ error: 'Not found.' }));
