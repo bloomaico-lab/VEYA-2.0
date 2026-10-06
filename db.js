@@ -118,6 +118,13 @@ function openDb(file = process.env.DB_FILE || path.join(__dirname, 'data', 'veya
     db.exec("ALTER TABLE products ADD COLUMN gender TEXT NOT NULL DEFAULT ''");
   }
 
+  // Products taken out of the range: remove them (and any bags holding them) from older databases.
+  // Past orders keep their own copy of the name and price, so order history is unaffected.
+  for (const id of seed.retiredProductIds) {
+    db.prepare('DELETE FROM cart_items WHERE product_id = ?').run(id);
+    db.prepare('DELETE FROM products WHERE id = ?').run(id);
+  }
+
   // Seed the catalog. Products added to seed.js later (e.g. the men's and women's lines) are
   // inserted into existing databases too; products already there are left alone.
   const insert = db.prepare(`INSERT OR IGNORE INTO products

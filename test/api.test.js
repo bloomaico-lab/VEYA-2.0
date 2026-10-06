@@ -62,12 +62,12 @@ test('lists, filters and searches products', async () => {
 
 test('bag: add, merge, update, remove', async () => {
   const api = client();
-  let r = await api('/api/cart', { method: 'POST', body: { productId: 'coach-jacket', size: 'M', color: 'Black' } });
+  let r = await api('/api/cart', { method: 'POST', body: { productId: 'heavyweight-zip-hoodie', size: 'M', color: 'Black' } });
   assert.equal(r.status, 201);
-  r = await api('/api/cart', { method: 'POST', body: { productId: 'coach-jacket', size: 'M', color: 'Black', qty: 2 } });
+  r = await api('/api/cart', { method: 'POST', body: { productId: 'heavyweight-zip-hoodie', size: 'M', color: 'Black', qty: 2 } });
   assert.equal(r.body.items.length, 1);
   assert.equal(r.body.count, 3);
-  assert.equal(r.body.subtotal, 234);
+  assert.equal(r.body.subtotal, 192);
   assert.equal(r.body.shipping, 0);
   const id = r.body.items[0].id;
   r = await api(`/api/cart/${id}`, { method: 'PATCH', body: { qty: 1 } });
@@ -75,7 +75,7 @@ test('bag: add, merge, update, remove', async () => {
   r = await api(`/api/cart/${id}`, { method: 'DELETE' });
   assert.equal(r.body.count, 0);
 
-  assert.equal((await api('/api/cart', { method: 'POST', body: { productId: 'coach-jacket', size: 'XXXL' } })).status, 400);
+  assert.equal((await api('/api/cart', { method: 'POST', body: { productId: 'heavyweight-zip-hoodie', size: 'XXXL' } })).status, 400);
   // Another visitor cannot touch this bag.
   const other = client();
   r = await api('/api/cart', { method: 'POST', body: { productId: 'everyday-crew' } });

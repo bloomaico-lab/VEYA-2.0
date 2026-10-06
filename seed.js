@@ -43,24 +43,26 @@ const products = [
     stock: 100,
   },
   {
-    id: 'coach-jacket',
-    name: 'Coach Jacket',
-    tagline: 'Jackets',
-    material: 'Water-Resistant Nylon',
+    id: 'heavyweight-zip-hoodie',
+    name: 'Heavyweight Zip Hoodie',
+    tagline: 'Hoodies',
+    material: '14oz Cotton Fleece',
     category: 'layers',
     gender: 'men',
-    price_cents: 7800,
+    price_cents: 6400,
     badge: 'New',
-    image: '/images/coach-jacket.jpg',
-    model_image: '/images/model-coach-jacket.jpg',
-    description: 'A lightweight nylon coach jacket with snap buttons, a corduroy collar and a soft mesh lining. Water-resistant, packable and easy to throw over anything.',
+    image: '/images/zip-hoodie-men.jpg',
+    model_image: '/images/model-zip-hoodie-men.jpg',
+    description: 'Our heavyweight hoodie with a full metal zip. Double-lined hood, two deep front pockets and a relaxed fit that layers over a tee or under a coat. Zip it up or wear it open all year.',
     colors: [
       { name: 'Black', hex: '#111317' },
-      { name: 'Olive', hex: '#4d5340' },
+      { name: 'Heather Grey', hex: '#9a9a98' },
+      { name: 'Navy', hex: '#1d2433' },
     ],
     sizes: ['XS', 'S', 'M', 'L', 'XL', '2XL'],
-    stock: 60,
+    stock: 80,
   },
+
   {
     id: 'heavyweight-sweatpants',
     name: 'Heavyweight Sweatpants',
@@ -393,4 +395,7 @@ const pages = {
   },
 };
 
-module.exports = { products, fabrics, pages };
+// Ids of products that were replaced (coach-jacket -> heavyweight-zip-hoodie).
+const retiredProductIds = ['coach-jacket'];
+
+module.exports = { products, fabrics, pages, retiredProductIds };
