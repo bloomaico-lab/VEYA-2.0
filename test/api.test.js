@@ -41,12 +41,22 @@ test('lists, filters and searches products', async () => {
   const api = client();
   const all = await api('/api/products');
   assert.equal(all.status, 200);
-  assert.equal(all.body.length, 9);
+  assert.equal(all.body.length, 16);
   assert.ok(all.body.every((p) => p.modelImage.startsWith('/images/model-')), 'every product has an on-model photo');
   const exp = await api('/api/products?category=bottoms');
   assert.ok(exp.body.every((p) => p.category === 'bottoms'));
   const search = await api('/api/products?q=sweatpants');
-  assert.deepEqual(search.body.map((p) => p.id), ['heavyweight-sweatpants']);
+  assert.deepEqual(search.body.map((p) => p.id), ['heavyweight-sweatpants', 'relaxed-sweatpant']);
+  const men = await api('/api/products?gender=men');
+  const women = await api('/api/products?gender=women');
+  assert.equal(men.body.length, 8);
+  assert.equal(women.body.length, 8);
+  assert.ok(men.body.every((p) => p.gender === 'men') && women.body.every((p) => p.gender === 'women'));
+  for (const list of [men.body, women.body]) {
+    assert.deepEqual([...new Set(list.map((p) => p.category))].sort(), ['bottoms', 'layers', 'tops'], 'each section has tops, layers and bottoms');
+  }
+  const womensBottoms = await api('/api/products?gender=women&category=bottoms');
+  assert.deepEqual(womensBottoms.body.map((p) => p.id), ['heavyweight-sweatpants', 'everyday-jogger', 'linen-short']);
   assert.equal((await api('/api/products/nope')).status, 404);
 });
 

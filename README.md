@@ -68,6 +68,7 @@ Optional product tags to control how products appear:
 | Tag | Effect |
 | --- | --- |
 | `category:tops`, `category:layers`, `category:bottoms` | Puts the product in that category. Without one, it is matched from the product type or title (tee, shirt → Tops; hoodie, jacket → Layers; pants, shorts → Bottoms). |
+| `gender:men`, `gender:women`, `gender:unisex` | Puts the product in the Men or Women section. Without one, "Men's" / "Women's" in the title, product type or tags is used; anything else is unisex and shows in both sections. |
 | `badge:New`, `badge:Best Seller` (or the tags `new`, `best seller`) | Badge on the product photo |
 | `material:6.5oz Combed Cotton` | Fabric line under the product name |
 

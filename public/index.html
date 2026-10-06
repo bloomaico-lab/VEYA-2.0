@@ -66,10 +66,11 @@ Free shipping over $75 <span class="opacity-60 mx-1">·</span> Made to order <sp
 </a>
 <nav class="hidden lg:flex items-center gap-8" aria-label="Main">
 <a class="nav-link text-primary border-b border-secondary pb-1 tracking-widest font-label-md uppercase" href="#collections" data-filter="all">Shop All</a>
+<a class="text-on-surface-variant hover:text-primary tracking-widest font-label-md uppercase transition-colors duration-200 nav-link border-b border-transparent pb-1" href="#collections" data-filter="all" data-gender="men">Men</a>
+<a class="text-on-surface-variant hover:text-primary tracking-widest font-label-md uppercase transition-colors duration-200 nav-link border-b border-transparent pb-1" href="#collections" data-filter="all" data-gender="women">Women</a>
 <a class="text-on-surface-variant hover:text-primary tracking-widest font-label-md uppercase transition-colors duration-200 nav-link border-b border-transparent pb-1" href="#collections" data-filter="tops">Tops</a>
 <a class="text-on-surface-variant hover:text-primary tracking-widest font-label-md uppercase transition-colors duration-200 nav-link border-b border-transparent pb-1" href="#collections" data-filter="layers">Layers</a>
 <a class="text-on-surface-variant hover:text-primary tracking-widest font-label-md uppercase transition-colors duration-200 nav-link border-b border-transparent pb-1" href="#collections" data-filter="bottoms">Bottoms</a>
-<a class="text-on-surface-variant hover:text-primary tracking-widest font-label-md uppercase transition-colors duration-200" href="#fabric-lab">Fabrics</a>
 <a class="text-on-surface-variant hover:text-primary tracking-widest font-label-md uppercase transition-colors duration-200" href="#shipping" data-page="shipping">Help</a>
 </nav>
 <div class="flex items-center gap-6">
@@ -138,7 +139,54 @@ Free shipping over $75 <span class="opacity-60 mx-1">·</span> Made to order <sp
 </div>
 </div>
 </section>
-<!-- 2. SHOP BY CATEGORY -->
+<!-- 2. SHOP MEN / WOMEN -->
+<section class="py-24 px-6 md:px-12 max-w-7xl mx-auto border-t border-outline-variant/20" id="shop-gender">
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+<div>
+<div class="flex items-center gap-2 mb-3">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span class="font-label-sm text-secondary uppercase tracking-widest">MEN &amp; WOMEN</span>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-primary">Cut for him. Cut for her.</h2>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-md">
+          The same heavyweight fabrics, fitted for each of you: boxy tees and relaxed sweats for men, cropped cuts and high-rise joggers for women.
+        </p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<article class="group relative rounded-xl overflow-hidden border border-outline-variant/30 bg-surface-container-low" data-gender-card="men">
+<div role="button" tabindex="0" aria-label="Shop Men" data-filter="all" data-gender="men" class="relative block aspect-[4/5] md:aspect-[5/6] overflow-hidden">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="/images/men.jpg" alt="A man in a grey hoodie and navy joggers leaning on a sunlit cream wall with a coffee" loading="lazy"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/70 via-primary/10 to-transparent"></div>
+<div class="absolute top-4 left-4">
+<span class="px-2.5 py-1 rounded bg-surface-container-lowest/80 border border-outline-variant/30 backdrop-blur-md font-label-sm text-secondary uppercase tracking-widest" data-gender-count="men">&nbsp;</span>
+</div>
+<div class="absolute bottom-0 left-0 right-0 p-6 md:p-8 text-on-primary">
+<h3 class="font-display text-[44px] md:text-[64px] leading-none tracking-tight mb-2">Men</h3>
+<p class="font-body-sm text-body-sm opacity-90 max-w-sm mb-5">Boxy tees, heavyweight hoodies, coach jackets and joggers.</p>
+<span class="inline-flex h-11 px-6 rounded-full bg-background text-primary font-label-md text-label-md uppercase tracking-widest items-center gap-2 group-hover:bg-secondary group-hover:text-on-primary transition-colors duration-300">Shop Men <span class="material-symbols-outlined text-[16px]">arrow_forward</span></span>
+</div>
+</div>
+<div class="flex flex-wrap gap-2 p-4 md:px-8 border-t border-outline-variant/30 bg-surface-container-low"><button type="button" data-filter="tops" data-gender="men" class="px-3.5 py-1.5 rounded-full bg-surface-container-lowest/85 border border-outline-variant/40 backdrop-blur-md text-primary font-label-sm text-label-sm uppercase tracking-widest hover:bg-primary hover:text-on-primary transition-colors duration-200">Tops</button><button type="button" data-filter="layers" data-gender="men" class="px-3.5 py-1.5 rounded-full bg-surface-container-lowest/85 border border-outline-variant/40 backdrop-blur-md text-primary font-label-sm text-label-sm uppercase tracking-widest hover:bg-primary hover:text-on-primary transition-colors duration-200">Layers</button><button type="button" data-filter="bottoms" data-gender="men" class="px-3.5 py-1.5 rounded-full bg-surface-container-lowest/85 border border-outline-variant/40 backdrop-blur-md text-primary font-label-sm text-label-sm uppercase tracking-widest hover:bg-primary hover:text-on-primary transition-colors duration-200">Bottoms</button></div>
+</article>
+<article class="group relative rounded-xl overflow-hidden border border-outline-variant/30 bg-surface-container-low" data-gender-card="women">
+<div role="button" tabindex="0" aria-label="Shop Women" data-filter="all" data-gender="women" class="relative block aspect-[4/5] md:aspect-[5/6] overflow-hidden">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="/images/women.jpg" alt="A woman in a cropped off-white tee and black joggers walking down a sunlit street" loading="lazy"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/70 via-primary/10 to-transparent"></div>
+<div class="absolute top-4 left-4">
+<span class="px-2.5 py-1 rounded bg-surface-container-lowest/80 border border-outline-variant/30 backdrop-blur-md font-label-sm text-secondary uppercase tracking-widest" data-gender-count="women">&nbsp;</span>
+</div>
+<div class="absolute bottom-0 left-0 right-0 p-6 md:p-8 text-on-primary">
+<h3 class="font-display text-[44px] md:text-[64px] leading-none tracking-tight mb-2">Women</h3>
+<p class="font-body-sm text-body-sm opacity-90 max-w-sm mb-5">Cropped tees, ribbed tanks, zip hoodies and high-rise joggers.</p>
+<span class="inline-flex h-11 px-6 rounded-full bg-background text-primary font-label-md text-label-md uppercase tracking-widest items-center gap-2 group-hover:bg-secondary group-hover:text-on-primary transition-colors duration-300">Shop Women <span class="material-symbols-outlined text-[16px]">arrow_forward</span></span>
+</div>
+</div>
+<div class="flex flex-wrap gap-2 p-4 md:px-8 border-t border-outline-variant/30 bg-surface-container-low"><button type="button" data-filter="tops" data-gender="women" class="px-3.5 py-1.5 rounded-full bg-surface-container-lowest/85 border border-outline-variant/40 backdrop-blur-md text-primary font-label-sm text-label-sm uppercase tracking-widest hover:bg-primary hover:text-on-primary transition-colors duration-200">Tops</button><button type="button" data-filter="layers" data-gender="women" class="px-3.5 py-1.5 rounded-full bg-surface-container-lowest/85 border border-outline-variant/40 backdrop-blur-md text-primary font-label-sm text-label-sm uppercase tracking-widest hover:bg-primary hover:text-on-primary transition-colors duration-200">Layers</button><button type="button" data-filter="bottoms" data-gender="women" class="px-3.5 py-1.5 rounded-full bg-surface-container-lowest/85 border border-outline-variant/40 backdrop-blur-md text-primary font-label-sm text-label-sm uppercase tracking-widest hover:bg-primary hover:text-on-primary transition-colors duration-200">Bottoms</button></div>
+</article>
+</div>
+</section>
+<!-- 3. SHOP BY CATEGORY -->
 <section class="py-24 px-6 md:px-12 max-w-7xl mx-auto border-t border-outline-variant/20" id="categories">
 <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
 <div>
@@ -224,13 +272,18 @@ Free shipping over $75 <span class="opacity-60 mx-1">·</span> Made to order <sp
 </div>
 </div>
 </section>
-<!-- 3. PRODUCT GRID -->
+<!-- 4. PRODUCT GRID -->
 <section class="py-24 px-6 md:px-12 max-w-7xl mx-auto border-t border-outline-variant/20" id="collections">
 <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
 <div>
 <span class="font-label-sm text-secondary uppercase tracking-widest block mb-2">THE COLLECTION</span>
 <h2 id="collection-title" class="font-headline-lg text-headline-lg text-primary">Shop All</h2>
-<div id="filter-chips" class="flex flex-wrap items-center gap-1.5 mt-5">
+<div id="gender-tabs" role="tablist" aria-label="Shop men or women" class="inline-flex items-center gap-1 p-1 mt-5 rounded-full bg-surface-container-low border border-outline-variant/40">
+<button type="button" role="tab" data-gender-tab="all" class="gender-tab h-9 px-4 rounded-full font-label-md text-label-md uppercase tracking-widest text-on-surface-variant hover:text-primary transition-colors duration-200">All</button>
+<button type="button" role="tab" data-gender-tab="men" class="gender-tab h-9 px-4 rounded-full font-label-md text-label-md uppercase tracking-widest text-on-surface-variant hover:text-primary transition-colors duration-200">Men</button>
+<button type="button" role="tab" data-gender-tab="women" class="gender-tab h-9 px-4 rounded-full font-label-md text-label-md uppercase tracking-widest text-on-surface-variant hover:text-primary transition-colors duration-200">Women</button>
+</div>
+<div id="filter-chips" class="flex flex-wrap items-center gap-1.5 mt-4">
 <button type="button" data-chip="all" class="chip px-3.5 py-1 rounded-full border border-outline-variant/30 text-on-surface-variant hover:text-primary font-label-sm text-label-sm tracking-widest uppercase transition-all duration-200 chip-active">All</button>
 <button type="button" data-chip="tops" class="chip px-3.5 py-1 rounded-full border border-outline-variant/30 text-on-surface-variant hover:text-primary font-label-sm text-label-sm tracking-widest uppercase transition-all duration-200">Tops</button>
 <button type="button" data-chip="layers" class="chip px-3.5 py-1 rounded-full border border-outline-variant/30 text-on-surface-variant hover:text-primary font-label-sm text-label-sm tracking-widest uppercase transition-all duration-200">Layers</button>
@@ -253,7 +306,7 @@ Free shipping over $75 <span class="opacity-60 mx-1">·</span> Made to order <sp
 <p class="col-span-full font-label-md text-on-surface-variant">LOADING COLLECTION…</p>
 </div>
 </section>
-<!-- 4. FABRICS -->
+<!-- 5. FABRICS -->
 <section class="py-24 px-6 md:px-12 bg-surface-container-lowest border-y border-outline-variant/20" id="fabric-lab">
 <div class="max-w-7xl mx-auto">
 <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
@@ -347,7 +400,7 @@ Free shipping over $75 <span class="opacity-60 mx-1">·</span> Made to order <sp
 </div>
 </div>
 </section>
-<!-- 5. NEWSLETTER -->
+<!-- 6. NEWSLETTER -->
 <section id="vip" class="py-24 px-6 md:px-12 bg-surface-container-low relative overflow-hidden border-t border-outline-variant/20">
 <div class="absolute -top-48 right-0 w-96 h-96 bg-secondary/10 rounded-full blur-3xl pointer-events-none"></div>
 <div class="max-w-4xl mx-auto text-center space-y-8 relative z-10">
@@ -396,6 +449,8 @@ Free shipping over $75 <span class="opacity-60 mx-1">·</span> Made to order <sp
 <h4 class="text-headline-sm font-headline-sm text-primary mb-4">Shop</h4>
 <ul class="space-y-3">
 <li><a class="text-label-sm font-label-sm text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#collections" data-filter="all">Shop All</a></li>
+<li><a class="text-label-sm font-label-sm text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#collections" data-filter="all" data-gender="men">Men</a></li>
+<li><a class="text-label-sm font-label-sm text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#collections" data-filter="all" data-gender="women">Women</a></li>
 <li><a class="text-label-sm font-label-sm text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#collections" data-filter="tops">Tops</a></li>
 <li><a class="text-label-sm font-label-sm text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#collections" data-filter="layers">Layers</a></li>
 <li><a class="text-label-sm font-label-sm text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#collections" data-filter="bottoms">Bottoms</a></li>
@@ -622,6 +677,8 @@ Free shipping over $75 <span class="opacity-60 mx-1">·</span> Made to order <sp
 </div>
 <nav class="flex flex-col gap-5">
 <a data-close data-filter="all" href="#collections" class="font-label-lg text-label-lg uppercase tracking-widest text-primary">Shop All</a>
+<a data-close data-filter="all" data-gender="men" href="#collections" class="font-label-lg text-label-lg uppercase tracking-widest text-on-surface-variant hover:text-primary">Men</a>
+<a data-close data-filter="all" data-gender="women" href="#collections" class="font-label-lg text-label-lg uppercase tracking-widest text-on-surface-variant hover:text-primary">Women</a>
 <a data-close data-filter="tops" href="#collections" class="font-label-lg text-label-lg uppercase tracking-widest text-on-surface-variant hover:text-primary">Tops</a>
 <a data-close data-filter="layers" href="#collections" class="font-label-lg text-label-lg uppercase tracking-widest text-on-surface-variant hover:text-primary">Layers</a>
 <a data-close data-filter="bottoms" href="#collections" class="font-label-lg text-label-lg uppercase tracking-widest text-on-surface-variant hover:text-primary">Bottoms</a>

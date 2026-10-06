@@ -47,6 +47,15 @@ test('maps a Shopify product to the storefront shape', () => {
   assert.equal(toSiteProduct({ ...shopifyProduct, tags: ['category:bottoms'] }).category, 'bottoms');
 });
 
+test('sorts Shopify products into men / women / unisex', () => {
+  assert.equal(toSiteProduct(shopifyProduct).gender, 'unisex');
+  assert.equal(toSiteProduct({ ...shopifyProduct, tags: ['gender:women'] }).gender, 'women');
+  assert.equal(toSiteProduct({ ...shopifyProduct, tags: ['gender:men'] }).gender, 'men');
+  assert.equal(toSiteProduct({ ...shopifyProduct, title: "Women's Cropped Hoodie" }).gender, 'women');
+  assert.equal(toSiteProduct({ ...shopifyProduct, productType: "Men's Hoodie" }).gender, 'men');
+  assert.equal(toSiteProduct({ ...shopifyProduct, tags: ['Mens', 'Womens'] }).gender, 'unisex');
+});
+
 describe('Shopify mode routes (fake Storefront client)', () => {
   // In-memory stand-in for the Shopify Storefront API client.
   const carts = new Map();

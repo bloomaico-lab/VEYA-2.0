@@ -72,6 +72,23 @@ function categoryFor(product) {
   return 'tops';
 }
 
+// men / women / unisex. Use a "gender:women" (or men / unisex) tag, or put Men's / Women's in the
+// product title, type or tags. Anything else is unisex and shows in both sections.
+function genderFor(product) {
+  const tags = product.tags.map((t) => t.toLowerCase());
+  const explicit = tags.find((t) => t.startsWith('gender:'));
+  if (explicit) {
+    const value = explicit.slice('gender:'.length).trim();
+    if (['men', 'women', 'unisex'].includes(value)) return value;
+  }
+  const haystack = [product.productType, product.title, ...tags].join(' ').toLowerCase();
+  const women = /\b(women|womens|women's|woman|ladies)\b/.test(haystack);
+  const men = /\b(men|mens|men's|man)\b/.test(haystack);
+  if (women && !men) return 'women';
+  if (men && !women) return 'men';
+  return 'unisex';
+}
+
 function badgeFor(product) {
   const badge = product.tags.find((t) => t.toLowerCase().startsWith('badge:'));
   if (badge) return badge.slice('badge:'.length).trim();
@@ -94,6 +111,7 @@ function toSiteProduct(p) {
     tagline: p.productType || 'VEYA',
     material: p.tags.find((t) => t.toLowerCase().startsWith('material:'))?.slice('material:'.length).trim() || '',
     category: categoryFor(p),
+    gender: genderFor(p),
     price: money(p.priceRange.minVariantPrice.amount),
     currency: p.priceRange.minVariantPrice.currencyCode,
     badge: badgeFor(p),
@@ -290,12 +308,13 @@ function registerShopifyRoutes(app, shopify, db) {
   app.get('/api/config', (req, res) => res.json({ payments: 'shopify', accountUrl: shopify.accountUrl }));
 
   app.get('/api/products', wrap(async (req, res) => {
-    const { category, q } = req.query;
+    const { category, gender, q } = req.query;
     let list = await shopify.products();
     if (category && category !== 'all') list = list.filter((p) => p.category === category);
+    if (gender && gender !== 'all') list = list.filter((p) => p.gender === gender || p.gender === 'unisex');
     if (q) {
       const needle = String(q).toLowerCase().slice(0, 100);
-      list = list.filter((p) => [p.name, p.tagline, p.material, p.category, p.description]
+      list = list.filter((p) => [p.name, p.tagline, p.material, p.category, p.gender, p.description]
         .some((f) => f.toLowerCase().includes(needle)));
     }
     res.json(list.map(publicProduct));

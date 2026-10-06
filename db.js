@@ -17,6 +17,7 @@ function openDb(file = process.env.DB_FILE || path.join(__dirname, 'data', 'veya
       tagline TEXT NOT NULL,
       material TEXT NOT NULL,
       category TEXT NOT NULL,
+      gender TEXT NOT NULL DEFAULT '',
       price_cents INTEGER NOT NULL,
       badge TEXT NOT NULL DEFAULT '',
       image TEXT NOT NULL,
@@ -113,17 +114,19 @@ function openDb(file = process.env.DB_FILE || path.join(__dirname, 'data', 'veya
   if (!db.prepare('PRAGMA table_info(products)').all().some((c) => c.name === 'model_image')) {
     db.exec("ALTER TABLE products ADD COLUMN model_image TEXT NOT NULL DEFAULT ''");
   }
-
-  const count = db.prepare('SELECT COUNT(*) AS n FROM products').get().n;
-  if (count === 0) {
-    const insert = db.prepare(`INSERT INTO products
-      (id, name, tagline, material, category, price_cents, badge, image, model_image, description, colors, sizes, stock, sort)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
-    seed.products.forEach((p, i) => insert.run(
-      p.id, p.name, p.tagline, p.material, p.category, p.price_cents, p.badge, p.image, p.model_image || '',
-      p.description, JSON.stringify(p.colors), JSON.stringify(p.sizes), p.stock, i,
-    ));
+  if (!db.prepare('PRAGMA table_info(products)').all().some((c) => c.name === 'gender')) {
+    db.exec("ALTER TABLE products ADD COLUMN gender TEXT NOT NULL DEFAULT ''");
   }
+
+  // Seed the catalog. Products added to seed.js later (e.g. the men's and women's lines) are
+  // inserted into existing databases too; products already there are left alone.
+  const insert = db.prepare(`INSERT OR IGNORE INTO products
+    (id, name, tagline, material, category, gender, price_cents, badge, image, model_image, description, colors, sizes, stock, sort)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+  seed.products.forEach((p, i) => insert.run(
+    p.id, p.name, p.tagline, p.material, p.category, p.gender, p.price_cents, p.badge, p.image, p.model_image || '',
+    p.description, JSON.stringify(p.colors), JSON.stringify(p.sizes), p.stock, i,
+  ));
   // Newsletter: every subscriber needs a private token for their unsubscribe link.
   const subCols = db.prepare('PRAGMA table_info(subscribers)').all().map((c) => c.name);
   for (const col of ['unsubscribe_token', 'unsubscribed_at']) {
@@ -138,6 +141,8 @@ function openDb(file = process.env.DB_FILE || path.join(__dirname, 'data', 'veya
   // Fill in on-model photos for catalogs seeded before they existed.
   const setModel = db.prepare("UPDATE products SET model_image = ? WHERE id = ? AND model_image = ''");
   for (const p of seed.products) if (p.model_image) setModel.run(p.model_image, p.id);
+  const setGender = db.prepare("UPDATE products SET gender = ? WHERE id = ? AND gender = ''");
+  for (const p of seed.products) setGender.run(p.gender, p.id);
   return db;
 }
 

@@ -6,6 +6,7 @@
   const state = {
     products: [],
     filter: 'all',
+    gender: 'all', // all | men | women
     sort: 'featured',
     config: { payments: 'demo' },
     cart: null,
@@ -34,6 +35,9 @@
   // Prices show their currency only when it isn't USD (a Shopify store can sell in any currency).
   const price = (n, currency) => (currency && currency !== 'USD' ? `${money(n)} ${currency}` : money(n));
   const CATEGORY_NAMES = { all: 'Shop All', tops: 'Tops', layers: 'Layers', bottoms: 'Bottoms' };
+  const GENDER_NAMES = { men: "Men's", women: "Women's" };
+  // Unisex pieces show in both the men's and the women's section.
+  const matchesGender = (p, gender) => gender === 'all' || !p.gender || p.gender === gender || p.gender === 'unisex';
 
   function esc(s) {
     return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -102,7 +106,7 @@
         </div>
         <div class="p-3 md:p-5 flex flex-col justify-between flex-grow">
           <div class="cursor-pointer" data-open-product>
-            <span class="font-label-sm text-label-sm md:text-label-md text-secondary uppercase tracking-widest block mb-1">${esc(p.tagline)}</span>
+            <span class="font-label-sm text-label-sm md:text-label-md text-secondary uppercase tracking-widest block mb-1">${GENDER_NAMES[p.gender] ? `${GENDER_NAMES[p.gender]} · ` : ''}${esc(p.tagline)}</span>
             <h3 class="font-headline-sm text-[15px] md:text-headline-sm text-primary mb-1">${esc(p.name)}</h3>
             ${p.material ? `<p class="hidden md:block font-label-md text-on-surface-variant font-normal">${esc(p.material)}</p>` : ''}
           </div>
@@ -125,15 +129,25 @@
 
   function renderProducts() {
     const track = $('#product-track');
-    const list = sortedProducts(state.filter === 'all' ? state.products : state.products.filter((p) => p.category === state.filter));
+    const list = sortedProducts(state.products.filter((p) => matchesGender(p, state.gender)
+      && (state.filter === 'all' || p.category === state.filter)));
     track.innerHTML = list.length
       ? list.map(productCard).join('')
       : '<p class="col-span-full font-label-md text-on-surface-variant">NOTHING HERE YET. CHECK BACK SOON.</p>';
-    $('#collection-title').textContent = CATEGORY_NAMES[state.filter] || 'Shop All';
+    const genderName = GENDER_NAMES[state.gender];
+    $('#collection-title').textContent = genderName
+      ? `${genderName} ${state.filter === 'all' ? 'Collection' : CATEGORY_NAMES[state.filter]}`
+      : CATEGORY_NAMES[state.filter] || 'Shop All';
     $('#result-count').textContent = `${list.length} ${list.length === 1 ? 'item' : 'items'}`;
     $$('#filter-chips .chip').forEach((c) => c.classList.toggle('chip-active', c.dataset.chip === state.filter));
+    $$('#gender-tabs [data-gender-tab]').forEach((t) => {
+      const active = t.dataset.genderTab === state.gender;
+      t.classList.toggle('chip-active', active);
+      t.setAttribute('aria-selected', String(active));
+    });
     $$('.nav-link').forEach((a) => {
-      const active = a.dataset.filter === state.filter;
+      // Men / Women links light up for their section; Shop All and category links only when no section is picked.
+      const active = a.dataset.filter === state.filter && (a.dataset.gender || 'all') === state.gender;
       a.classList.toggle('text-primary', active);
       a.classList.toggle('border-secondary', active);
       a.classList.toggle('border-transparent', !active);
@@ -150,10 +164,17 @@
       const fromEl = $(`[data-cat-from="${el.dataset.catCount}"]`);
       if (fromEl) fromEl.textContent = from === null ? '' : `From ${price(from, items[0].currency)}`;
     });
+    // Men / Women cards: style count and starting price for each section.
+    $$('[data-gender-count]').forEach((el) => {
+      const items = state.products.filter((p) => matchesGender(p, el.dataset.genderCount));
+      const from = items.length ? Math.min(...items.map((p) => p.price)) : null;
+      el.textContent = `${items.length} ${items.length === 1 ? 'style' : 'styles'}${from === null ? '' : ` · From ${price(from, items[0].currency)}`}`;
+    });
   }
 
-  function setFilter(filter, { scroll = true } = {}) {
+  function setFilter(filter, { scroll = true, gender } = {}) {
     state.filter = filter;
+    if (gender) state.gender = gender;
     renderProducts();
     if (scroll) $('#collections').scrollIntoView({ behavior: 'smooth' });
   }
@@ -172,16 +193,23 @@
 
   // Filter triggers: nav links, category cards, hero CTA, chips.
   document.addEventListener('click', (e) => {
+    // Links pick a category and a section: Men / Women links carry data-gender, everything else means both.
     const trigger = e.target.closest('[data-filter]');
     if (trigger) {
       e.preventDefault();
-      setFilter(trigger.dataset.filter);
+      setFilter(trigger.dataset.filter, { gender: trigger.dataset.gender || 'all' });
     }
+    // Chips and the Men / Women tabs above the grid change one thing and keep the other.
     const chip = e.target.closest('[data-chip]');
     if (chip) setFilter(chip.dataset.chip, { scroll: false });
+    const tab = e.target.closest('[data-gender-tab]');
+    if (tab) setFilter(state.filter, { scroll: false, gender: tab.dataset.genderTab });
   });
   $$('[data-filter][role=button]').forEach((el) => el.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setFilter(el.dataset.filter); }
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      setFilter(el.dataset.filter, { gender: el.dataset.gender || 'all' });
+    }
   }));
 
   // Product card interactions.

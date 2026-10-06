@@ -65,6 +65,7 @@ function toProduct(row) {
     tagline: row.tagline,
     material: row.material,
     category: row.category,
+    gender: row.gender || 'unisex',
     price: row.price_cents / 100,
     badge: row.badge,
     image: row.image,
@@ -180,12 +181,14 @@ function createApp(db = openDb(), { stripe = defaultStripe(), shopify = shopifyF
   // ----- catalog & content -----
 
   app.get('/api/products', (req, res) => {
-    const { category, q } = req.query;
+    const { category, gender, q } = req.query;
     let rows = db.prepare('SELECT * FROM products ORDER BY sort').all();
     if (category && category !== 'all') rows = rows.filter((r) => r.category === category);
+    // Unisex pieces belong in both the men's and the women's section.
+    if (gender && gender !== 'all') rows = rows.filter((r) => [gender, 'unisex', ''].includes(r.gender));
     if (q) {
       const needle = String(q).toLowerCase().slice(0, 100);
-      rows = rows.filter((r) => [r.name, r.tagline, r.material, r.category, r.description]
+      rows = rows.filter((r) => [r.name, r.tagline, r.material, r.category, r.gender, r.description]
         .some((f) => f.toLowerCase().includes(needle)));
     }
     res.json(rows.map(toProduct));
