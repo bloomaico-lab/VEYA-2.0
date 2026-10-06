@@ -49,15 +49,16 @@
     .chip-active { color: #F5EFE4 !important; background: #1B2A41; border-color: #1B2A41 !important; }
     .swatch-active { outline: 1px solid #1B2A41; outline-offset: 2px; }
     #toast { transition: opacity 250ms, transform 250ms; }
-    /* Announcement bar: offers loop continuously; pauses on hover/focus, stays still for reduced motion. */
+    /* Announcement bar: offers loop continuously. Only a mouse hover or keyboard focus pauses it, so a tap on a phone never leaves it stuck. */
     .ticker { overflow: hidden; white-space: nowrap; }
     .ticker-track { display: flex; width: max-content; animation: ticker 40s linear infinite; }
-    .ticker:hover .ticker-track, .ticker:focus-within .ticker-track { animation-play-state: paused; }
+    @media (hover: hover) and (pointer: fine) { .ticker:hover .ticker-track { animation-play-state: paused; } }
+    .ticker:has(:focus-visible) .ticker-track { animation-play-state: paused; }
     .ticker-group { display: flex; align-items: center; flex-shrink: 0; }
     .ticker-group a { padding: 0 1.75rem; }
     .ticker-dot { width: 4px; height: 4px; border-radius: 50%; background: currentColor; opacity: 0.5; }
     @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-    @media (prefers-reduced-motion: reduce) { .ticker-track { animation: none; } }
+    @media (prefers-reduced-motion: reduce) { .ticker-track { animation-duration: 80s; } }
   </style>
 </head>
 <body class="bg-background text-on-background selection:bg-secondary selection:text-surface-container-lowest antialiased overflow-x-hidden min-h-screen flex flex-col justify-between">
