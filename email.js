@@ -16,18 +16,18 @@ const escapeHtml = (s) => String(s).replace(/[&<>"']/g, (c) => ({
 function renderCampaign({ subject, body, unsubscribeUrl, mailingAddress, siteUrl }) {
   const paragraphs = body.trim().split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
   const htmlParagraphs = paragraphs
-    .map((p) => `<p style="margin:0 0 16px;font-size:15px;line-height:24px;color:#2f3034;">${escapeHtml(p).replace(/\n/g, '<br>')}</p>`)
+    .map((p) => `<p style="margin:0 0 16px;font-size:15px;line-height:24px;color:#1B2A41;">${escapeHtml(p).replace(/\n/g, '<br>')}</p>`)
     .join('');
   const html = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(subject)}</title></head>
-<body style="margin:0;padding:0;background:#f3f1ec;font-family:Helvetica,Arial,sans-serif;">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f3f1ec;padding:32px 16px;"><tr><td align="center">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:8px;">
-<tr><td style="padding:28px 32px 8px;font-family:Georgia,serif;font-size:26px;letter-spacing:1px;color:#111317;">VEYA<span style="color:#f9bb72;">.</span></td></tr>
+<body style="margin:0;padding:0;background:#F5EFE4;font-family:Helvetica,Arial,sans-serif;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F5EFE4;padding:32px 16px;"><tr><td align="center">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#FBF8F2;border-radius:8px;">
+<tr><td style="padding:28px 32px 8px;font-family:Georgia,serif;font-size:26px;letter-spacing:1px;color:#1B2A41;">VEYA<span style="color:#34507A;">.</span></td></tr>
 <tr><td style="padding:16px 32px 8px;">${htmlParagraphs}
-<p style="margin:24px 0 8px;"><a href="${escapeHtml(siteUrl)}" style="display:inline-block;background:#111317;color:#ffffff;text-decoration:none;padding:12px 24px;border-radius:999px;font-size:14px;">Shop VEYA</a></p></td></tr>
-<tr><td style="padding:24px 32px 28px;border-top:1px solid #eceae4;font-size:12px;line-height:18px;color:#7a7b7d;">
+<p style="margin:24px 0 8px;"><a href="${escapeHtml(siteUrl)}" style="display:inline-block;background:#1B2A41;color:#F5EFE4;text-decoration:none;padding:12px 24px;border-radius:999px;font-size:14px;">Shop VEYA</a></p></td></tr>
+<tr><td style="padding:24px 32px 28px;border-top:1px solid #E2D8C6;font-size:12px;line-height:18px;color:#4A5568;">
 You're receiving this because you joined the VEYA list.<br>
-<a href="${escapeHtml(unsubscribeUrl)}" style="color:#7a7b7d;">Unsubscribe</a><br>
+<a href="${escapeHtml(unsubscribeUrl)}" style="color:#4A5568;">Unsubscribe</a><br>
 ${escapeHtml(mailingAddress)}</td></tr>
 </table></td></tr></table></body></html>`;
   const text = `${paragraphs.join('\n\n')}\n\nShop VEYA: ${siteUrl}\n\n--\nYou're receiving this because you joined the VEYA list.\nUnsubscribe: ${unsubscribeUrl}\n${mailingAddress}\n`;

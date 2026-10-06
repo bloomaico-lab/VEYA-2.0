@@ -485,10 +485,10 @@ function createApp(db = openDb(), { stripe = defaultStripe(), shopify = shopifyF
   function unsubscribePage(title, message, form = '') {
     return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex"><title>${title} · VEYA</title></head>
-<body style="margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#111317;color:#e2e2e6;font-family:Helvetica,Arial,sans-serif;padding:16px;">
-<main style="max-width:420px;text-align:center;"><p style="font-family:Georgia,serif;font-size:28px;margin:0 0 24px;">VEYA<span style="color:#f9bb72;">.</span></p>
-<h1 style="font-size:20px;font-weight:600;margin:0 0 12px;">${title}</h1><p style="color:#c7c7bf;line-height:1.6;margin:0 0 24px;">${message}</p>${form}
-<p style="margin-top:24px;"><a href="/" style="color:#f9bb72;">Back to the shop</a></p></main></body></html>`;
+<body style="margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#F5EFE4;color:#1B2A41;font-family:Helvetica,Arial,sans-serif;padding:16px;">
+<main style="max-width:420px;text-align:center;"><p style="font-family:Georgia,serif;font-size:28px;margin:0 0 24px;">VEYA<span style="color:#34507A;">.</span></p>
+<h1 style="font-size:20px;font-weight:600;margin:0 0 12px;">${title}</h1><p style="color:#4A5568;line-height:1.6;margin:0 0 24px;">${message}</p>${form}
+<p style="margin-top:24px;"><a href="/" style="color:#34507A;">Back to the shop</a></p></main></body></html>`;
   }
   const subscriberByToken = (token) => (token
     ? db.prepare('SELECT * FROM subscribers WHERE unsubscribe_token = ?').get(String(token))
@@ -499,7 +499,7 @@ function createApp(db = openDb(), { stripe = defaultStripe(), shopify = shopifyF
     if (!sub) return res.status(404).send(unsubscribePage('Link not recognised', 'This unsubscribe link is invalid or has expired.'));
     if (sub.unsubscribed_at) return res.send(unsubscribePage('You are unsubscribed', `${escapeHtml(sub.email)} will not receive VEYA emails.`));
     res.send(unsubscribePage('Unsubscribe from VEYA emails?', `Stop sending newsletters to ${escapeHtml(sub.email)}.`,
-      `<form method="post"><button type="submit" style="background:#ffffff;color:#111317;border:0;border-radius:999px;padding:12px 28px;font-size:15px;cursor:pointer;">Unsubscribe</button></form>`));
+      `<form method="post"><button type="submit" style="background:#1B2A41;color:#F5EFE4;border:0;border-radius:999px;padding:12px 28px;font-size:15px;cursor:pointer;">Unsubscribe</button></form>`));
   });
 
   app.post('/unsubscribe', (req, res) => {
