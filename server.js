@@ -188,7 +188,7 @@ function createApp(db = openDb(), { stripe = defaultStripe(), shopify = shopifyF
     if (gender && gender !== 'all') rows = rows.filter((r) => [gender, 'unisex', ''].includes(r.gender));
     if (q) {
       const needle = String(q).toLowerCase().slice(0, 100);
-      rows = rows.filter((r) => [r.name, r.tagline, r.material, r.category, r.gender, r.description]
+      rows = rows.filter((r) => [r.name, r.tagline, r.material, r.category, r.gender, r.badge, r.description]
         .some((f) => f.toLowerCase().includes(needle)));
     }
     res.json(rows.map(toProduct));

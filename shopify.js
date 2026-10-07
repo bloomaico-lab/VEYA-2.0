@@ -314,7 +314,7 @@ function registerShopifyRoutes(app, shopify, db) {
     if (gender && gender !== 'all') list = list.filter((p) => p.gender === gender || p.gender === 'unisex');
     if (q) {
       const needle = String(q).toLowerCase().slice(0, 100);
-      list = list.filter((p) => [p.name, p.tagline, p.material, p.category, p.gender, p.description]
+      list = list.filter((p) => [p.name, p.tagline, p.material, p.category, p.gender, p.badge, p.description]
         .some((f) => f.toLowerCase().includes(needle)));
     }
     res.json(list.map(publicProduct));

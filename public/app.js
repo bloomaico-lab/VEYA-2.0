@@ -547,6 +547,15 @@
     renderSearch('');
     openOverlay('search-overlay');
   });
+  // Links like the "matching sets" banner message open search with a query filled in.
+  document.addEventListener('click', (e) => {
+    const link = e.target.closest('[data-search]');
+    if (!link) return;
+    e.preventDefault();
+    $('#search-input').value = link.dataset.search;
+    renderSearch(link.dataset.search);
+    openOverlay('search-overlay');
+  });
 
   let searchTimer;
   $('#search-input').addEventListener('input', (e) => {
@@ -557,7 +566,7 @@
   async function renderSearch(q) {
     const box = $('#search-results');
     if (!q) {
-      box.innerHTML = '<p class="px-3 py-2 font-label-sm text-on-surface-variant uppercase tracking-widest">Try “linen”, “hoodie” or “commute”</p>';
+      box.innerHTML = '<p class="px-3 py-2 font-label-sm text-on-surface-variant uppercase tracking-widest">Try “quarter-zip”, “leggings” or “matching set”</p>';
       return;
     }
     try {

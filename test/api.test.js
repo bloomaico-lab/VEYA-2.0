@@ -46,7 +46,9 @@ test('lists, filters and searches products', async () => {
   const exp = await api('/api/products?category=bottoms');
   assert.ok(exp.body.every((p) => p.category === 'bottoms'));
   const search = await api('/api/products?q=sweatpants');
-  assert.deepEqual(search.body.map((p) => p.id), ['heavyweight-sweatpants', 'relaxed-sweatpant']);
+  assert.deepEqual(search.body.map((p) => p.id), ['straight-leg-sweatpant', 'cargo-sweatpant', 'wide-leg-sweatpant']);
+  const sets = await api('/api/products?q=matching%20set');
+  assert.deepEqual(sets.body.map((p) => p.id).sort(), ['oversized-hoodie', 'oversized-sweatshirt', 'straight-leg-sweatpant', 'wide-leg-sweatpant']);
   const men = await api('/api/products?gender=men');
   const women = await api('/api/products?gender=women');
   assert.equal(men.body.length, 8);
@@ -56,18 +58,18 @@ test('lists, filters and searches products', async () => {
     assert.deepEqual([...new Set(list.map((p) => p.category))].sort(), ['bottoms', 'layers', 'tops'], 'each section has tops, layers and bottoms');
   }
   const womensBottoms = await api('/api/products?gender=women&category=bottoms');
-  assert.deepEqual(womensBottoms.body.map((p) => p.id), ['heavyweight-sweatpants', 'everyday-jogger', 'linen-short']);
+  assert.deepEqual(womensBottoms.body.map((p) => p.id), ['flare-legging', 'wide-leg-sweatpant', 'biker-short']);
   assert.equal((await api('/api/products/nope')).status, 404);
 });
 
 test('bag: add, merge, update, remove', async () => {
   const api = client();
-  let r = await api('/api/cart', { method: 'POST', body: { productId: 'heavyweight-zip-hoodie', size: 'M', color: 'Black' } });
+  let r = await api('/api/cart', { method: 'POST', body: { productId: 'oversized-hoodie', size: 'M', color: 'Black' } });
   assert.equal(r.status, 201);
-  r = await api('/api/cart', { method: 'POST', body: { productId: 'heavyweight-zip-hoodie', size: 'M', color: 'Black', qty: 2 } });
+  r = await api('/api/cart', { method: 'POST', body: { productId: 'oversized-hoodie', size: 'M', color: 'Black', qty: 2 } });
   assert.equal(r.body.items.length, 1);
   assert.equal(r.body.count, 3);
-  assert.equal(r.body.subtotal, 192);
+  assert.equal(r.body.subtotal, 180);
   assert.equal(r.body.shipping, 0);
   const id = r.body.items[0].id;
   r = await api(`/api/cart/${id}`, { method: 'PATCH', body: { qty: 1 } });
@@ -75,17 +77,17 @@ test('bag: add, merge, update, remove', async () => {
   r = await api(`/api/cart/${id}`, { method: 'DELETE' });
   assert.equal(r.body.count, 0);
 
-  assert.equal((await api('/api/cart', { method: 'POST', body: { productId: 'heavyweight-zip-hoodie', size: 'XXXL' } })).status, 400);
+  assert.equal((await api('/api/cart', { method: 'POST', body: { productId: 'oversized-hoodie', size: 'XXXL' } })).status, 400);
   // Another visitor cannot touch this bag.
   const other = client();
-  r = await api('/api/cart', { method: 'POST', body: { productId: 'everyday-crew' } });
+  r = await api('/api/cart', { method: 'POST', body: { productId: 'heavyweight-crewneck' } });
   assert.equal((await other(`/api/cart/${r.body.items[0].id}`, { method: 'PATCH', body: { qty: 2 } })).status, 404);
 });
 
 test('checkout creates an order, charges shipping under threshold, decrements stock', async () => {
   const api = client();
   assert.equal((await api('/api/checkout', { method: 'POST', body: {} })).status, 400);
-  await api('/api/cart', { method: 'POST', body: { productId: 'everyday-crew', size: 'S', color: 'Charcoal' } });
+  await api('/api/cart', { method: 'POST', body: { productId: 'heavyweight-crewneck', size: 'S', color: 'Black' } });
   const details = { name: 'Ada Lovelace', email: 'ada@example.com', address: '1 Main St', city: 'London', postalCode: 'N1', country: 'UK' };
   assert.equal((await api('/api/checkout', { method: 'POST', body: { ...details, email: 'bad' } })).status, 400);
   const order = await api('/api/checkout', { method: 'POST', body: details });
@@ -96,18 +98,18 @@ test('checkout creates an order, charges shipping under threshold, decrements st
 
   const admin = await api('/api/admin/summary', { headers: { 'x-admin-token': 'test-admin-token' } });
   assert.equal(admin.status, 200);
-  assert.equal(admin.body.inventory.find((p) => p.id === 'everyday-crew').stock, 69);
+  assert.equal(admin.body.inventory.find((p) => p.id === 'heavyweight-crewneck').stock, 89);
   assert.equal(admin.body.orders[0].number, order.body.number);
 });
 
 test('stock limits are enforced', async () => {
   const api = client();
-  const r = await api('/api/cart', { method: 'POST', body: { productId: 'linen-short', qty: 11 } });
+  const r = await api('/api/cart', { method: 'POST', body: { productId: 'biker-short', qty: 11 } });
   assert.equal(r.status, 400);
-  await fetch(`${base}/api/admin/products/linen-short`, {
+  await fetch(`${base}/api/admin/products/biker-short`, {
     method: 'PATCH', headers: { 'Content-Type': 'application/json', 'x-admin-token': 'test-admin-token' }, body: JSON.stringify({ stock: 1 }),
   });
-  assert.equal((await api('/api/cart', { method: 'POST', body: { productId: 'linen-short', qty: 2 } })).status, 409);
+  assert.equal((await api('/api/cart', { method: 'POST', body: { productId: 'biker-short', qty: 2 } })).status, 409);
 });
 
 test('accounts: register, me, orders, logout, login keeps the bag', async () => {
@@ -118,18 +120,18 @@ test('accounts: register, me, orders, logout, login keeps the bag', async () => 
   assert.equal((await api('/api/auth/register', { method: 'POST', body: { name: 'Q', email: 'quinn@example.com', password: 'supersecret' } })).status, 409);
   assert.equal((await api('/api/auth/me')).body.user.name, 'Quinn');
 
-  await api('/api/cart', { method: 'POST', body: { productId: 'heavyweight-sweatpants', size: 'M', color: 'Black' } });
+  await api('/api/cart', { method: 'POST', body: { productId: 'straight-leg-sweatpant', size: 'M', color: 'Black' } });
   await api('/api/checkout', { method: 'POST', body: { name: 'Quinn', address: '2 Road', city: 'Oslo', postalCode: '0150', country: 'NO' } });
   const orders = await api('/api/orders');
   assert.equal(orders.body.length, 1);
-  assert.equal(orders.body[0].items[0].name, 'Heavyweight Sweatpants');
+  assert.equal(orders.body[0].items[0].name, 'Straight-Leg Sweatpant');
 
   await api('/api/auth/logout', { method: 'POST' });
   assert.equal((await api('/api/auth/me')).body.user, null);
   assert.equal((await api('/api/orders')).status, 401);
   assert.equal((await api('/api/auth/login', { method: 'POST', body: { email: 'quinn@example.com', password: 'wrongpass' } })).status, 401);
 
-  await api('/api/cart', { method: 'POST', body: { productId: 'heavyweight-hoodie' } });
+  await api('/api/cart', { method: 'POST', body: { productId: 'oversized-hoodie' } });
   const login = await api('/api/auth/login', { method: 'POST', body: { email: 'quinn@example.com', password: 'supersecret' } });
   assert.equal(login.status, 200);
   assert.equal((await api('/api/cart')).body.count, 1);
