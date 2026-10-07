@@ -49,7 +49,7 @@ Shopify admin → **Online Store → Pages → Add page**. Create these three pa
 >
 > Body length: XS 27" · S 28" · M 29" · L 30" · XL 31" · 2XL 32".
 >
-> Men's tops and layers are an oversized, relaxed fit. Women's baby tees and long sleeves are fitted; sweatshirts are oversized.
+> Men's tops and layers are an oversized, relaxed fit. Women's baby tees, tanks and long sleeves are fitted; sweatshirts are oversized.
 >
 > Sweatpants have elastic drawcord waists and run true to size. Leggings are compressive: size up if you are between sizes.
 
