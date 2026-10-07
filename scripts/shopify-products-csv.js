@@ -19,7 +19,7 @@ const OUT = path.join(__dirname, '..', 'shopify', 'veya-products.csv');
 const GRAMS = {
   tops: { Tees: 200, Tanks: 120, 'Long Sleeves': 250 },
   layers: 600,
-  bottoms: { Leggings: 250, Shorts: 250 },
+  bottoms: { Leggings: 250, 'Track Pants': 350 },
 };
 const gramsFor = (p) => {
   const g = GRAMS[p.category];

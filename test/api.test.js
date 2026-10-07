@@ -63,7 +63,7 @@ test('lists, filters and searches products', async () => {
     assert.deepEqual([...new Set(list.map((p) => p.category))].sort(), ['bottoms', 'layers', 'tops'], 'each section has tops, layers and bottoms');
   }
   const womensBottoms = await api('/api/products?gender=women&category=bottoms');
-  assert.deepEqual(womensBottoms.body.map((p) => p.id), ['flare-legging', 'wide-leg-sweatpant', 'sweat-short']);
+  assert.deepEqual(womensBottoms.body.map((p) => p.id), ['flare-legging', 'wide-leg-sweatpant', 'side-stripe-track-pant']);
   assert.equal((await api('/api/products/nope')).status, 404);
 });
 

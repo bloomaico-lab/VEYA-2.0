@@ -51,7 +51,7 @@ Shopify admin → **Online Store → Pages → Add page**. Create these three pa
 >
 > Men's tops and layers are an oversized, relaxed fit. Women's baby tees, tanks and long sleeves are fitted; sweatshirts are oversized.
 >
-> Sweatpants have elastic drawcord waists and run true to size. Leggings are compressive: size up if you are between sizes.
+> Sweatpants and track pants have elastic drawcord waists and run true to size. Leggings are compressive: size up if you are between sizes.
 
 **Fabrics & Care** (check the address is `/pages/fabrics-care`; edit it under "Search engine listing" if Shopify made it `fabrics-and-care`)
 > Heavyweight Cotton: 7oz combed cotton, pre-shrunk and garment-dyed so it keeps its size and colour. Wash cold inside out, tumble dry low.
