@@ -1,0 +1,36 @@
+<section class="py-16 px-6 md:px-12 max-w-7xl mx-auto">
+  <span class="font-label-sm text-secondary uppercase tracking-widest block mb-2">SEARCH</span>
+  <h1 class="font-headline-lg text-headline-lg text-primary mb-6">{% if search.performed %}Results for “{{ search.terms | escape }}”{% else %}Search{% endif %}</h1>
+  <form action="{{ routes.search_url }}" method="get" role="search" class="max-w-xl flex gap-3 mb-10">
+    <input type="hidden" name="type" value="product">
+    <label class="sr-only" for="search-page-input">Search</label>
+    <input id="search-page-input" class="field !rounded-full" type="search" name="q" value="{{ search.terms | escape }}" placeholder="Search quarter-zips, leggings, hoodies…">
+    <button type="submit" class="h-12 px-6 rounded-full bg-primary text-on-primary font-label-md uppercase tracking-widest hover:bg-secondary">Search</button>
+  </form>
+  {%- if search.performed -%}
+    {%- paginate search.results by 24 -%}
+      <p class="font-label-sm text-on-surface-variant uppercase tracking-widest mb-6">{{ search.results_count }} {% if search.results_count == 1 %}result{% else %}results{% endif %}</p>
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        {%- for item in search.results -%}
+          {%- if item.object_type == 'product' -%}
+            {% render 'product-card', product: item, index: forloop.index %}
+          {%- else -%}
+            <a href="{{ item.url }}" class="block p-5 rounded-xl border border-outline-variant/30 bg-surface-container-low">
+              <span class="font-label-sm text-secondary uppercase tracking-widest">{{ item.object_type }}</span>
+              <span class="block font-headline-sm text-primary mt-1">{{ item.title | escape }}</span>
+            </a>
+          {%- endif -%}
+        {%- else -%}
+          <p class="col-span-full font-body-md text-on-surface-variant">No pieces match “{{ search.terms | escape }}”. Try “hoodie”, “leggings” or “quarter-zip”.</p>
+        {%- endfor -%}
+      </div>
+      {%- if paginate.pages > 1 -%}
+        <div class="mt-10 flex justify-center font-label-md">{{ paginate | default_pagination }}</div>
+      {%- endif -%}
+    {%- endpaginate -%}
+  {%- endif -%}
+</section>
+
+{% schema %}
+{ "name": "Search results", "settings": [] }
+{% endschema %}

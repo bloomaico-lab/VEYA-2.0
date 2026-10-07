@@ -1,0 +1,25 @@
+<section class="py-16 px-6 max-w-md mx-auto">
+  <span class="font-label-sm text-secondary uppercase tracking-widest block mb-2">ACCOUNT</span>
+  <h1 class="font-headline-lg text-headline-lg text-primary mb-8">Sign in</h1>
+  {%- form 'customer_login', class: 'space-y-4' -%}
+    <div class="errors">{{ form.errors | default_errors }}</div>
+    <div><label class="field-label" for="login-email">Email</label><input class="field" id="login-email" type="email" name="customer[email]" autocomplete="email" required></div>
+    <div><label class="field-label" for="login-password">Password</label><input class="field" id="login-password" type="password" name="customer[password]" autocomplete="current-password" required></div>
+    <button type="submit" class="w-full h-[52px] rounded-full bg-primary text-on-primary font-headline-sm text-headline-sm hover:bg-secondary transition-colors amber-glow-hover">Sign in</button>
+    <p class="font-body-sm text-on-surface-variant flex justify-between"><a class="text-secondary hover:underline" href="#recover" data-toggle-recover>Forgot your password?</a><a class="text-secondary hover:underline" href="{{ routes.account_register_url }}">Create account</a></p>
+  {%- endform -%}
+  <div id="recover" class="mt-12 pt-8 border-t border-outline-variant/30">
+    <h2 class="font-headline-md text-headline-md text-primary mb-4">Reset your password</h2>
+    {%- form 'recover_customer_password', class: 'space-y-4' -%}
+      {%- if form.posted_successfully? -%}<p class="font-label-md text-secondary uppercase">We've emailed you a link to reset your password.</p>{%- endif -%}
+      <div class="errors">{{ form.errors | default_errors }}</div>
+      <div><label class="field-label" for="recover-email">Email</label><input class="field" id="recover-email" type="email" name="email" autocomplete="email" required></div>
+      <button type="submit" class="w-full h-[52px] rounded-full bg-primary text-on-primary font-headline-sm text-headline-sm hover:bg-secondary transition-colors amber-glow-hover">Send reset link</button>
+    {%- endform -%}
+  </div>
+  {%- if shop.checkout.guest_login -%}
+    <div class="mt-12 pt-8 border-t border-outline-variant/30">
+      {%- form 'guest_login' -%}<button type="submit" class="w-full h-[52px] rounded-full border border-outline-variant/40 text-primary font-label-md uppercase tracking-widest">Continue as guest</button>{%- endform -%}
+    </div>
+  {%- endif -%}
+</section>

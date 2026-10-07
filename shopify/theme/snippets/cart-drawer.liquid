@@ -1,0 +1,27 @@
+{%- comment -%}Bag drawer. Filled in by veya.js from Shopify's cart (cart.js); the server-rendered count keeps it in sync on load.{%- endcomment -%}
+<div id="bag-overlay" class="overlay" aria-hidden="true">
+  <div class="overlay-backdrop" data-close></div>
+  <aside class="drawer-panel absolute top-0 right-0 h-full w-full max-w-md bg-surface-container-low border-l border-outline-variant/30 flex flex-col" role="dialog" aria-modal="true" aria-labelledby="bag-title">
+    <div class="flex items-center justify-between px-6 py-5 border-b border-outline-variant/20">
+      <div>
+        <span class="font-label-sm text-secondary uppercase tracking-widest block mb-1">YOUR BAG</span>
+        <h2 id="bag-title" class="font-headline-md text-headline-md text-primary">Bag</h2>
+      </div>
+      <button type="button" data-close aria-label="Close bag" class="w-9 h-9 rounded-full border border-outline-variant/40 flex items-center justify-center text-primary hover:border-secondary hover:text-secondary transition-colors"><span class="material-symbols-outlined text-[18px]" aria-hidden="true">close</span></button>
+    </div>
+    <div id="bag-items" class="flex-grow overflow-y-auto px-6 py-4 space-y-4" aria-live="polite"></div>
+    <div class="px-6 py-5 border-t border-outline-variant/20 space-y-3 bg-surface-container-lowest/60">
+      <div>
+        <p id="bag-shipping-note" class="font-label-sm text-secondary uppercase tracking-widest mb-2"></p>
+        <div class="h-1 rounded-full bg-surface-container-high overflow-hidden"><div id="bag-shipping-bar" class="h-full bg-secondary transition-all duration-500" style="width: 0%"></div></div>
+      </div>
+      <div class="flex justify-between font-headline-sm text-headline-sm text-primary pt-2"><span>Subtotal</span><span id="bag-subtotal">{{ cart.total_price | money }}</span></div>
+      <p class="font-body-sm text-body-sm text-on-surface-variant">Shipping, taxes and discount codes are added at checkout.</p>
+      <form action="{{ routes.cart_url }}" method="post" id="bag-checkout-form">
+        <button id="checkout-btn" type="submit" name="checkout" class="w-full h-[52px] rounded-full bg-primary text-on-primary font-headline-sm text-headline-sm flex items-center justify-center gap-2 hover:bg-secondary transition-colors duration-300 amber-glow-hover disabled:opacity-40 disabled:pointer-events-none" {% if cart.item_count == 0 %}disabled{% endif %}>
+          <span>Checkout</span><span class="material-symbols-outlined text-[18px]" aria-hidden="true">lock</span>
+        </button>
+      </form>
+    </div>
+  </aside>
+</div>

@@ -1,0 +1,18 @@
+{
+  "general": {
+    "password_page": {
+      "login_form_heading": "Enter store using password"
+    }
+  },
+  "products": {
+    "product": {
+      "add_to_cart": "Add to Bag",
+      "sold_out": "Sold out"
+    }
+  },
+  "templates": {
+    "404": {
+      "title": "Page not found"
+    }
+  }
+}

@@ -5,6 +5,9 @@ It is built on the **VEYA Active Luxury UI** design from Google Stitch (project 
 
 It runs in one of two modes:
 
+- **Shopify theme (simplest):** upload `shopify/veya-shopify-theme.zip` as your Shopify theme and import
+  `shopify/veya-products.csv`; the whole store then runs on Shopify. Step-by-step guide:
+  [shopify/README.md](shopify/README.md).
 - **Shopify mode (recommended):** connect a Shopify store and it becomes the source of products,
   the bag and checkout. Install a print-on-demand app such as **Printful** or **Printify** in
   Shopify and every paid order is printed and shipped automatically. See

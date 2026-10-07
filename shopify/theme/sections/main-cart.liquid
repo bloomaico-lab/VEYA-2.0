@@ -1,0 +1,47 @@
+{%- comment -%}Full cart page (the bag drawer covers most visits; this is the fallback and the no-JavaScript path).{%- endcomment -%}
+<section class="py-16 px-6 md:px-12 max-w-4xl mx-auto">
+  <span class="font-label-sm text-secondary uppercase tracking-widest block mb-2">YOUR BAG</span>
+  <h1 class="font-headline-lg text-headline-lg text-primary mb-8">Bag</h1>
+  {%- if cart.item_count > 0 -%}
+    <form action="{{ routes.cart_url }}" method="post" id="cart-page-form">
+      <ul class="divide-y divide-outline-variant/30 border-y border-outline-variant/30">
+        {%- for item in cart.items -%}
+          <li class="flex gap-4 py-5">
+            <a href="{{ item.url }}" class="shrink-0">
+              {%- if item.image -%}
+                {{ item.image | image_url: width: 240 | image_tag: class: 'w-20 h-24 object-cover rounded', alt: item.product.title }}
+              {%- endif -%}
+            </a>
+            <div class="flex-grow min-w-0">
+              <a href="{{ item.url }}" class="font-headline-sm text-headline-sm text-primary">{{ item.product.title | escape }}</a>
+              {%- unless item.product.has_only_default_variant -%}
+                <p class="font-label-md text-on-surface-variant uppercase mt-1">{{ item.variant.title | escape }}</p>
+              {%- endunless -%}
+              <div class="flex items-center gap-3 mt-3">
+                <label class="sr-only" for="qty-{{ item.key }}">Quantity</label>
+                <input id="qty-{{ item.key }}" type="number" name="updates[]" value="{{ item.quantity }}" min="0" max="10" class="field !w-20 !h-10 text-center">
+                <a href="{{ item.url_to_remove }}" class="font-label-sm text-label-sm uppercase tracking-widest text-on-surface-variant hover:text-error">Remove</a>
+              </div>
+            </div>
+            <span class="font-label-lg text-primary">{{ item.final_line_price | money }}</span>
+          </li>
+        {%- endfor -%}
+      </ul>
+      <div class="mt-8 flex flex-col items-end gap-3">
+        <p class="font-headline-sm text-headline-sm text-primary">Subtotal {{ cart.total_price | money }}</p>
+        <p class="font-body-sm text-body-sm text-on-surface-variant">Shipping, taxes and discount codes are added at checkout.</p>
+        <div class="flex gap-3">
+          <button type="submit" name="update" class="h-[52px] px-6 rounded-full border border-outline-variant/40 text-primary font-label-md uppercase tracking-widest hover:border-secondary">Update</button>
+          <button type="submit" name="checkout" class="h-[52px] px-8 rounded-full bg-primary text-on-primary font-headline-sm text-headline-sm hover:bg-secondary transition-colors amber-glow-hover inline-flex items-center gap-2">Checkout <span class="material-symbols-outlined text-[18px]" aria-hidden="true">lock</span></button>
+        </div>
+      </div>
+    </form>
+  {%- else -%}
+    <p class="font-body-md text-on-surface-variant mb-6">Your bag is empty.</p>
+    <a href="{{ routes.all_products_collection_url }}" class="inline-flex h-[52px] px-8 rounded-full bg-primary text-on-primary font-headline-sm text-headline-sm items-center gap-2 hover:bg-secondary">Start shopping</a>
+  {%- endif -%}
+</section>
+
+{% schema %}
+{ "name": "Cart", "settings": [] }
+{% endschema %}

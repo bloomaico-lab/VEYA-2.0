@@ -1,0 +1,102 @@
+{%- comment -%}The fabrics: clickable fabric cards that update the spec panel over the photo.{%- endcomment -%}
+{%- assign first = section.blocks.first -%}
+<section class="py-24 px-6 md:px-12 bg-surface-container-lowest border-y border-outline-variant/20" id="fabric-lab" data-fabrics>
+  <div class="max-w-7xl mx-auto">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+      <div class="lg:col-span-5 space-y-8">
+        <div>
+          <div class="inline-flex items-center gap-2 mb-3">
+            <span class="material-symbols-outlined text-secondary text-[16px]" aria-hidden="true">texture</span>
+            <span class="font-label-sm text-secondary uppercase tracking-widest">{{ section.settings.eyebrow | escape }}</span>
+          </div>
+          <h2 class="font-headline-lg text-headline-lg text-primary mb-4">{{ section.settings.heading | escape }}</h2>
+          <p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">{{ section.settings.text | escape }}</p>
+        </div>
+        <div class="space-y-4">
+          {%- for block in section.blocks -%}
+            <button type="button" {{ block.shopify_attributes }}
+              data-fabric
+              data-specimen="{{ block.settings.specimen | escape }}"
+              data-metric="{{ block.settings.metric | escape }}"
+              data-focus-title="{{ block.settings.focus_title | escape }}"
+              data-focus-text="{{ block.settings.focus_text | escape }}"
+              aria-pressed="{{ forloop.first }}"
+              class="fabric-card w-full text-left p-5 rounded-lg border transition-all duration-300 {% if forloop.first %}border-secondary/40 bg-surface-container/60{% else %}border-outline-variant/30 bg-surface-container-low/40 hover:border-outline-variant/60{% endif %}">
+              <span class="flex items-center justify-between mb-2">
+                <span class="font-label-lg text-label-lg text-primary tracking-wider uppercase">{{ block.settings.title | escape }}</span>
+                <span class="font-label-sm text-secondary uppercase tracking-wider">{{ block.settings.used_in | escape }}</span>
+              </span>
+              <span class="block font-body-sm text-body-sm text-on-surface-variant">{{ block.settings.text | escape }}</span>
+            </button>
+          {%- endfor -%}
+        </div>
+        {%- if section.settings.guide_link != blank -%}
+          <a class="font-label-md text-label-md text-secondary hover:underline inline-flex items-center gap-2 uppercase tracking-widest" href="{{ section.settings.guide_link }}">
+            <span>Fabrics &amp; Care Guide</span><span class="material-symbols-outlined text-[14px]" aria-hidden="true">arrow_forward</span>
+          </a>
+        {%- endif -%}
+      </div>
+      <div class="lg:col-span-7">
+        <div class="relative rounded-2xl overflow-hidden border border-outline-variant/40 bg-surface-container-low p-2">
+          <div class="relative aspect-video rounded-xl overflow-hidden bg-surface-container-lowest">
+            {%- if section.settings.image -%}
+              {{ section.settings.image | image_url: width: 1600 | image_tag: class: 'w-full h-full object-cover', loading: 'lazy', sizes: '(min-width: 1024px) 60vw, 100vw', alt: '' }}
+            {%- else -%}
+              <img class="w-full h-full object-cover" src="{{ 'fabric.jpg' | asset_url }}" alt="" loading="lazy" width="1600" height="900">
+            {%- endif -%}
+            <div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-transparent to-transparent"></div>
+            <div class="absolute top-6 left-6 flex flex-col gap-2">
+              <div class="px-3 py-1 rounded bg-surface-container-lowest/80 border border-outline-variant/40 backdrop-blur-md font-label-sm text-primary tracking-widest" id="hud-specimen">SPECIMEN: {{ first.settings.specimen | escape }}</div>
+              <div class="px-3 py-1 rounded bg-surface-container-lowest/80 border border-outline-variant/40 backdrop-blur-md font-label-sm text-secondary tracking-widest" id="hud-metric">{{ first.settings.metric | escape }}</div>
+            </div>
+            <div class="absolute bottom-8 left-8 right-8 glass-spec-panel p-4 rounded-xl flex items-center justify-between gap-4">
+              <div class="flex items-center gap-4">
+                <span class="w-3 h-3 shrink-0 rounded-full bg-secondary animate-ping"></span>
+                <div>
+                  <p id="hud-focus-title" class="font-label-sm uppercase tracking-widest text-primary">{{ first.settings.focus_title | escape }}</p>
+                  <p id="hud-focus-text" class="font-body-sm text-body-sm text-on-surface-variant">{{ first.settings.focus_text | escape }}</p>
+                </div>
+              </div>
+              <span class="hidden sm:inline font-label-sm text-secondary border border-secondary/30 px-3 py-1 rounded">LAB VERIFIED</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Fabrics",
+  "max_blocks": 4,
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Small label", "default": "THE FABRICS" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Made to wear every day." },
+    { "type": "textarea", "id": "text", "label": "Text", "default": "We pick a few fabrics and get them right: cotton that keeps its shape, fleece that stays soft, and a sculpt knit that moves with you." },
+    { "type": "image_picker", "id": "image", "label": "Photo" },
+    { "type": "url", "id": "guide_link", "label": "Care guide link" }
+  ],
+  "blocks": [
+    {
+      "type": "fabric",
+      "name": "Fabric",
+      "settings": [
+        { "type": "text", "id": "title", "label": "Name", "default": "Heavyweight cotton" },
+        { "type": "text", "id": "used_in", "label": "Used in", "default": "Tees & long sleeves" },
+        { "type": "textarea", "id": "text", "label": "Description", "default": "Dense combed cotton, pre-shrunk and garment-dyed so your tees keep their size, shape and colour." },
+        { "type": "text", "id": "specimen", "label": "Specimen code", "default": "VEYA-TX-2201" },
+        { "type": "text", "id": "metric", "label": "Spec line", "default": "WEIGHT: 7 OZ / PRE-SHRUNK" },
+        { "type": "text", "id": "focus_title", "label": "Panel title", "default": "Dense Garment-Dyed Cotton" },
+        { "type": "textarea", "id": "focus_text", "label": "Panel text", "default": "A tight knit that keeps tees from twisting or shrinking." }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Fabrics",
+      "blocks": [{ "type": "fabric" }]
+    }
+  ]
+}
+{% endschema %}

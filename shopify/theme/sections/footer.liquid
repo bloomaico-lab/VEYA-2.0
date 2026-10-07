@@ -1,0 +1,77 @@
+{%- assign all_url = routes.all_products_collection_url -%}
+{%- assign link = 'text-label-sm font-label-sm text-on-surface-variant hover:text-secondary transition-colors duration-200' -%}
+<footer class="bg-surface-container-lowest border-t border-outline-variant/20">
+  <div class="w-full px-6 md:px-12 py-16 max-w-7xl mx-auto flex flex-col gap-12">
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-12">
+      <div class="md:col-span-4 space-y-4">
+        <a class="text-headline-lg font-display tracking-tighter text-primary block" href="{{ routes.root_url }}">{{ shop.name | upcase }}</a>
+        <p class="font-body-md text-body-md text-on-surface-variant max-w-sm leading-relaxed">{{ section.settings.about | escape }}</p>
+        <div class="pt-2">
+          <span class="font-label-sm text-secondary uppercase tracking-widest block mb-1">MANTRA</span>
+          <p class="font-label-md text-primary tracking-wider">{{ section.settings.mantra | escape }}</p>
+        </div>
+      </div>
+      <div class="md:col-span-8 grid grid-cols-2 sm:grid-cols-3 gap-8">
+        <div>
+          <h4 class="text-headline-sm font-headline-sm text-primary mb-4">Shop</h4>
+          <ul class="space-y-3">
+            <li><a class="{{ link }}" href="{{ all_url }}">Shop All</a></li>
+            <li><a class="{{ link }}" href="{{ all_url }}/gender-men">Men</a></li>
+            <li><a class="{{ link }}" href="{{ all_url }}/gender-women">Women</a></li>
+            <li><a class="{{ link }}" href="{{ all_url }}/category-tops">Tops</a></li>
+            <li><a class="{{ link }}" href="{{ all_url }}/category-layers">Layers</a></li>
+            <li><a class="{{ link }}" href="{{ all_url }}/category-bottoms">Bottoms</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-headline-sm font-headline-sm text-primary mb-4">Help</h4>
+          <ul class="space-y-3">
+            <li><a class="{{ link }}" href="/policies/shipping-policy">Shipping</a></li>
+            <li><a class="{{ link }}" href="/policies/refund-policy">Returns &amp; Exchanges</a></li>
+            <li><a class="{{ link }}" href="/pages/size-guide">Size Guide</a></li>
+            <li><a class="{{ link }}" href="/pages/fabrics-care">Fabrics &amp; Care</a></li>
+            <li><a class="{{ link }}" href="/policies/privacy-policy">Privacy Policy</a></li>
+            <li><a class="{{ link }}" href="/policies/terms-of-service">Terms of Service</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-headline-sm font-headline-sm text-primary mb-4">About</h4>
+          <ul class="space-y-3">
+            <li><a class="{{ link }}" href="/pages/our-approach">Our Approach</a></li>
+            <li><a class="{{ link }}" href="{{ routes.root_url }}#fabric-lab">The Fabrics</a></li>
+            <li><a class="{{ link }}" href="{{ routes.root_url }}#vip">Join the List</a></li>
+            {%- if section.settings.instagram != blank -%}
+              <li><a class="{{ link }}" href="{{ section.settings.instagram }}" target="_blank" rel="noopener">Instagram</a></li>
+            {%- endif -%}
+            {%- if section.settings.tiktok != blank -%}
+              <li><a class="{{ link }}" href="{{ section.settings.tiktok }}" target="_blank" rel="noopener">TikTok</a></li>
+            {%- endif -%}
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="pt-8 border-t border-outline-variant/20 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <p class="text-label-sm font-label-sm text-on-surface-variant">&copy; {{ 'now' | date: '%Y' }} {{ shop.name }}. All rights reserved.</p>
+      <div class="flex items-center gap-4">
+        {%- for type in shop.enabled_payment_types limit: 6 -%}
+          {{ type | payment_type_svg_tag: class: 'h-5 w-auto opacity-80' }}
+        {%- endfor -%}
+        <span class="font-label-sm text-secondary uppercase tracking-widest flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-[14px]" aria-hidden="true">lock</span>Secure checkout
+        </span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+{% schema %}
+{
+  "name": "Footer",
+  "settings": [
+    { "type": "textarea", "id": "about", "label": "About text", "default": "Everyday clothing, made to order. Heavyweight basics and easy layers at prices that make sense." },
+    { "type": "text", "id": "mantra", "label": "Mantra", "default": "PREMIUM FABRICS. TIMELESS DESIGNS. BUILT FOR MORE." },
+    { "type": "url", "id": "instagram", "label": "Instagram link" },
+    { "type": "url", "id": "tiktok", "label": "TikTok link" }
+  ]
+}
+{% endschema %}

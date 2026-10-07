@@ -1,0 +1,77 @@
+{%- comment -%}
+  JSON describing a product's colours (with their own studio + on-model photos) and variants, read by
+  veya.js for colour switching, quick add and the product page.
+
+  Photos per colour: the colour's variant image is the studio shot; the on-model shot is the product
+  photo whose alt text contains "in <Colour>" and "on model" (the VEYA import file sets these up).
+
+  Usage: {% render 'product-data', product: product %}
+{%- endcomment -%}
+{%- liquid
+  assign color_index = 0
+  assign size_index = 0
+  assign color_option = nil
+  for option in product.options_with_values
+    assign oname = option.name | downcase
+    if oname == 'color' or oname == 'colour'
+      assign color_index = option.position
+      assign color_option = option
+    elsif oname == 'size'
+      assign size_index = option.position
+    endif
+  endfor
+  assign color_key = 'option' | append: color_index
+  assign size_key = 'option' | append: size_index
+-%}
+<script type="application/json" data-product-json>
+{
+  "id": {{ product.id | json }},
+  "title": {{ product.title | json }},
+  "url": {{ product.url | json }},
+  "colors": [
+    {%- if color_option -%}
+      {%- for value in color_option.values -%}
+        {%- liquid
+          assign vname = value | append: ''
+          assign needle = ' in ' | append: vname
+          assign first_variant = product.variants | where: color_key, vname | first
+          assign studio = first_variant.featured_image
+          assign model = nil
+          for media in product.media
+            if media.alt contains needle
+              if media.alt contains 'on model'
+                if model == nil
+                  assign model = media.preview_image
+                endif
+              elsif studio == nil
+                assign studio = media.preview_image
+              endif
+            endif
+          endfor
+          if studio == nil
+            assign studio = product.featured_image
+          endif
+        -%}
+        {%- capture hex -%}{% render 'color-hex', name: vname %}{%- endcapture -%}
+        {
+          "name": {{ vname | json }},
+          "hex": {{ hex | strip | json }},
+          "image": {% if studio %}{{ studio | image_url: width: 900 | json }}{% else %}null{% endif %},
+          "model": {% if model %}{{ model | image_url: width: 900 | json }}{% else %}null{% endif %}
+        }{% unless forloop.last %},{% endunless %}
+      {%- endfor -%}
+    {%- endif -%}
+  ],
+  "variants": [
+    {%- for variant in product.variants -%}
+      {
+        "id": {{ variant.id }},
+        "color": {% if color_index > 0 %}{{ variant[color_key] | json }}{% else %}null{% endif %},
+        "size": {% if size_index > 0 %}{{ variant[size_key] | json }}{% else %}{{ variant.title | json }}{% endif %},
+        "available": {{ variant.available | json }},
+        "price": {{ variant.price | json }}
+      }{% unless forloop.last %},{% endunless %}
+    {%- endfor -%}
+  ]
+}
+</script>

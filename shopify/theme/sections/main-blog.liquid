@@ -1,0 +1,22 @@
+<section class="py-16 px-6 md:px-12 max-w-5xl mx-auto">
+  <h1 class="font-headline-lg text-headline-lg text-primary mb-10">{{ blog.title | escape }}</h1>
+  {%- paginate blog.articles by 12 -%}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      {%- for article in blog.articles -%}
+        <a href="{{ article.url }}" class="group block">
+          {%- if article.image -%}
+            <div class="aspect-video rounded-xl overflow-hidden mb-4 bg-surface-container-lowest">{{ article.image | image_url: width: 1000 | image_tag: class: 'w-full h-full object-cover group-hover:scale-105 transition-transform duration-500', loading: 'lazy', alt: article.title }}</div>
+          {%- endif -%}
+          <span class="font-label-sm text-secondary uppercase tracking-widest">{{ article.published_at | date: '%b %d, %Y' }}</span>
+          <h2 class="font-headline-md text-headline-md text-primary mt-1">{{ article.title | escape }}</h2>
+          <p class="font-body-md text-on-surface-variant mt-2">{{ article.excerpt_or_content | strip_html | truncate: 160 }}</p>
+        </a>
+      {%- endfor -%}
+    </div>
+    {%- if paginate.pages > 1 -%}<div class="mt-10 flex justify-center font-label-md">{{ paginate | default_pagination }}</div>{%- endif -%}
+  {%- endpaginate -%}
+</section>
+
+{% schema %}
+{ "name": "Blog", "settings": [] }
+{% endschema %}

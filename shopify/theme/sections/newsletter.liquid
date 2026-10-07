@@ -1,0 +1,46 @@
+{%- comment -%}
+  Email sign-up. Uses Shopify's customer form: sign-ups appear in Shopify admin → Customers with email
+  marketing consent, ready to email with Shopify Email (Marketing → Campaigns).
+{%- endcomment -%}
+<section id="vip" class="py-24 px-6 md:px-12 bg-surface-container-low relative overflow-hidden border-t border-outline-variant/20">
+  <div class="absolute -top-48 right-0 w-96 h-96 bg-secondary/10 rounded-full blur-3xl pointer-events-none"></div>
+  <div class="max-w-4xl mx-auto text-center space-y-8 relative z-10">
+    <div class="inline-flex items-center gap-2">
+      <span class="w-2 h-2 rounded-full bg-secondary"></span>
+      <span class="font-label-sm text-secondary uppercase tracking-[0.25em]">{{ section.settings.eyebrow | escape }}</span>
+    </div>
+    <h2 class="font-headline-lg md:font-display text-headline-lg md:text-display text-primary">{{ section.settings.heading | escape }}</h2>
+    <p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto leading-relaxed">{{ section.settings.text | escape }}</p>
+    {%- form 'customer', id: 'vip-form', class: 'max-w-md mx-auto pt-4' -%}
+      <input type="hidden" name="contact[tags]" value="newsletter">
+      {%- if form.posted_successfully? -%}
+        <p class="font-label-md text-secondary tracking-wider uppercase" role="status">You're on the list. We'll email you about the next drop.</p>
+      {%- else -%}
+        <div class="flex flex-col sm:flex-row gap-3">
+          <input class="flex-grow w-full h-[52px] px-5 rounded-full bg-surface-container-lowest/80 border border-outline-variant/40 text-primary placeholder-on-surface-variant/50 focus:border-secondary focus:ring-0 font-body-md transition-colors duration-200 outline-none" placeholder="Your email address" required type="email" name="contact[email]" aria-label="Email address" autocomplete="email" value="{{ form.email }}">
+          <button class="h-[52px] px-8 rounded-full bg-primary text-on-primary font-headline-sm text-headline-sm hover:bg-secondary transition-colors duration-300 amber-glow-hover whitespace-nowrap flex items-center justify-center gap-2" type="submit">
+            <span>Sign Up</span><span class="material-symbols-outlined text-[18px]" aria-hidden="true">arrow_forward</span>
+          </button>
+        </div>
+        {%- if form.errors -%}
+          <p class="mt-3 font-label-md text-error tracking-wider" role="alert">
+            {%- if form.errors contains 'email' -%}Please enter a valid email address.{%- else -%}{{ form.errors | default_errors }}{%- endif -%}
+          </p>
+        {%- endif -%}
+      {%- endif -%}
+    {%- endform -%}
+    <p class="font-label-sm text-outline tracking-wider">NO SPAM. UNSUBSCRIBE ANYTIME.</p>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Email sign-up",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Small label", "default": "JOIN THE LIST" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Be first to the next drop." },
+    { "type": "textarea", "id": "text", "label": "Text", "default": "New releases, restocks and members-only offers, straight to your inbox." }
+  ],
+  "presets": [{ "name": "Email sign-up" }]
+}
+{% endschema %}

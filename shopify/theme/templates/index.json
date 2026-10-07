@@ -1,0 +1,83 @@
+{
+  "sections": {
+    "hero": {
+      "type": "hero",
+      "settings": {}
+    },
+    "shop-gender": {
+      "type": "gender-split",
+      "settings": {}
+    },
+    "categories": {
+      "type": "categories",
+      "settings": {}
+    },
+    "collection": {
+      "type": "product-grid",
+      "settings": {
+        "limit": 48
+      }
+    },
+    "fabrics": {
+      "type": "fabrics",
+      "blocks": {
+        "fabric-1": {
+          "type": "fabric",
+          "settings": {
+            "title": "Heavyweight cotton",
+            "used_in": "Tees & long sleeves",
+            "text": "Dense combed cotton, pre-shrunk and garment-dyed so your tees and long sleeves keep their size, shape and colour wash after wash.",
+            "specimen": "VEYA-TX-2201",
+            "metric": "WEIGHT: 7 OZ / PRE-SHRUNK",
+            "focus_title": "Dense Garment-Dyed Cotton",
+            "focus_text": "A tight knit that keeps tees from twisting or shrinking, dyed after sewing for a soft, lived-in colour."
+          }
+        },
+        "fabric-2": {
+          "type": "fabric",
+          "settings": {
+            "title": "Brushed fleece",
+            "used_in": "Hoodies & sweats",
+            "text": "Heavyweight 12–14oz cotton fleece, brushed on the inside for warmth. Used in our quarter-zips, hoodies, sweatshirts and sweatpants.",
+            "specimen": "VEYA-TX-4417",
+            "metric": "WEIGHT: 12–14 OZ / BRUSHED BACK",
+            "focus_title": "Heavyweight Brushed Fleece",
+            "focus_text": "Thick cotton fleece brushed on the inside for warmth, with a smooth face that resists pilling."
+          }
+        },
+        "fabric-3": {
+          "type": "fabric",
+          "settings": {
+            "title": "Sculpt knit",
+            "used_in": "Leggings & bras",
+            "text": "A smooth four-way-stretch knit that holds you in and never goes see-through. Used in our flare leggings, biker shorts and sports bras.",
+            "specimen": "VEYA-TX-7731",
+            "metric": "STRETCH: 4-WAY / SQUAT-PROOF",
+            "focus_title": "Sculpt Performance Knit",
+            "focus_text": "A smooth, buttery knit that holds you in, wicks sweat and never goes see-through."
+          }
+        }
+      },
+      "block_order": [
+        "fabric-1",
+        "fabric-2",
+        "fabric-3"
+      ],
+      "settings": {
+        "guide_link": "/pages/fabrics-care"
+      }
+    },
+    "newsletter": {
+      "type": "newsletter",
+      "settings": {}
+    }
+  },
+  "order": [
+    "hero",
+    "shop-gender",
+    "categories",
+    "collection",
+    "fabrics",
+    "newsletter"
+  ]
+}

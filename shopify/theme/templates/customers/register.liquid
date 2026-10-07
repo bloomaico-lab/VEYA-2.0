@@ -1,0 +1,14 @@
+<section class="py-16 px-6 max-w-md mx-auto">
+  <span class="font-label-sm text-secondary uppercase tracking-widest block mb-2">ACCOUNT</span>
+  <h1 class="font-headline-lg text-headline-lg text-primary mb-8">Create account</h1>
+  {%- form 'create_customer', class: 'space-y-4' -%}
+    <div class="errors">{{ form.errors | default_errors }}</div>
+    <div><label class="field-label" for="reg-first">First name</label><input class="field" id="reg-first" type="text" name="customer[first_name]" autocomplete="given-name"></div>
+    <div><label class="field-label" for="reg-last">Last name</label><input class="field" id="reg-last" type="text" name="customer[last_name]" autocomplete="family-name"></div>
+    <div><label class="field-label" for="reg-email">Email</label><input class="field" id="reg-email" type="email" name="customer[email]" autocomplete="email" required></div>
+    <div><label class="field-label" for="reg-password">Password</label><input class="field" id="reg-password" type="password" name="customer[password]" autocomplete="new-password" required></div>
+    <label class="flex items-center gap-2 font-body-sm text-on-surface-variant"><input type="checkbox" name="customer[accepts_marketing]" value="true" class="rounded border-outline-variant text-primary"> Email me about new drops</label>
+    <button type="submit" class="w-full h-[52px] rounded-full bg-primary text-on-primary font-headline-sm text-headline-sm hover:bg-secondary transition-colors amber-glow-hover">Create account</button>
+    <p class="font-body-sm text-on-surface-variant">Already have one? <a class="text-secondary hover:underline" href="{{ routes.account_login_url }}">Sign in</a></p>
+  {%- endform -%}
+</section>

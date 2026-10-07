@@ -1,0 +1,76 @@
+{%- comment -%}Hero: full-bleed photo, headline, two buttons and the store perks.{%- endcomment -%}
+<section class="relative min-h-[640px] md:min-h-[780px] flex flex-col justify-end px-6 md:px-12 pb-16 pt-24 max-w-7xl mx-auto overflow-hidden">
+  <div class="absolute inset-0 -z-10 bg-surface-container-lowest">
+    {%- if section.settings.image -%}
+      {{ section.settings.image | image_url: width: 2400 | image_tag:
+        class: 'w-full h-full object-cover object-[70%_40%]',
+        sizes: '100vw',
+        widths: '750, 1100, 1500, 1800, 2400',
+        fetchpriority: 'high',
+        alt: section.settings.image.alt
+      }}
+    {%- else -%}
+      <img class="w-full h-full object-cover object-[70%_40%]" src="{{ 'hero.jpg' | asset_url }}" alt="A model in an off-white boxy tee and navy trousers leaning against a sunlit cream wall" fetchpriority="high" width="1600" height="900">
+    {%- endif -%}
+    <div class="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent"></div>
+    <div class="absolute inset-0 bg-gradient-to-r from-background/80 via-background/30 to-transparent"></div>
+  </div>
+  <div class="max-w-4xl space-y-6">
+    {%- if section.settings.eyebrow != blank -%}
+      <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container-lowest/80 border border-outline-variant/30 backdrop-blur-md font-label-sm text-label-sm text-secondary uppercase tracking-widest">
+        <span class="w-2 h-2 rounded-full bg-secondary"></span>{{ section.settings.eyebrow | escape }}
+      </span>
+    {%- endif -%}
+    <h1 class="font-headline-lg md:font-display text-headline-lg md:text-display text-primary leading-none tracking-tight">{{ section.settings.heading | escape }}</h1>
+    <p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl font-light leading-relaxed">{{ section.settings.text | escape }}</p>
+    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-2">
+      <a class="h-[52px] px-8 rounded-full bg-primary text-on-primary font-headline-sm text-headline-sm flex items-center justify-center gap-3 transition-colors duration-300 hover:bg-secondary amber-glow-hover" href="{{ section.settings.button_link | default: routes.all_products_collection_url }}" data-nav-gender="all" data-nav-filter="all">
+        <span>{{ section.settings.button_label | escape }}</span>
+        <span class="material-symbols-outlined text-[18px]" aria-hidden="true">arrow_forward</span>
+      </a>
+      {%- if section.settings.button2_label != blank -%}
+        <a class="h-[52px] px-8 rounded-full bg-surface-container-high/40 hover:bg-surface-container-high/80 border border-primary/10 text-primary font-headline-sm text-headline-sm flex items-center justify-center gap-2 backdrop-blur-md transition-all duration-300" href="{{ section.settings.button2_link | default: '/pages/size-guide' }}">
+          <span>{{ section.settings.button2_label | escape }}</span>
+          <span class="material-symbols-outlined text-[18px] text-secondary" aria-hidden="true">straighten</span>
+        </a>
+      {%- endif -%}
+    </div>
+  </div>
+  {%- if section.settings.show_perks -%}
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-12 mt-12 border-t border-outline-variant/20">
+      <div class="flex gap-3">
+        <span class="material-symbols-outlined text-secondary text-[22px]" aria-hidden="true">local_shipping</span>
+        <div><p class="font-label-md uppercase tracking-wider text-primary">Free shipping</p>
+        <p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Free on orders over {{ settings.free_shipping_threshold | times: 100 | money_without_trailing_zeros }}.</p></div>
+      </div>
+      <div class="flex gap-3">
+        <span class="material-symbols-outlined text-secondary text-[22px]" aria-hidden="true">checkroom</span>
+        <div><p class="font-label-md uppercase tracking-wider text-primary">Made to order</p>
+        <p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Every piece is made for you, so nothing goes to waste.</p></div>
+      </div>
+      <div class="flex gap-3">
+        <span class="material-symbols-outlined text-secondary text-[22px]" aria-hidden="true">autorenew</span>
+        <div><p class="font-label-md uppercase tracking-wider text-primary">Easy exchanges</p>
+        <p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Free size exchanges within 30 days of delivery.</p></div>
+      </div>
+    </div>
+  {%- endif -%}
+</section>
+
+{% schema %}
+{
+  "name": "Hero",
+  "settings": [
+    { "type": "image_picker", "id": "image", "label": "Photo", "info": "Leave empty to use the VEYA photo." },
+    { "type": "text", "id": "eyebrow", "label": "Small label", "default": "New season · Fall 2026" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "EVERYDAY ESSENTIALS. BUILT FOR MORE." },
+    { "type": "textarea", "id": "text", "label": "Text", "default": "Heavyweight tees, hoodies and easy layers, made to order and shipped to your door. Everyday clothing at prices that make sense." },
+    { "type": "text", "id": "button_label", "label": "Button", "default": "Shop New Arrivals" },
+    { "type": "url", "id": "button_link", "label": "Button link" },
+    { "type": "text", "id": "button2_label", "label": "Second button", "default": "Find Your Size" },
+    { "type": "url", "id": "button2_link", "label": "Second button link", "info": "Defaults to /pages/size-guide." },
+    { "type": "checkbox", "id": "show_perks", "label": "Show store perks", "default": true }
+  ],
+  "presets": [{ "name": "Hero" }]
+}
+{% endschema %}

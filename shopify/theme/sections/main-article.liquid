@@ -1,0 +1,13 @@
+<article class="py-16 px-6 md:px-12 max-w-3xl mx-auto">
+  <span class="font-label-sm text-secondary uppercase tracking-widest">{{ article.published_at | date: '%b %d, %Y' }}</span>
+  <h1 class="font-headline-lg text-headline-lg text-primary mt-2 mb-8">{{ article.title | escape }}</h1>
+  {%- if article.image -%}
+    <div class="rounded-xl overflow-hidden mb-8">{{ article.image | image_url: width: 1600 | image_tag: class: 'w-full h-auto', alt: article.title }}</div>
+  {%- endif -%}
+  <div class="rte">{{ article.content }}</div>
+  <a href="{{ blog.url }}" class="inline-block mt-10 font-label-md text-secondary uppercase tracking-widest hover:underline">← Back to {{ blog.title | escape }}</a>
+</article>
+
+{% schema %}
+{ "name": "Article", "settings": [] }
+{% endschema %}

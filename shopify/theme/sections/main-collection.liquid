@@ -1,0 +1,159 @@
+{%- comment -%}
+  Collection page. Men / Women tabs and category chips are tag filters in the URL, e.g.
+  /collections/all/gender-women+category-bottoms, so every combination has its own shareable page.
+{%- endcomment -%}
+{%- liquid
+  assign gender = 'all'
+  assign category = 'all'
+  for tag in current_tags
+    assign h = tag | handle
+    if h contains 'gender-'
+      assign gender = h | remove_first: 'gender-'
+    elsif h contains 'category-'
+      assign category = h | remove_first: 'category-'
+    endif
+  endfor
+
+  assign base = collection.url
+  if base == nil or base == blank
+    assign base = routes.all_products_collection_url
+  endif
+
+  assign heading = collection.title
+  if collection.handle == 'all' or collection.handle == blank
+    assign heading = 'Shop All'
+  endif
+  if gender == 'men'
+    assign heading = "Men's"
+  elsif gender == 'women'
+    assign heading = "Women's"
+  endif
+  if category != 'all'
+    assign category_name = category | capitalize
+    if gender == 'all'
+      assign heading = category_name
+    else
+      assign heading = heading | append: ' ' | append: category_name
+    endif
+  elsif gender != 'all'
+    assign heading = heading | append: ' Collection'
+  endif
+
+  assign tab = 'h-9 px-4 rounded-full font-label-md text-label-md uppercase tracking-widest text-on-surface-variant hover:text-primary transition-colors duration-200 inline-flex items-center'
+  assign chip = 'chip px-3.5 py-1 rounded-full border border-outline-variant/30 text-on-surface-variant hover:text-primary font-label-sm text-label-sm tracking-widest uppercase transition-all duration-200'
+  assign sort_by = collection.sort_by | default: collection.default_sort_by
+-%}
+<section class="py-16 px-6 md:px-12 max-w-7xl mx-auto">
+  <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
+    <div>
+      <span class="font-label-sm text-secondary uppercase tracking-widest block mb-2">THE COLLECTION</span>
+      <h1 class="font-headline-lg text-headline-lg text-primary">{{ heading | escape }}</h1>
+      {%- if collection.description != blank and current_tags == blank -%}
+        <div class="rte mt-3 max-w-xl">{{ collection.description }}</div>
+      {%- endif -%}
+
+      <div class="inline-flex items-center gap-1 p-1 mt-5 rounded-full bg-surface-container-low border border-outline-variant/40" aria-label="Shop men or women">
+        {%- for g in (1..3) -%}
+          {%- liquid
+            case g
+              when 1
+                assign gv = 'all'
+                assign label = 'All'
+              when 2
+                assign gv = 'men'
+                assign label = 'Men'
+              else
+                assign gv = 'women'
+                assign label = 'Women'
+            endcase
+            assign parts = ''
+            if gv != 'all'
+              assign parts = 'gender-' | append: gv
+            endif
+            if category != 'all'
+              if parts != ''
+                assign parts = parts | append: '+'
+              endif
+              assign parts = parts | append: 'category-' | append: category
+            endif
+            assign href = base
+            if parts != ''
+              assign href = base | append: '/' | append: parts
+            endif
+          -%}
+          <a href="{{ href }}" class="{{ tab }}{% if gv == gender %} chip-active{% endif %}" {% if gv == gender %}aria-current="page"{% endif %}>{{ label }}</a>
+        {%- endfor -%}
+      </div>
+      <div class="flex flex-wrap items-center gap-1.5 mt-4">
+        {%- for c in (1..4) -%}
+          {%- liquid
+            case c
+              when 1
+                assign cv = 'all'
+              when 2
+                assign cv = 'tops'
+              when 3
+                assign cv = 'layers'
+              else
+                assign cv = 'bottoms'
+            endcase
+            assign parts = ''
+            if gender != 'all'
+              assign parts = 'gender-' | append: gender
+            endif
+            if cv != 'all'
+              if parts != ''
+                assign parts = parts | append: '+'
+              endif
+              assign parts = parts | append: 'category-' | append: cv
+            endif
+            assign href = base
+            if parts != ''
+              assign href = base | append: '/' | append: parts
+            endif
+          -%}
+          <a href="{{ href }}" class="{{ chip }}{% if cv == category %} chip-active{% endif %}">{{ cv | capitalize }}</a>
+        {%- endfor -%}
+      </div>
+    </div>
+    <div class="flex items-center gap-4">
+      <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">{{ collection.products_count }} {% if collection.products_count == 1 %}item{% else %}items{% endif %}</span>
+      <label class="sr-only" for="collection-sort">Sort products</label>
+      <select id="collection-sort" data-collection-sort class="h-10 pl-4 pr-9 rounded-full bg-surface-container-lowest border border-outline-variant/40 text-primary font-label-md text-label-md uppercase tracking-wider focus:border-secondary focus:ring-0">
+        {%- for option in collection.sort_options -%}
+          <option value="{{ option.value | escape }}" {% if option.value == sort_by %}selected{% endif %}>{{ option.name | escape }}</option>
+        {%- endfor -%}
+      </select>
+    </div>
+  </div>
+
+  {%- paginate collection.products by 24 -%}
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+      {%- for product in collection.products -%}
+        {% render 'product-card', product: product, index: forloop.index %}
+      {%- else -%}
+        <p class="col-span-full font-label-md text-on-surface-variant uppercase tracking-widest">Nothing here yet. Check back soon.</p>
+      {%- endfor -%}
+    </div>
+    {%- if paginate.pages > 1 -%}
+      <nav class="mt-12 flex justify-center gap-2 font-label-md" aria-label="Pages">
+        {%- if paginate.previous -%}<a class="px-4 h-10 inline-flex items-center rounded-full border border-outline-variant/40 text-primary hover:border-secondary" href="{{ paginate.previous.url }}">Previous</a>{%- endif -%}
+        {%- for part in paginate.parts -%}
+          {%- if part.is_link -%}
+            <a class="w-10 h-10 inline-flex items-center justify-center rounded-full border border-outline-variant/40 text-primary hover:border-secondary" href="{{ part.url }}">{{ part.title }}</a>
+          {%- else -%}
+            <span class="w-10 h-10 inline-flex items-center justify-center rounded-full {% if part.title == paginate.current_page %}bg-primary text-on-primary{% else %}text-on-surface-variant{% endif %}">{{ part.title }}</span>
+          {%- endif -%}
+        {%- endfor -%}
+        {%- if paginate.next -%}<a class="px-4 h-10 inline-flex items-center rounded-full border border-outline-variant/40 text-primary hover:border-secondary" href="{{ paginate.next.url }}">Next</a>{%- endif -%}
+      </nav>
+    {%- endif -%}
+  {%- endpaginate -%}
+</section>
+
+{% schema %}
+{
+  "name": "Collection",
+  "settings": []
+}
+{% endschema %}

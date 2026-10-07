@@ -1,0 +1,17 @@
+{%- comment -%}Search overlay with live results from Shopify's predictive search; Enter opens the full search page.{%- endcomment -%}
+<div id="search-overlay" class="overlay" aria-hidden="true">
+  <div class="overlay-backdrop" data-close></div>
+  <div class="relative w-full max-w-2xl mx-auto mt-24 px-4">
+    <div class="rounded-xl bg-surface-container-low border border-outline-variant/30 shadow-xl overflow-hidden" role="dialog" aria-modal="true" aria-label="Search">
+      <form action="{{ routes.search_url }}" method="get" role="search" class="flex items-center gap-3 px-5 border-b border-outline-variant/20">
+        <span class="material-symbols-outlined text-secondary text-[20px]" aria-hidden="true">search</span>
+        <input type="hidden" name="type" value="product">
+        <input id="search-input" name="q" type="search" class="flex-grow h-14 bg-transparent border-0 focus:ring-0 text-primary font-body-lg placeholder-on-surface-variant/50 outline-none" placeholder="Search quarter-zips, leggings, hoodies…" autocomplete="off" aria-label="Search">
+        <button type="button" data-close aria-label="Close search" class="text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined text-[20px]" aria-hidden="true">close</span></button>
+      </form>
+      <div id="search-results" class="max-h-[60vh] overflow-y-auto p-3">
+        <p class="px-3 py-2 font-label-sm text-on-surface-variant uppercase tracking-widest">Try “quarter-zip”, “leggings” or “matching set”</p>
+      </div>
+    </div>
+  </div>
+</div>

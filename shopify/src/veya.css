@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Shared VEYA styles (same as the standalone site). */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #F5EFE4; }
+::-webkit-scrollbar-thumb { background: #CFC5B2; border-radius: 2px; }
+html { scroll-behavior: smooth; }
+[id] { scroll-margin-top: 120px; }
+.amber-glow-hover:hover { box-shadow: 0 8px 24px -8px rgba(27, 42, 65, 0.35); }
+.glass-spec-panel { background: rgba(251, 248, 242, 0.78); backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px); border: 1px solid rgba(27, 42, 65, 0.1); }
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.overlay { position: fixed; inset: 0; z-index: 60; display: none; }
+.overlay.open { display: block; }
+.overlay-backdrop { position: absolute; inset: 0; background: rgba(27, 42, 65, 0.45); backdrop-filter: blur(6px); }
+.drawer-panel { transform: translateX(100%); transition: transform 300ms ease-out; }
+.overlay.open .drawer-panel { transform: translateX(0); }
+.field { width: 100%; height: 48px; padding: 0 1rem; border-radius: 0.5rem; background: #FBF8F2; border: 1px solid #CFC5B2; color: #1B2A41; font-family: "Hanken Grotesk"; font-size: 14px; outline: none; }
+.field:focus { border-color: #34507A; box-shadow: none; }
+.field-label { display: block; margin-bottom: 6px; font-family: "JetBrains Mono"; font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: #4A5568; }
+.chip-active { color: #F5EFE4 !important; background: #1B2A41; border-color: #1B2A41 !important; }
+.swatch-active { outline: 1px solid #1B2A41; outline-offset: 2px; }
+.material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24; }
+
+/* Announcement bar: offers loop continuously. Only a mouse hover or keyboard focus pauses it. */
+.ticker { overflow: hidden; white-space: nowrap; }
+.ticker-track { display: flex; width: max-content; animation: ticker 40s linear infinite; }
+@media (hover: hover) and (pointer: fine) { .ticker:hover .ticker-track { animation-play-state: paused; } }
+.ticker:has(:focus-visible) .ticker-track { animation-play-state: paused; }
+.ticker-group { display: flex; align-items: center; flex-shrink: 0; }
+.ticker-group a, .ticker-group span.ticker-text { padding: 0 1.75rem; }
+.ticker-dot { width: 4px; height: 4px; border-radius: 50%; background: currentColor; opacity: 0.5; }
+@keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) { .ticker-track { animation-duration: 80s; } }
+
+/* Toast */
+#toast { transition: opacity 250ms, transform 250ms; }
+
+/* Quick add size picker on product cards */
+.quick-sizes { transform: translateY(100%); transition: transform 220ms ease-out; }
+.quick-sizes.open { transform: translateY(0); }
+
+/* Rich text from Shopify (pages, policies, product descriptions) */
+.rte { color: #4A5568; font-family: "Hanken Grotesk"; font-size: 15px; line-height: 1.7; }
+.rte > * + * { margin-top: 1em; }
+.rte h1, .rte h2, .rte h3 { color: #1B2A41; font-family: "Bodoni Moda"; line-height: 1.2; }
+.rte h2 { font-size: 28px; } .rte h3 { font-size: 22px; }
+.rte a { color: #34507A; text-decoration: underline; }
+.rte ul { list-style: disc; padding-left: 1.25rem; } .rte ol { list-style: decimal; padding-left: 1.25rem; }
+.rte table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.rte th, .rte td { border: 1px solid #CFC5B2; padding: 8px 10px; text-align: left; }
+.rte th { background: #EFE7DA; color: #1B2A41; }
+
+/* Shopify form errors */
+.errors ul { list-style: none; padding: 0; color: #B3261E; font-size: 13px; }

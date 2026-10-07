@@ -1,0 +1,14 @@
+<section class="py-16 px-6 md:px-12 max-w-3xl mx-auto">
+  <span class="font-label-sm text-secondary uppercase tracking-widest block mb-2">{{ section.settings.eyebrow | escape }}</span>
+  <h1 class="font-headline-lg text-headline-lg text-primary mb-8">{{ page.title | escape }}</h1>
+  <div class="rte">{{ page.content }}</div>
+</section>
+
+{% schema %}
+{
+  "name": "Page",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Small label", "default": "VEYA" }
+  ]
+}
+{% endschema %}

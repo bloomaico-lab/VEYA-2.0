@@ -1,0 +1,155 @@
+{%- comment -%}
+  Product page: colour-aware gallery (studio + on-model photo for the chosen colour), colour and size
+  pickers, quantity and Add to Bag. veya.js adds to the bag without leaving the page; without
+  JavaScript the form still posts to the cart.
+{%- endcomment -%}
+{%- liquid
+  assign current = product.selected_or_first_available_variant
+  assign badge = ''
+  assign material = ''
+  assign gender = ''
+  for tag in product.tags
+    assign t = tag | downcase
+    if t contains 'badge:'
+      assign badge = tag | split: ':' | last | strip
+    elsif t contains 'material:'
+      assign material = tag | remove_first: 'material:' | remove_first: 'Material:' | strip
+    elsif t contains 'gender:'
+      assign gender = t | remove_first: 'gender:' | strip
+    endif
+  endfor
+  assign color_option = nil
+  assign size_option = nil
+  for option in product.options_with_values
+    assign oname = option.name | downcase
+    if oname == 'color' or oname == 'colour'
+      assign color_option = option
+    elsif oname == 'size'
+      assign size_option = option
+    endif
+  endfor
+  assign selected_color = ''
+  if color_option
+    assign selected_color = color_option.selected_value | default: color_option.values.first
+  endif
+  assign studio = current.featured_media | default: product.featured_media
+  assign model = nil
+  if product.media.size > 1
+    assign model = product.media[1]
+  endif
+-%}
+<section class="px-6 md:px-12 pt-10 pb-20 max-w-7xl mx-auto" data-product-page>
+  {% render 'product-data', product: product %}
+  <nav class="mb-6 font-label-sm text-label-sm uppercase tracking-widest text-on-surface-variant" aria-label="Breadcrumb">
+    <a href="{{ routes.root_url }}" class="hover:text-primary">Home</a>
+    <span class="mx-2">/</span>
+    {%- if gender == 'men' or gender == 'women' -%}
+      <a href="{{ routes.all_products_collection_url }}/gender-{{ gender }}" class="hover:text-primary">{{ gender | capitalize }}</a>
+      <span class="mx-2">/</span>
+    {%- endif -%}
+    <span class="text-primary">{{ product.title | escape }}</span>
+  </nav>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-14">
+    <div>
+      <div class="relative rounded-xl overflow-hidden bg-surface-container-lowest border border-outline-variant/30 aspect-[4/5]">
+        {%- if studio -%}
+          {{ studio.preview_image | image_url: width: 1400 | image_tag:
+            class: 'js-pd-image w-full h-full object-cover',
+            sizes: '(min-width: 768px) 50vw, 100vw',
+            widths: '600, 900, 1200, 1400',
+            alt: product.title
+          }}
+        {%- endif -%}
+        {%- if badge != blank -%}
+          <span class="absolute top-3 left-3 font-label-sm px-2 py-0.5 rounded bg-surface-container-lowest/80 border border-outline-variant/30 text-secondary uppercase tracking-widest">{{ badge | escape }}</span>
+        {%- endif -%}
+      </div>
+      <div class="flex gap-3 mt-3" id="pd-thumbs" role="group" aria-label="Product photos">
+        {%- if studio -%}
+          <button type="button" data-pd-photo="0" aria-pressed="true" aria-label="Show product photo" class="w-16 h-20 rounded-md overflow-hidden border-2 border-secondary transition">
+            {{ studio.preview_image | image_url: width: 200 | image_tag: class: 'w-full h-full object-cover', alt: '' }}
+          </button>
+        {%- endif -%}
+        {%- if model -%}
+          <button type="button" data-pd-photo="1" aria-pressed="false" aria-label="Show on-model photo" class="w-16 h-20 rounded-md overflow-hidden border-2 border-outline-variant/40 opacity-70 hover:opacity-100 transition">
+            {{ model.preview_image | image_url: width: 200 | image_tag: class: 'w-full h-full object-cover', alt: '' }}
+          </button>
+        {%- endif -%}
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-5 md:pt-4">
+      <div>
+        <span class="font-label-sm text-secondary uppercase tracking-widest block mb-1">
+          {%- if gender == 'men' %}Men's · {% elsif gender == 'women' %}Women's · {% endif -%}{{ product.type | escape }}
+        </span>
+        <h1 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary">{{ product.title | escape }}</h1>
+        {%- if material != blank -%}<p class="font-label-md text-on-surface-variant mt-1">{{ material | escape }}</p>{%- endif -%}
+      </div>
+      <p class="font-label-lg text-label-lg text-primary" id="pd-price">
+        {%- if current.available -%}{{ current.price | money }}{%- else -%}SOLD OUT{%- endif -%}
+        {%- if current.compare_at_price > current.price -%}
+          <s class="ml-2 text-on-surface-variant">{{ current.compare_at_price | money }}</s>
+        {%- endif -%}
+      </p>
+      <p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-secondary" aria-hidden="true">schedule</span>Made to order · Ships in 3–7 business days</p>
+      <div class="rte">{{ product.description }}</div>
+
+      {%- form 'product', product, id: 'product-form', novalidate: 'novalidate', class: 'flex flex-col gap-5' -%}
+        <input type="hidden" name="id" value="{{ current.id }}" id="pd-variant-id">
+        {%- if color_option -%}
+          <div>
+            <span class="field-label">Colour — <span id="pd-color-name" class="text-primary">{{ selected_color }}</span></span>
+            <div class="flex items-center gap-3" role="group" aria-label="Colour">
+              {%- for value in color_option.values -%}
+                {%- capture hex -%}{% render 'color-hex', name: value %}{%- endcapture -%}
+                <button type="button" data-pd-color="{{ value | escape }}" title="{{ value | escape }}" aria-label="{{ value | escape }}" aria-pressed="{% if value == selected_color %}true{% else %}false{% endif %}"
+                  class="w-8 h-8 rounded-full border border-outline-variant {% if value == selected_color %}swatch-active{% endif %}" style="background: {{ hex | strip }};"></button>
+              {%- endfor -%}
+            </div>
+          </div>
+        {%- endif -%}
+        {%- if size_option -%}
+          <div>
+            <div class="flex items-center justify-between">
+              <span class="field-label">Size</span>
+              <a href="/pages/size-guide" class="field-label text-secondary hover:underline">Size guide</a>
+            </div>
+            <div class="flex flex-wrap gap-2" role="group" aria-label="Size">
+              {%- for value in size_option.values -%}
+                <button type="button" data-pd-size="{{ value | escape }}" aria-pressed="false"
+                  class="min-w-[48px] h-10 px-3 rounded-lg border font-label-md transition-colors border-outline-variant/40 text-primary hover:border-outline disabled:opacity-30 disabled:line-through">{{ value }}</button>
+              {%- endfor -%}
+            </div>
+          </div>
+        {%- endif -%}
+        <p id="pd-error" class="font-label-md text-error min-h-[16px]" role="alert"></p>
+        <div class="flex items-center gap-3">
+          <div class="flex items-center rounded-full border border-outline-variant/40 h-[52px]">
+            <button id="pd-minus" type="button" aria-label="Decrease quantity" class="w-11 h-full flex items-center justify-center text-primary hover:text-secondary"><span class="material-symbols-outlined text-[18px]" aria-hidden="true">remove</span></button>
+            <input id="pd-qty" type="number" name="quantity" value="1" min="1" max="10" class="w-10 text-center bg-transparent border-0 focus:ring-0 font-label-lg text-primary [appearance:textfield]" aria-label="Quantity">
+            <button id="pd-plus" type="button" aria-label="Increase quantity" class="w-11 h-full flex items-center justify-center text-primary hover:text-secondary"><span class="material-symbols-outlined text-[18px]" aria-hidden="true">add</span></button>
+          </div>
+          <button id="pd-add" type="submit" name="add" class="flex-grow h-[52px] rounded-full bg-primary text-on-primary font-headline-sm text-headline-sm flex items-center justify-center gap-2 hover:bg-secondary transition-colors duration-300 amber-glow-hover disabled:opacity-40" {% unless product.available %}disabled{% endunless %}>
+            <span>{% if product.available %}Add to Bag{% else %}Sold Out{% endif %}</span><span class="material-symbols-outlined text-[18px]" aria-hidden="true">shopping_bag</span>
+          </button>
+        </div>
+        {{ form | payment_terms }}
+      {%- endform -%}
+
+      <ul class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4 border-t border-outline-variant/20">
+        <li class="flex items-center gap-2 font-label-sm text-label-sm uppercase tracking-widest text-on-surface-variant"><span class="material-symbols-outlined text-[18px] text-secondary" aria-hidden="true">local_shipping</span>Free over {{ settings.free_shipping_threshold | times: 100 | money_without_trailing_zeros }}</li>
+        <li class="flex items-center gap-2 font-label-sm text-label-sm uppercase tracking-widest text-on-surface-variant"><span class="material-symbols-outlined text-[18px] text-secondary" aria-hidden="true">autorenew</span>30-day exchanges</li>
+        <li class="flex items-center gap-2 font-label-sm text-label-sm uppercase tracking-widest text-on-surface-variant"><span class="material-symbols-outlined text-[18px] text-secondary" aria-hidden="true">lock</span>Secure checkout</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Product",
+  "settings": []
+}
+{% endschema %}

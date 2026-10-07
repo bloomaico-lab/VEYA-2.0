@@ -1,0 +1,61 @@
+{%- comment -%}
+  Home page collection grid with All / Men / Women tabs, category chips and sorting. Filtering
+  happens in the browser (veya.js) using each card's data-gender / data-category.
+{%- endcomment -%}
+{%- liquid
+  assign source = section.settings.collection
+  if source == nil or source == blank
+    assign source = collections.all
+  endif
+  assign tab = 'gender-tab h-9 px-4 rounded-full font-label-md text-label-md uppercase tracking-widest text-on-surface-variant hover:text-primary transition-colors duration-200'
+  assign chip = 'chip px-3.5 py-1 rounded-full border border-outline-variant/30 text-on-surface-variant hover:text-primary font-label-sm text-label-sm tracking-widest uppercase transition-all duration-200'
+-%}
+<section class="py-24 px-6 md:px-12 max-w-7xl mx-auto border-t border-outline-variant/20" id="collections" data-product-grid>
+  <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
+    <div>
+      <span class="font-label-sm text-secondary uppercase tracking-widest block mb-2">{{ section.settings.eyebrow | escape }}</span>
+      <h2 id="collection-title" class="font-headline-lg text-headline-lg text-primary">Shop All</h2>
+      <div id="gender-tabs" role="tablist" aria-label="Shop men or women" class="inline-flex items-center gap-1 p-1 mt-5 rounded-full bg-surface-container-low border border-outline-variant/40">
+        <button type="button" role="tab" data-gender-tab="all" class="{{ tab }} chip-active" aria-selected="true">All</button>
+        <button type="button" role="tab" data-gender-tab="men" class="{{ tab }}" aria-selected="false">Men</button>
+        <button type="button" role="tab" data-gender-tab="women" class="{{ tab }}" aria-selected="false">Women</button>
+      </div>
+      <div id="filter-chips" class="flex flex-wrap items-center gap-1.5 mt-4">
+        <button type="button" data-chip="all" class="{{ chip }} chip-active">All</button>
+        <button type="button" data-chip="tops" class="{{ chip }}">Tops</button>
+        <button type="button" data-chip="layers" class="{{ chip }}">Layers</button>
+        <button type="button" data-chip="bottoms" class="{{ chip }}">Bottoms</button>
+      </div>
+    </div>
+    <div class="flex items-center gap-4">
+      <span id="result-count" class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">{{ source.products_count }} items</span>
+      <label class="sr-only" for="sort-select">Sort products</label>
+      <select id="sort-select" class="h-10 pl-4 pr-9 rounded-full bg-surface-container-lowest border border-outline-variant/40 text-primary font-label-md text-label-md uppercase tracking-wider focus:border-secondary focus:ring-0">
+        <option value="featured">Featured</option>
+        <option value="price-asc">Price: Low to High</option>
+        <option value="price-desc">Price: High to Low</option>
+        <option value="name">Name: A–Z</option>
+      </select>
+    </div>
+  </div>
+  <div id="product-track" class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+    {%- for product in source.products limit: section.settings.limit -%}
+      {% render 'product-card', product: product, index: forloop.index %}
+    {%- else -%}
+      <p class="col-span-full font-body-md text-on-surface-variant">No products yet. Import the VEYA product file in Shopify admin → Products → Import.</p>
+    {%- endfor -%}
+  </div>
+  <p id="grid-empty" class="hidden font-label-md text-on-surface-variant uppercase tracking-widest">Nothing here yet. Check back soon.</p>
+</section>
+
+{% schema %}
+{
+  "name": "Product grid",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Small label", "default": "THE COLLECTION" },
+    { "type": "collection", "id": "collection", "label": "Collection", "info": "Leave empty to show every product." },
+    { "type": "range", "id": "limit", "label": "Products to show", "min": 4, "max": 48, "step": 4, "default": 48 }
+  ],
+  "presets": [{ "name": "Product grid" }]
+}
+{% endschema %}

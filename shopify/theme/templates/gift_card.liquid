@@ -1,0 +1,31 @@
+{%- layout none -%}
+<!doctype html>
+<html lang="{{ request.locale.iso_code }}">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Your {{ gift_card.initial_value | money_without_trailing_zeros }} gift card – {{ shop.name }}</title>
+    {{ 'veya.css' | asset_url | stylesheet_tag }}
+    <script src="{{ 'vendor/qrcode.js' | shopify_asset_url }}" defer></script>
+    {{ content_for_header }}
+  </head>
+  <body class="bg-background text-on-background min-h-screen flex items-center justify-center p-6">
+    <main class="max-w-md w-full text-center space-y-5 rounded-xl border border-outline-variant/40 bg-surface-container-low p-8">
+      <p class="text-headline-lg font-display text-primary">{{ shop.name | upcase }}</p>
+      <p class="font-label-md uppercase tracking-widest text-secondary">Gift card</p>
+      <p class="font-headline-lg text-headline-lg text-primary">{{ gift_card.balance | money }}</p>
+      {%- if gift_card.enabled == false or gift_card.expired -%}<p class="font-label-md text-error uppercase">This card is no longer active</p>{%- endif -%}
+      <p class="font-label-md text-on-surface-variant">Code</p>
+      <p class="font-label-lg text-label-lg text-primary tracking-widest">{{ gift_card.code | format_code }}</p>
+      <div id="QrCode" data-identifier="{{ gift_card.qr_identifier }}" class="flex justify-center"></div>
+      <a href="{{ shop.url }}" class="inline-flex h-[52px] px-8 rounded-full bg-primary text-on-primary font-headline-sm items-center hover:bg-secondary">Start shopping</a>
+      {%- if gift_card.pass_url -%}<a href="{{ gift_card.pass_url }}" class="block font-label-md text-secondary underline">Add to Apple Wallet</a>{%- endif -%}
+    </main>
+    <script>
+      window.addEventListener('load', function () {
+        var el = document.getElementById('QrCode');
+        if (window.QRCode && el) new QRCode(el, { text: el.dataset.identifier, width: 120, height: 120 });
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,27 @@
+[
+  {
+    "name": "theme_info",
+    "theme_name": "VEYA",
+    "theme_version": "1.0.0",
+    "theme_author": "VEYA",
+    "theme_documentation_url": "https://github.com/bloomaico-lab/VEYA-2.0/tree/claude/hopeful-maxwell-t8ycra/shopify",
+    "theme_support_url": "https://github.com/bloomaico-lab/VEYA-2.0"
+  },
+  {
+    "name": "Store",
+    "settings": [
+      {
+        "type": "image_picker",
+        "id": "favicon",
+        "label": "Favicon"
+      },
+      {
+        "type": "number",
+        "id": "free_shipping_threshold",
+        "label": "Free shipping over (in your store currency)",
+        "default": 75,
+        "info": "Shown in the banner and the bag. Set the matching free-shipping rate in Settings → Shipping and delivery."
+      }
+    ]
+  }
+]

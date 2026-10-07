@@ -1,0 +1,41 @@
+{%- comment -%}
+  Swatch colour for a colour name. Usage: {% render 'color-hex', name: 'Sage' %}
+  Add new colour names here; anything unknown shows as neutral grey.
+{%- endcomment -%}
+{%- liquid
+  assign key = name | downcase | strip
+  case key
+    when 'black', 'washed black', 'vintage black', 'pitch black'
+      echo '#111317'
+    when 'white', 'optic white'
+      echo '#F4F2ED'
+    when 'bone', 'vintage white', 'ecru', 'natural', 'off-white', 'cream'
+      echo '#E9E2D3'
+    when 'sand', 'sandshell', 'oatmeal', 'beige'
+      echo '#CDBB98'
+    when 'khaki', 'tan'
+      echo '#A69373'
+    when 'olive', 'military green'
+      echo '#4D5340'
+    when 'washed olive'
+      echo '#6B6A4F'
+    when 'sage', 'cypress'
+      echo '#9AA58C'
+    when 'charcoal', 'asphalt', 'graphite', 'washed charcoal'
+      echo '#37393D'
+    when 'heather grey', 'heather gray', 'athletic heather', 'grey', 'gray'
+      echo '#9A9A98'
+    when 'navy', 'washed navy', 'midnight blue'
+      echo '#1D2433'
+    when 'light blue', 'powder blue'
+      echo '#B9CBE0'
+    when 'bark', 'vintage brown', 'chocolate brown', 'brown'
+      echo '#5E4331'
+    when 'walnut', 'clay', 'mocha'
+      echo '#6B4F3A'
+    when 'espresso'
+      echo '#3B2A20'
+    else
+      echo '#8E8F91'
+  endcase
+-%}

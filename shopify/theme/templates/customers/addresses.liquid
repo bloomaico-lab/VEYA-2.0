@@ -1,0 +1,32 @@
+<section class="py-16 px-6 max-w-3xl mx-auto">
+  <a href="{{ routes.account_url }}" class="font-label-md text-secondary uppercase tracking-widest hover:underline">← Account</a>
+  <h1 class="font-headline-lg text-headline-lg text-primary mt-4 mb-8">Addresses</h1>
+  {%- paginate customer.addresses by 10 -%}
+    <div class="space-y-6">
+      {%- for address in customer.addresses -%}
+        <div class="p-5 rounded-xl border border-outline-variant/30 bg-surface-container-low">
+          {%- if address == customer.default_address -%}<span class="field-label text-secondary">Default</span>{%- endif -%}
+          <div class="font-body-md text-on-surface-variant">{{ address | format_address }}</div>
+          {%- form 'customer_address', address, class: 'mt-4' -%}
+            <input type="hidden" name="_method" value="delete">
+            <button type="submit" class="font-label-sm uppercase tracking-widest text-on-surface-variant hover:text-error">Delete</button>
+          {%- endform -%}
+        </div>
+      {%- endfor -%}
+    </div>
+  {%- endpaginate -%}
+  <h2 class="font-headline-md text-headline-md text-primary mt-12 mb-4">Add an address</h2>
+  {%- form 'customer_address', customer.new_address, class: 'grid grid-cols-1 sm:grid-cols-2 gap-4' -%}
+    <div class="errors sm:col-span-2">{{ form.errors | default_errors }}</div>
+    <div><label class="field-label" for="a-first">First name</label><input class="field" id="a-first" name="address[first_name]" value="{{ form.first_name }}" autocomplete="given-name"></div>
+    <div><label class="field-label" for="a-last">Last name</label><input class="field" id="a-last" name="address[last_name]" value="{{ form.last_name }}" autocomplete="family-name"></div>
+    <div class="sm:col-span-2"><label class="field-label" for="a-1">Address</label><input class="field" id="a-1" name="address[address1]" value="{{ form.address1 }}" autocomplete="address-line1"></div>
+    <div class="sm:col-span-2"><label class="field-label" for="a-2">Apartment, suite, etc.</label><input class="field" id="a-2" name="address[address2]" value="{{ form.address2 }}" autocomplete="address-line2"></div>
+    <div><label class="field-label" for="a-city">City</label><input class="field" id="a-city" name="address[city]" value="{{ form.city }}" autocomplete="address-level2"></div>
+    <div><label class="field-label" for="a-zip">Postal code</label><input class="field" id="a-zip" name="address[zip]" value="{{ form.zip }}" autocomplete="postal-code"></div>
+    <div><label class="field-label" for="a-country">Country</label><select class="field" id="a-country" name="address[country]" autocomplete="country">{{ all_country_option_tags }}</select></div>
+    <div><label class="field-label" for="a-province">State / province</label><input class="field" id="a-province" name="address[province]" value="{{ form.province }}" autocomplete="address-level1"></div>
+    <label class="sm:col-span-2 flex items-center gap-2 font-body-sm text-on-surface-variant">{{ form.set_as_default_checkbox }} Set as default</label>
+    <div class="sm:col-span-2"><button type="submit" class="w-full h-[52px] rounded-full bg-primary text-on-primary font-headline-sm text-headline-sm hover:bg-secondary transition-colors amber-glow-hover">Save address</button></div>
+  {%- endform -%}
+</section>

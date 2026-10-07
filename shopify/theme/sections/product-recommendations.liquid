@@ -1,0 +1,26 @@
+{%- comment -%}
+  "Complete the look": Shopify's related products for this product. The section first renders empty;
+  veya.js loads it from the recommendations endpoint so it doesn't slow the page down.
+{%- endcomment -%}
+<section class="px-6 md:px-12 pb-24 max-w-7xl mx-auto" data-recommendations
+  data-url="{{ routes.product_recommendations_url }}?section_id={{ section.id }}&product_id={{ product.id }}&limit={{ section.settings.limit }}">
+  {%- if recommendations.performed? and recommendations.products_count > 0 -%}
+    <h2 class="font-headline-md text-headline-md text-primary mb-6">{{ section.settings.heading | escape }}</h2>
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+      {%- for rec in recommendations.products -%}
+        {% render 'product-card', product: rec, index: forloop.index %}
+      {%- endfor -%}
+    </div>
+  {%- endif -%}
+</section>
+
+{% schema %}
+{
+  "name": "Recommendations",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Complete the look" },
+    { "type": "range", "id": "limit", "label": "Products", "min": 2, "max": 8, "step": 1, "default": 4 }
+  ],
+  "presets": [{ "name": "Recommendations" }]
+}
+{% endschema %}

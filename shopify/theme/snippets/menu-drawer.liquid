@@ -1,0 +1,25 @@
+{%- comment -%}Mobile menu.{%- endcomment -%}
+{%- assign all_url = routes.all_products_collection_url -%}
+{%- assign link_class = 'font-label-lg text-label-lg uppercase tracking-widest text-on-surface-variant hover:text-primary' -%}
+<div id="menu-overlay" class="overlay" aria-hidden="true">
+  <div class="overlay-backdrop" data-close></div>
+  <aside class="drawer-panel absolute top-0 right-0 h-full w-full max-w-xs bg-surface-container-low border-l border-outline-variant/30 flex flex-col p-6 gap-6" role="dialog" aria-modal="true" aria-label="Menu">
+    <div class="flex items-center justify-between">
+      <span class="text-headline-md font-display text-primary">{{ shop.name | upcase }}</span>
+      <button type="button" data-close aria-label="Close menu" class="w-9 h-9 rounded-full border border-outline-variant/40 flex items-center justify-center text-primary"><span class="material-symbols-outlined text-[18px]" aria-hidden="true">close</span></button>
+    </div>
+    <nav class="flex flex-col gap-5" aria-label="Mobile">
+      <a data-close href="{{ all_url }}" data-nav-gender="all" data-nav-filter="all" class="font-label-lg text-label-lg uppercase tracking-widest text-primary">Shop All</a>
+      <a data-close href="{{ all_url }}/gender-men" data-nav-gender="men" data-nav-filter="all" class="{{ link_class }}">Men</a>
+      <a data-close href="{{ all_url }}/gender-women" data-nav-gender="women" data-nav-filter="all" class="{{ link_class }}">Women</a>
+      <a data-close href="{{ all_url }}/category-tops" data-nav-gender="all" data-nav-filter="tops" class="{{ link_class }}">Tops</a>
+      <a data-close href="{{ all_url }}/category-layers" data-nav-gender="all" data-nav-filter="layers" class="{{ link_class }}">Layers</a>
+      <a data-close href="{{ all_url }}/category-bottoms" data-nav-gender="all" data-nav-filter="bottoms" class="{{ link_class }}">Bottoms</a>
+      <a href="{{ routes.root_url }}#fabric-lab" data-close class="{{ link_class }}">Fabrics</a>
+      <a href="/policies/shipping-policy" class="{{ link_class }}">Help</a>
+      {%- if shop.customer_accounts_enabled -%}
+        <a href="{% if customer %}{{ routes.account_url }}{% else %}{{ routes.account_login_url }}{% endif %}" class="font-label-lg text-label-lg uppercase tracking-widest text-secondary">Account</a>
+      {%- endif -%}
+    </nav>
+  </aside>
+</div>

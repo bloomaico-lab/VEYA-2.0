@@ -12,7 +12,9 @@
     "build:css": "tailwindcss -i src/styles.css -o public/styles.css --minify",
     "start": "node --no-warnings=ExperimentalWarning server.js",
     "dev": "node --no-warnings=ExperimentalWarning --watch server.js",
-    "test": "node --no-warnings=ExperimentalWarning --test test/*.test.js"
+    "test": "node --no-warnings=ExperimentalWarning --test test/*.test.js",
+    "build:theme": "tailwindcss -c shopify/tailwind.config.js -i shopify/src/veya.css -o shopify/theme/assets/veya.css --minify && cd shopify/theme && rm -f ../veya-shopify-theme.zip && zip -qr ../veya-shopify-theme.zip . -x \".*\" && echo Built shopify/veya-shopify-theme.zip",
+    "build:shopify-csv": "node scripts/shopify-products-csv.js"
   },
   "dependencies": {
     "express": "^4.21.2",

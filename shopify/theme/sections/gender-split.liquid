@@ -1,0 +1,113 @@
+{%- comment -%}Shop Men / Shop Women: two large photo cards with live style counts and quick category links.{%- endcomment -%}
+{%- liquid
+  assign men_count = 0
+  assign women_count = 0
+  assign men_from = 0
+  assign women_from = 0
+  for product in collections.all.products
+    assign gender = 'unisex'
+    for tag in product.tags
+      assign t = tag | downcase
+      if t contains 'gender:'
+        assign gender = t | remove_first: 'gender:' | strip
+      endif
+    endfor
+    if gender == 'men' or gender == 'unisex'
+      assign men_count = men_count | plus: 1
+      if men_from == 0 or product.price < men_from
+        assign men_from = product.price
+      endif
+    endif
+    if gender == 'women' or gender == 'unisex'
+      assign women_count = women_count | plus: 1
+      if women_from == 0 or product.price < women_from
+        assign women_from = product.price
+      endif
+    endif
+  endfor
+  assign all_url = routes.all_products_collection_url
+-%}
+<section class="py-24 px-6 md:px-12 max-w-7xl mx-auto border-t border-outline-variant/20" id="shop-gender">
+  <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+    <div>
+      <div class="flex items-center gap-2 mb-3">
+        <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+        <span class="font-label-sm text-secondary uppercase tracking-widest">{{ section.settings.eyebrow | escape }}</span>
+      </div>
+      <h2 class="font-headline-lg text-headline-lg text-primary">{{ section.settings.heading | escape }}</h2>
+    </div>
+    <p class="font-body-md text-body-md text-on-surface-variant max-w-md">{{ section.settings.text | escape }}</p>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+    {%- for side in (1..2) -%}
+      {%- liquid
+        if side == 1
+          assign g = 'men'
+          assign title = 'Men'
+          assign image = section.settings.men_image
+          assign fallback = 'men.jpg'
+          assign blurb = section.settings.men_text
+          assign count = men_count
+          assign from = men_from
+        else
+          assign g = 'women'
+          assign title = 'Women'
+          assign image = section.settings.women_image
+          assign fallback = 'women.jpg'
+          assign blurb = section.settings.women_text
+          assign count = women_count
+          assign from = women_from
+        endif
+      -%}
+      <article class="group relative rounded-xl overflow-hidden border border-outline-variant/30 bg-surface-container-low">
+        <a href="{{ all_url }}/gender-{{ g }}" data-nav-gender="{{ g }}" data-nav-filter="all" aria-label="Shop {{ title }}" class="relative block aspect-[4/5] md:aspect-[5/6] overflow-hidden">
+          {%- if image -%}
+            {{ image | image_url: width: 1400 | image_tag: class: 'w-full h-full object-cover transition-transform duration-700 group-hover:scale-105', loading: 'lazy', sizes: '(min-width: 768px) 50vw, 100vw', widths: '600, 900, 1200, 1400', alt: image.alt }}
+          {%- else -%}
+            <img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="{{ fallback | asset_url }}" alt="" loading="lazy" width="896" height="1200">
+          {%- endif -%}
+          <div class="absolute inset-0 bg-gradient-to-t from-primary/70 via-primary/10 to-transparent"></div>
+          <div class="absolute top-4 left-4">
+            <span class="px-2.5 py-1 rounded bg-surface-container-lowest/80 border border-outline-variant/30 backdrop-blur-md font-label-sm text-secondary uppercase tracking-widest">{{ count }} {% if count == 1 %}style{% else %}styles{% endif %}{% if from > 0 %} · From {{ from | money_without_trailing_zeros }}{% endif %}</span>
+          </div>
+          <div class="absolute bottom-0 left-0 right-0 p-6 md:p-8 text-on-primary">
+            <h3 class="font-display text-[44px] md:text-[64px] leading-none tracking-tight mb-2">{{ title }}</h3>
+            <p class="font-body-sm text-body-sm opacity-90 max-w-sm mb-5">{{ blurb | escape }}</p>
+            <span class="inline-flex h-11 px-6 rounded-full bg-background text-primary font-label-md text-label-md uppercase tracking-widest items-center gap-2 group-hover:bg-secondary group-hover:text-on-primary transition-colors duration-300">Shop {{ title }} <span class="material-symbols-outlined text-[16px]" aria-hidden="true">arrow_forward</span></span>
+          </div>
+        </a>
+        <div class="flex flex-wrap gap-2 p-4 md:px-8 border-t border-outline-variant/30 bg-surface-container-low">
+          {%- for cat in (1..3) -%}
+            {%- liquid
+              case cat
+                when 1
+                  assign c = 'tops'
+                when 2
+                  assign c = 'layers'
+                else
+                  assign c = 'bottoms'
+              endcase
+            -%}
+            <a href="{{ all_url }}/gender-{{ g }}+category-{{ c }}" data-nav-gender="{{ g }}" data-nav-filter="{{ c }}" class="px-3.5 py-1.5 rounded-full bg-surface-container-lowest/85 border border-outline-variant/40 text-primary font-label-sm text-label-sm uppercase tracking-widest hover:bg-primary hover:text-on-primary transition-colors duration-200">{{ c | capitalize }}</a>
+          {%- endfor -%}
+        </div>
+      </article>
+    {%- endfor -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Shop men & women",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Small label", "default": "MEN & WOMEN" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Cut for him. Cut for her." },
+    { "type": "textarea", "id": "text", "label": "Text", "default": "The pieces everyone is wearing this year, in earthy colours that mix and match: oversized fleece and quarter-zips for him, flare leggings and wide-leg sweats for her." },
+    { "type": "image_picker", "id": "men_image", "label": "Men photo" },
+    { "type": "text", "id": "men_text", "label": "Men text", "default": "Oversized tees, quarter-zips, matching hoodie sets and cargo sweats." },
+    { "type": "image_picker", "id": "women_image", "label": "Women photo" },
+    { "type": "text", "id": "women_text", "label": "Women text", "default": "Baby tees, sports bras, cropped quarter-zips, flare leggings and wide-leg sweats." }
+  ],
+  "presets": [{ "name": "Shop men & women" }]
+}
+{% endschema %}
