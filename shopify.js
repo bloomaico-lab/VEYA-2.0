@@ -31,7 +31,7 @@ const PRODUCT_FIELDS = `
   images(first: 2) { nodes { url } }
   options { name optionValues { name } }
   priceRange { minVariantPrice { amount currencyCode } }
-  variants(first: 100) { nodes { id availableForSale price { amount } selectedOptions { name value } } }
+  variants(first: 100) { nodes { id availableForSale price { amount } selectedOptions { name value } image { url } } }
 `;
 
 const CART_FIELDS = `
@@ -101,9 +101,12 @@ function badgeFor(product) {
 // Shopify product -> the shape the storefront front end already renders.
 function toSiteProduct(p) {
   const option = (name) => p.options.find((o) => o.name.toLowerCase() === name);
+  // Each colour shows the photo attached to its variants in Shopify (Printful sets these when it syncs).
+  const variantImage = (colorName) => p.variants.nodes.find((v) => v.image?.url
+    && ['color', 'colour'].some((n) => optionValue(v.selectedOptions, n) === colorName))?.image.url;
   const colors = (option('color') || option('colour'))?.optionValues.map((v) => ({
-    name: v.name, hex: COLOR_HEX[v.name.toLowerCase()] || '#8e8f91',
-  })) || [{ name: 'Default', hex: '#8e8f91' }];
+    name: v.name, hex: COLOR_HEX[v.name.toLowerCase()] || '#8e8f91', image: variantImage(v.name) || '',
+  })) || [{ name: 'Default', hex: '#8e8f91', image: '' }];
   const sizes = option('size')?.optionValues.map((v) => v.name) || ['One Size'];
   return {
     id: p.handle,

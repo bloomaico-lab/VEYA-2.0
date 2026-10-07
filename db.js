@@ -150,6 +150,9 @@ function openDb(file = process.env.DB_FILE || path.join(__dirname, 'data', 'veya
   for (const p of seed.products) if (p.model_image) setModel.run(p.model_image, p.id);
   const setGender = db.prepare("UPDATE products SET gender = ? WHERE id = ? AND gender = ''");
   for (const p of seed.products) setGender.run(p.gender, p.id);
+  // Fill in per-colour photos for catalogs seeded before colours had their own images.
+  const setColors = db.prepare("UPDATE products SET colors = ? WHERE id = ? AND colors NOT LIKE '%\"image\"%'");
+  for (const p of seed.products) setColors.run(JSON.stringify(p.colors), p.id);
   return db;
 }
 

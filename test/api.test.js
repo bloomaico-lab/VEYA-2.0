@@ -43,6 +43,11 @@ test('lists, filters and searches products', async () => {
   assert.equal(all.status, 200);
   assert.equal(all.body.length, 16);
   assert.ok(all.body.every((p) => p.modelImage.startsWith('/images/model-')), 'every product has an on-model photo');
+  for (const p of all.body) {
+    assert.ok(p.colors.every((c) => c.image && c.modelImage.startsWith('/images/model-')), `${p.id}: every colour has its own photos`);
+    assert.equal(new Set(p.colors.map((c) => c.image)).size, p.colors.length, `${p.id}: colour photos are distinct`);
+    assert.equal(p.colors[0].image, p.image, `${p.id}: first colour uses the main photo`);
+  }
   const exp = await api('/api/products?category=bottoms');
   assert.ok(exp.body.every((p) => p.category === 'bottoms'));
   const search = await api('/api/products?q=sweatpants');
@@ -70,6 +75,7 @@ test('bag: add, merge, update, remove', async () => {
   assert.equal(r.body.items.length, 1);
   assert.equal(r.body.count, 3);
   assert.equal(r.body.subtotal, 180);
+  assert.equal(r.body.items[0].image, '/images/oversized-hoodie-black.jpg', 'the bag shows the photo of the chosen colour');
   assert.equal(r.body.shipping, 0);
   const id = r.body.items[0].id;
   r = await api(`/api/cart/${id}`, { method: 'PATCH', body: { qty: 1 } });

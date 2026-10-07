@@ -87,16 +87,24 @@
 
   // ---------- catalog ----------
 
+  // Photos for one colour of a product. Each colour has its own studio shot and on-model photo;
+  // anything missing falls back to the product's main photos.
+  function colorPhotos(product, colorName) {
+    const c = product.colors.find((x) => x.name === colorName) || {};
+    return { image: c.image || product.image, modelImage: c.modelImage || product.modelImage };
+  }
+
   function productCard(p) {
     const selected = state.cardColors[p.id] || p.colors[0].name;
+    const photos = colorPhotos(p, selected);
     const swatches = p.colors.map((c) => `
       <button type="button" class="swatch w-3 h-3 rounded-full border border-outline-variant ${c.name === selected ? 'swatch-active' : ''}"
         style="background:${esc(c.hex)}" title="${esc(c.name)}" aria-label="${esc(c.name)}" data-swatch="${esc(c.name)}"></button>`).join('');
     return `
       <div class="product-card group flex flex-col min-w-0 bg-surface-container-low rounded-xl border border-outline-variant/20 overflow-hidden hover:border-outline-variant/60 transition-all duration-300" data-product="${esc(p.id)}">
         <div class="relative aspect-[4/5] bg-surface-container-lowest overflow-hidden cursor-pointer" data-open-product>
-          <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="${esc(p.image)}" alt="${esc(p.name)}" loading="lazy"/>
-          ${p.modelImage ? `<img class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500" src="${esc(p.modelImage)}" alt="${esc(p.name)} being worn" loading="lazy"/>` : ''}
+          <img data-card-image class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="${esc(photos.image)}" alt="${esc(p.name)} in ${esc(selected)}" loading="lazy"/>
+          ${photos.modelImage ? `<img data-card-model class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500" src="${esc(photos.modelImage)}" alt="${esc(p.name)} in ${esc(selected)} being worn" loading="lazy"/>` : ''}
           ${p.badge ? `<div class="absolute top-3 left-3">
             <span class="font-label-sm text-label-sm md:text-label-md px-2 py-0.5 rounded bg-surface-container-lowest/80 border border-outline-variant/30 text-secondary uppercase tracking-widest">${esc(p.badge)}</span>
           </div>` : ''}
@@ -219,8 +227,16 @@
     const product = state.products.find((p) => p.id === card.dataset.product);
     const swatch = e.target.closest('[data-swatch]');
     if (swatch) {
-      state.cardColors[product.id] = swatch.dataset.swatch;
+      const color = swatch.dataset.swatch;
+      state.cardColors[product.id] = color;
       $$('[data-swatch]', card).forEach((s) => s.classList.toggle('swatch-active', s === swatch));
+      // Show that colour's photos on the card.
+      const photos = colorPhotos(product, color);
+      const img = $('[data-card-image]', card);
+      img.src = photos.image;
+      img.alt = `${product.name} in ${color}`;
+      const model = $('[data-card-model]', card);
+      if (model && photos.modelImage) { model.src = photos.modelImage; model.alt = `${product.name} in ${color} being worn`; }
       return;
     }
     if (e.target.closest('[data-quick-add]')) {
@@ -250,10 +266,14 @@
   }
 
   // Product popup photos: the studio shot and, when there is one, the on-model photo (shown first).
+  // Uses the colour picked in the popup, so switching colour switches the photos.
   function renderPhotos(product, index) {
-    const photos = [{ src: product.image, alt: product.name, label: 'Product' }];
-    if (product.modelImage) photos.push({ src: product.modelImage, alt: `${product.name} being worn`, label: 'On model' });
+    const color = state.detail?.color || product.colors[0].name;
+    const shots = colorPhotos(product, color);
+    const photos = [{ src: shots.image, alt: `${product.name} in ${color}`, label: 'Product' }];
+    if (shots.modelImage) photos.push({ src: shots.modelImage, alt: `${product.name} in ${color} being worn`, label: 'On model' });
     const current = photos[index] || photos[0];
+    if (state.detail) state.detail.photo = photos.indexOf(current);
     $('#pd-image').src = current.src;
     $('#pd-image').alt = current.alt;
     $('#pd-thumbs').innerHTML = photos.length < 2 ? '' : photos.map((ph, i) => `
@@ -281,7 +301,12 @@
     if (photo) { renderPhotos(state.detail.product, Number(photo.dataset.pdPhoto)); return; }
     const c = e.target.closest('[data-pd-color]');
     const s = e.target.closest('[data-pd-size]');
-    if (c) state.detail.color = c.dataset.pdColor;
+    if (c) {
+      state.detail.color = c.dataset.pdColor;
+      renderPhotos(state.detail.product, state.detail.photo); // same view (product / on model), new colour
+      state.cardColors[state.detail.product.id] = state.detail.color; // keep the card in the grid in step
+      renderProducts();
+    }
     if (s) { state.detail.size = s.dataset.pdSize; $('#pd-error').textContent = ''; }
     if (c || s) renderDetail();
   });

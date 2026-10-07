@@ -42,6 +42,11 @@ test('maps a Shopify product to the storefront shape', () => {
   assert.deepEqual(p.sizes, ['S', 'M']);
   assert.deepEqual(p.colors.map((c) => c.name), ['Black', 'Heather Grey']);
   assert.equal(p.colors[1].hex, '#9a9a98');
+  // A colour picks up the photo of its variants; colours without one fall back to the main photo.
+  const withPhoto = structuredClone(shopifyProduct);
+  withPhoto.variants.nodes[2].image = { url: 'https://cdn.shopify.com/hoodie-grey.jpg' };
+  assert.equal(toSiteProduct(withPhoto).colors.find((c) => c.name === 'Heather Grey').image, 'https://cdn.shopify.com/hoodie-grey.jpg');
+  assert.equal(toSiteProduct(withPhoto).colors.find((c) => c.name === 'Black').image, '');
   assert.equal(p.variants.find((v) => v.color === 'Heather Grey' && v.size === 'S').available, false);
   // An explicit category tag wins over keyword matching.
   assert.equal(toSiteProduct({ ...shopifyProduct, tags: ['category:bottoms'] }).category, 'bottoms');

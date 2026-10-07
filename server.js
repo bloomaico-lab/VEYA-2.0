@@ -58,6 +58,12 @@ function cleanEmail(value) {
   return email;
 }
 
+// The photo for one colour of a product (each colour has its own shot); falls back to the main photo.
+function colorImage(row, colorName) {
+  const color = JSON.parse(row.colors).find((c) => c.name === colorName);
+  return color?.image || row.image;
+}
+
 function toProduct(row) {
   return {
     id: row.id,
@@ -148,7 +154,7 @@ function createApp(db = openDb(), { stripe = defaultStripe(), shopify = shopifyF
 
   function getCart(sessionId) {
     const rows = db.prepare(`
-      SELECT c.id, c.product_id, c.size, c.color, c.qty, p.name, p.image, p.price_cents, p.stock
+      SELECT c.id, c.product_id, c.size, c.color, c.qty, p.name, p.image, p.colors, p.price_cents, p.stock
       FROM cart_items c JOIN products p ON p.id = c.product_id
       WHERE c.session_id = ? ORDER BY c.id`).all(sessionId);
     const subtotal = rows.reduce((sum, r) => sum + r.price_cents * r.qty, 0);
@@ -158,7 +164,7 @@ function createApp(db = openDb(), { stripe = defaultStripe(), shopify = shopifyF
         id: r.id,
         productId: r.product_id,
         name: r.name,
-        image: r.image,
+        image: colorImage(r, r.color),
         size: r.size,
         color: r.color,
         qty: r.qty,
@@ -277,8 +283,9 @@ function createApp(db = openDb(), { stripe = defaultStripe(), shopify = shopifyF
   function createPendingOrder(req, details) {
     return transaction(db, () => {
       const lines = db.prepare(`
-        SELECT c.product_id, c.size, c.color, c.qty, p.name, p.image, p.price_cents, p.stock
-        FROM cart_items c JOIN products p ON p.id = c.product_id WHERE c.session_id = ?`).all(req.session.id);
+        SELECT c.product_id, c.size, c.color, c.qty, p.name, p.image, p.colors, p.price_cents, p.stock
+        FROM cart_items c JOIN products p ON p.id = c.product_id WHERE c.session_id = ?`).all(req.session.id)
+        .map((l) => ({ ...l, image: colorImage(l, l.color) }));
       if (lines.length === 0) throw new HttpError(400, 'Your bag is empty.');
 
       // Prices and stock always come from the database, never the client.
