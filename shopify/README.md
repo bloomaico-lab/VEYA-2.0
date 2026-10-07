@@ -6,7 +6,7 @@ checkout and orders, runs on Shopify. No separate hosting is needed.
 | File | What it is |
 |---|---|
 | `veya-shopify-theme.zip` | The VEYA design as a Shopify theme. Upload it in **Online Store → Themes**. |
-| `veya-products.csv` | All 16 products: colours, sizes, prices, tags and photos. Import it in **Products → Import**. |
+| `veya-products.csv` | All 13 products: colours, sizes, prices, tags and photos. Import it in **Products → Import**. |
 | `theme/` | The theme's source files (rebuild the zip with `npm run build:theme`). |
 
 ## Setup (about 45 minutes)
@@ -23,7 +23,7 @@ checkout and orders, runs on Shopify. No separate hosting is needed.
 ### 3. Import the products
 1. Shopify admin → **Products → Import**.
 2. Choose `veya-products.csv` and tick **Publish new products to all sales channels**.
-3. Click **Upload and preview**, then **Import products**. Shopify downloads all the photos (90 of them),
+3. Click **Upload and preview**, then **Import products**. Shopify downloads all the photos (74 of them),
    which takes a few minutes. You'll get an email when it's done.
 
 Each product arrives with its **Color** and **Size** options, the price, a studio photo and an
@@ -49,16 +49,16 @@ Shopify admin → **Online Store → Pages → Add page**. Create these three pa
 >
 > Body length: XS 27" · S 28" · M 29" · L 30" · XL 31" · 2XL 32".
 >
-> Men's tops and layers are an oversized, relaxed fit. Women's baby tees, long sleeves and sports bras are fitted; sweatshirts are oversized.
+> Men's tops and layers are an oversized, relaxed fit. Women's baby tees and long sleeves are fitted; sweatshirts are oversized.
 >
-> Sweatpants have elastic drawcord waists and run true to size. Leggings, biker shorts and sports bras are compressive: size up if you are between sizes.
+> Sweatpants have elastic drawcord waists and run true to size. Leggings are compressive: size up if you are between sizes.
 
 **Fabrics & Care** (check the address is `/pages/fabrics-care`; edit it under "Search engine listing" if Shopify made it `fabrics-and-care`)
 > Heavyweight Cotton: 7oz combed cotton, pre-shrunk and garment-dyed so it keeps its size and colour. Wash cold inside out, tumble dry low.
 >
 > Brushed Fleece: 12–14oz cotton fleece, brushed inside for warmth. Wash cold inside out with similar colours and tumble dry low to keep it soft.
 >
-> Sculpt Knit: four-way-stretch performance knit for leggings, shorts and sports bras. Wash cold, skip fabric softener and hang dry to keep its shape.
+> Sculpt Knit: four-way-stretch performance knit for our flare leggings. Wash cold, skip fabric softener and hang dry to keep its shape.
 >
 > Printed pieces: wash inside out and avoid ironing directly on the print.
 
@@ -87,7 +87,7 @@ The free-shipping amount shown on the site is set in **Online Store → Themes �
 
 ### 7. Connect Printful, so orders fulfil themselves
 1. Shopify admin → **Apps → App Store** → install **Printful** and sign in or create an account.
-2. In Printful go to **Stores → your Shopify store**. The 16 imported products show as **not synced**.
+2. In Printful go to **Stores → your Shopify store**. The 13 imported products show as **not synced**.
    For each one, click **Edit** (or "Sync"), pick the blank from the VEYA supplier spreadsheet, upload
    your VEYA logo, and match each Shopify colour to the Printful colour. Save.
 3. Printful → **Settings → Stores → Order import** → turn on **automatic order confirmation**.

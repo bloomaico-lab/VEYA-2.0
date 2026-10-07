@@ -41,7 +41,7 @@ test('lists, filters and searches products', async () => {
   const api = client();
   const all = await api('/api/products');
   assert.equal(all.status, 200);
-  assert.equal(all.body.length, 16);
+  assert.equal(all.body.length, 13);
   assert.ok(all.body.every((p) => p.modelImage.startsWith('/images/model-')), 'every product has an on-model photo');
   for (const p of all.body) {
     assert.ok(p.colors.every((c) => c.image && c.modelImage.startsWith('/images/model-')), `${p.id}: every colour has its own photos`);
@@ -56,14 +56,14 @@ test('lists, filters and searches products', async () => {
   assert.deepEqual(sets.body.map((p) => p.id).sort(), ['oversized-hoodie', 'oversized-sweatshirt', 'straight-leg-sweatpant', 'wide-leg-sweatpant']);
   const men = await api('/api/products?gender=men');
   const women = await api('/api/products?gender=women');
-  assert.equal(men.body.length, 8);
-  assert.equal(women.body.length, 8);
+  assert.equal(men.body.length, 7);
+  assert.equal(women.body.length, 6);
   assert.ok(men.body.every((p) => p.gender === 'men') && women.body.every((p) => p.gender === 'women'));
   for (const list of [men.body, women.body]) {
     assert.deepEqual([...new Set(list.map((p) => p.category))].sort(), ['bottoms', 'layers', 'tops'], 'each section has tops, layers and bottoms');
   }
   const womensBottoms = await api('/api/products?gender=women&category=bottoms');
-  assert.deepEqual(womensBottoms.body.map((p) => p.id), ['flare-legging', 'wide-leg-sweatpant', 'biker-short']);
+  assert.deepEqual(womensBottoms.body.map((p) => p.id), ['flare-legging', 'wide-leg-sweatpant']);
   assert.equal((await api('/api/products/nope')).status, 404);
 });
 
@@ -110,12 +110,12 @@ test('checkout creates an order, charges shipping under threshold, decrements st
 
 test('stock limits are enforced', async () => {
   const api = client();
-  const r = await api('/api/cart', { method: 'POST', body: { productId: 'biker-short', qty: 11 } });
+  const r = await api('/api/cart', { method: 'POST', body: { productId: 'flare-legging', qty: 11 } });
   assert.equal(r.status, 400);
-  await fetch(`${base}/api/admin/products/biker-short`, {
+  await fetch(`${base}/api/admin/products/flare-legging`, {
     method: 'PATCH', headers: { 'Content-Type': 'application/json', 'x-admin-token': 'test-admin-token' }, body: JSON.stringify({ stock: 1 }),
   });
-  assert.equal((await api('/api/cart', { method: 'POST', body: { productId: 'biker-short', qty: 2 } })).status, 409);
+  assert.equal((await api('/api/cart', { method: 'POST', body: { productId: 'flare-legging', qty: 2 } })).status, 409);
 });
 
 test('accounts: register, me, orders, logout, login keeps the bag', async () => {

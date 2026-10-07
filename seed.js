@@ -45,25 +45,6 @@ const products = [
     stock: 100,
   },
   {
-    id: 'relaxed-oxford-shirt',
-    name: 'Relaxed Oxford Shirt',
-    tagline: 'Shirts',
-    material: 'Brushed Cotton Oxford',
-    category: 'tops',
-    gender: 'men',
-    price_cents: 4400,
-    badge: 'New',
-    image: '/images/oxford-shirt.jpg',
-    model_image: '/images/model-oxford-shirt.jpg',
-    description: 'A relaxed button-down in soft brushed oxford cotton. Wear it buttoned, or open over a tee: the easy shirt that goes with everything.',
-    colors: [
-      { name: 'Light Blue', hex: '#b9cbe0', image: '/images/oxford-shirt.jpg', modelImage: '/images/model-oxford-shirt.jpg' },
-      { name: 'White', hex: '#f4f2ed', image: '/images/oxford-shirt-white.jpg', modelImage: '/images/model-oxford-shirt-white.jpg' },
-    ],
-    sizes: ['XS', 'S', 'M', 'L', 'XL', '2XL'],
-    stock: 70,
-  },
-  {
     id: 'quarter-zip-fleece',
     name: 'Quarter-Zip Fleece',
     tagline: 'Quarter-Zips',
@@ -184,26 +165,6 @@ const products = [
     stock: 150,
   },
   {
-    id: 'sculpt-sports-bra',
-    name: 'Sculpt Sports Bra',
-    tagline: 'Sports Bras',
-    material: 'Sculpt Performance Knit',
-    category: 'tops',
-    gender: 'women',
-    price_cents: 3200,
-    badge: 'New',
-    image: '/images/sports-bra.jpg',
-    model_image: '/images/model-sports-bra.jpg',
-    description: 'A smooth, longline sports bra with a racerback and medium support. Buttery-soft sculpt knit that moves from the gym to the coffee run.',
-    colors: [
-      { name: 'Black', hex: '#111317', image: '/images/sports-bra.jpg', modelImage: '/images/model-sports-bra.jpg' },
-      { name: 'Espresso', hex: '#3b2a20', image: '/images/sports-bra-espresso.jpg', modelImage: '/images/model-sports-bra-espresso.jpg' },
-      { name: 'Sage', hex: '#9aa58c', image: '/images/sports-bra-sage.jpg', modelImage: '/images/model-sports-bra-sage.jpg' },
-    ],
-    sizes: ['XS', 'S', 'M', 'L', 'XL'],
-    stock: 100,
-  },
-  {
     id: 'fitted-long-sleeve',
     name: 'Fitted Long Sleeve',
     tagline: 'Long Sleeves',
@@ -302,26 +263,6 @@ const products = [
     sizes: ['XS', 'S', 'M', 'L', 'XL'],
     stock: 90,
   },
-  {
-    id: 'biker-short',
-    name: 'Biker Short',
-    tagline: 'Shorts',
-    material: 'Sculpt Performance Knit',
-    category: 'bottoms',
-    gender: 'women',
-    price_cents: 3000,
-    badge: 'New',
-    image: '/images/biker-short.jpg',
-    model_image: '/images/model-biker-short.jpg',
-    description: 'A high-waisted biker short with a 6-inch inseam in smooth sculpt knit. Stays put through workouts, walks and everything after.',
-    colors: [
-      { name: 'Black', hex: '#111317', image: '/images/biker-short.jpg', modelImage: '/images/model-biker-short.jpg' },
-      { name: 'Espresso', hex: '#3b2a20', image: '/images/biker-short-espresso.jpg', modelImage: '/images/model-biker-short-espresso.jpg' },
-      { name: 'Sage', hex: '#9aa58c', image: '/images/biker-short-sage.jpg', modelImage: '/images/model-biker-short-sage.jpg' },
-    ],
-    sizes: ['XS', 'S', 'M', 'L', 'XL'],
-    stock: 120,
-  },
 ];
 
 const fabrics = [
@@ -365,8 +306,8 @@ const pages = {
       'Tops and layers are a relaxed fit. Size down for a closer fit, or stay true to size for the intended boxy look.',
       'Chest (body width × 2): XS 38" · S 40" · M 44" · L 48" · XL 52" · 2XL 56".',
       'Body length: XS 27" · S 28" · M 29" · L 30" · XL 31" · 2XL 32".',
-      'Men\'s tops and layers are an oversized, relaxed fit. Women\'s baby tees, long sleeves and sports bras are fitted; sweatshirts are oversized.',
-      'Sweatpants have elastic drawcord waists and run true to size. Leggings, biker shorts and sports bras are compressive: size up if you are between sizes.',
+      'Men\'s tops and layers are an oversized, relaxed fit. Women\'s baby tees and long sleeves are fitted; sweatshirts are oversized.',
+      'Sweatpants have elastic drawcord waists and run true to size. Leggings are compressive: size up if you are between sizes.',
     ],
   },
   'lab-documentation': {
@@ -375,7 +316,7 @@ const pages = {
     body: [
       'Heavyweight Cotton: 7oz combed cotton, pre-shrunk and garment-dyed so it keeps its size and colour. Wash cold inside out, tumble dry low.',
       'Brushed Fleece: 12–14oz cotton fleece, brushed inside for warmth. Wash cold inside out with similar colours and tumble dry low to keep it soft.',
-      'Sculpt Knit: four-way-stretch performance knit for leggings, shorts and sports bras. Wash cold, skip fabric softener and hang dry to keep its shape.',
+      'Sculpt Knit: four-way-stretch performance knit for our flare leggings. Wash cold, skip fabric softener and hang dry to keep its shape.',
       'Printed pieces: wash inside out and avoid ironing directly on the print.',
     ],
   },
@@ -405,6 +346,7 @@ const retiredProductIds = [
   'heavyweight-sweatpants', 'camp-collar-shirt', 'everyday-crew', 'half-zip-pullover',
   'everyday-jogger', 'linen-short', 'relaxed-sweatpant', 'tech-jogger', 'fleece-short',
   'cropped-boxy-tee', 'ribbed-tank', 'cropped-hoodie', 'oversized-zip-hoodie',
+  'relaxed-oxford-shirt', 'sculpt-sports-bra', 'biker-short',
 ];
 
 module.exports = { products, fabrics, pages, retiredProductIds };

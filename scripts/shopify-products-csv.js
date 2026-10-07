@@ -17,9 +17,9 @@ const OUT = path.join(__dirname, '..', 'shopify', 'veya-products.csv');
 
 // Approximate shipping weights in grams, used by Shopify for shipping rates.
 const GRAMS = {
-  tops: { Tees: 200, 'Long Sleeves': 250, Shirts: 250, 'Sports Bras': 120 },
+  tops: { Tees: 200, 'Long Sleeves': 250 },
   layers: 600,
-  bottoms: { Leggings: 250, Shorts: 150 },
+  bottoms: { Leggings: 250 },
 };
 const gramsFor = (p) => {
   const g = GRAMS[p.category];
