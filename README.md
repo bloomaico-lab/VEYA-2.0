@@ -3,12 +3,12 @@
 Online clothing store for VEYA: heavyweight tees, hoodies and everyday layers, made to order.
 It is built on the **VEYA Active Luxury UI** design from Google Stitch (project `11128318004927957051`).
 
-It runs in one of two modes:
+It can run three ways:
 
-- **Shopify theme (simplest):** upload `shopify/veya-shopify-theme.zip` as your Shopify theme and import
+- **Shopify theme (recommended):** upload `shopify/veya-shopify-theme.zip` as your Shopify theme and import
   `shopify/veya-products.csv`; the whole store then runs on Shopify. Step-by-step guide:
   [shopify/README.md](shopify/README.md).
-- **Shopify mode (recommended):** connect a Shopify store and it becomes the source of products,
+- **Headless Shopify mode:** host this site yourself (e.g. Render), connect a Shopify store and it becomes the source of products,
   the bag and checkout. Install a print-on-demand app such as **Printful** or **Printify** in
   Shopify and every paid order is printed and shipped automatically. See
   [Shopify + print-on-demand](#shopify--print-on-demand).
