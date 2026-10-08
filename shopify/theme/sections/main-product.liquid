@@ -135,6 +135,16 @@
             <span>{% if product.available %}Add to Bag{% else %}Sold Out{% endif %}</span><span class="material-symbols-outlined text-[18px]" aria-hidden="true">shopping_bag</span>
           </button>
         </div>
+        {%- if section.settings.show_express_checkout and product.available -%}
+          {%- comment -%}
+            Express checkout (Shop Pay, Apple Pay, Google Pay, PayPal…): Shopify shows the wallets the
+            shopper can use and buys the variant in the form's "id" field. Locked until a size is picked.
+          {%- endcomment -%}
+          <div class="relative transition-opacity{% if size_option and size_option.values.size > 1 %} opacity-40{% endif %}" data-express-checkout>
+            {{ form | payment_button }}
+            <button type="button" data-express-guard class="absolute inset-0 w-full h-full cursor-pointer rounded-full" aria-label="Choose a size to use express checkout" {% unless size_option and size_option.values.size > 1 %}hidden{% endunless %}></button>
+          </div>
+        {%- endif -%}
         {{ form | payment_terms }}
       {%- endform -%}
 
@@ -150,6 +160,14 @@
 {% schema %}
 {
   "name": "Product",
-  "settings": []
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_express_checkout",
+      "label": "Show express checkout buttons",
+      "info": "Shop Pay, Apple Pay, Google Pay or PayPal, depending on what you turn on in Settings → Payments.",
+      "default": true
+    }
+  ]
 }
 {% endschema %}

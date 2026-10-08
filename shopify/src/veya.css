@@ -55,3 +55,15 @@ html { scroll-behavior: smooth; }
 
 /* Shopify form errors */
 .errors ul { list-style: none; padding: 0; color: #B3261E; font-size: 13px; }
+
+/* Shopify express checkout buttons (Shop Pay, Apple Pay, Google Pay, PayPal), styled to match VEYA. */
+:root {
+  --shopify-accelerated-checkout-button-block-size: 52px;
+  --shopify-accelerated-checkout-button-border-radius: 9999px;
+  --shopify-accelerated-checkout-row-gap: 8px;
+}
+.shopify-payment-button { width: 100%; }
+.shopify-payment-button__button { width: 100%; min-height: 52px; border-radius: 9999px !important; overflow: hidden; }
+.shopify-payment-button__button--unbranded { background: #FBF8F2 !important; color: #1B2A41 !important; border: 1px solid #1B2A41 !important; font-family: "Hanken Grotesk"; font-size: 16px; font-weight: 600; }
+.shopify-payment-button__button--unbranded:hover:not([disabled]) { background: #EFE7DA !important; }
+.shopify-payment-button__more-options { display: block; width: 100%; text-align: center; background: none; border: 0; cursor: pointer; margin-top: 10px; font-family: "JetBrains Mono"; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: #34507A; text-decoration: underline; }

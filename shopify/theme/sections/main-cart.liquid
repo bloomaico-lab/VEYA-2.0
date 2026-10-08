@@ -34,6 +34,10 @@
           <button type="submit" name="update" class="h-[52px] px-6 rounded-full border border-outline-variant/40 text-primary font-label-md uppercase tracking-widest hover:border-secondary">Update</button>
           <button type="submit" name="checkout" class="h-[52px] px-8 rounded-full bg-primary text-on-primary font-headline-sm text-headline-sm hover:bg-secondary transition-colors amber-glow-hover inline-flex items-center gap-2">Checkout <span class="material-symbols-outlined text-[18px]" aria-hidden="true">lock</span></button>
         </div>
+        {%- if additional_checkout_buttons -%}
+          {%- comment -%}Shop Pay, Apple Pay, Google Pay, PayPal… (whichever are turned on in Settings → Payments).{%- endcomment -%}
+          <div class="w-full sm:w-80 mt-2 additional-checkout-buttons">{{ content_for_additional_checkout_buttons }}</div>
+        {%- endif -%}
       </div>
     </form>
   {%- else -%}

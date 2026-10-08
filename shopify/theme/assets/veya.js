@@ -386,8 +386,16 @@
       }
       const add = $('#pd-add', page);
       if (add) add.disabled = !!variant && !variant.available && state.size != null;
+      // Express checkout buys whatever is in the form, so it stays locked until a real size is picked.
+      const express = $('[data-express-checkout]', page);
+      if (express) {
+        const locked = needsSize() || (!!variant && !variant.available);
+        express.classList.toggle('opacity-40', locked);
+        $('[data-express-guard]', express).hidden = !locked;
+      }
       renderPhotos();
     }
+    const needsSize = () => sizeButtons.length > 1 && state.size == null;
 
     page.addEventListener('click', (e) => {
       const color = e.target.closest('[data-pd-color]');
@@ -396,6 +404,9 @@
       if (color) { state.color = color.dataset.pdColor; render(); }
       if (size && !size.disabled) { state.size = size.dataset.pdSize; errorEl.textContent = ''; render(); }
       if (photo) { state.photo = Number(photo.dataset.pdPhoto); renderPhotos(); }
+      if (e.target.closest('[data-express-guard]')) {
+        errorEl.textContent = needsSize() ? 'Please choose a size.' : 'That size is sold out in this colour.';
+      }
     });
     $('#pd-minus', page)?.addEventListener('click', () => { qtyInput.value = Math.max(1, Number(qtyInput.value) - 1); });
     $('#pd-plus', page)?.addEventListener('click', () => { qtyInput.value = Math.min(10, Number(qtyInput.value) + 1); });

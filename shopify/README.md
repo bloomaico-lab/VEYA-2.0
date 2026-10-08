@@ -6,10 +6,11 @@ checkout and orders, runs on Shopify. No separate hosting is needed.
 | File | What it is |
 |---|---|
 | `veya-shopify-theme.zip` | The VEYA design as a Shopify theme. Upload it in **Online Store → Themes**. |
-| `veya-products.csv` | All 13 products: colours, sizes, prices, tags and photos. Import it in **Products → Import**. |
+| `veya-products.csv` | All 16 products: colours, sizes, prices, tags and photos. Import it in **Products → Import**. |
+| `brand/` | VEYA logo files for the checkout page, order emails and favicon (see step 7). |
 | `theme/` | The theme's source files (rebuild the zip with `npm run build:theme`). |
 
-## Setup (about 45 minutes)
+## Setup (about an hour)
 
 ### 1. Create the store
 1. Go to **shopify.com** and start a free trial. Name the store **VEYA**.
@@ -23,7 +24,7 @@ checkout and orders, runs on Shopify. No separate hosting is needed.
 ### 3. Import the products
 1. Shopify admin → **Products → Import**.
 2. Choose `veya-products.csv` and tick **Publish new products to all sales channels**.
-3. Click **Upload and preview**, then **Import products**. Shopify downloads all the photos (74 of them),
+3. Click **Upload and preview**, then **Import products**. Shopify downloads all the photos (90 of them),
    which takes a few minutes. You'll get an email when it's done.
 
 Each product arrives with its **Color** and **Size** options, the price, a studio photo and an
@@ -77,38 +78,93 @@ exchange text below), and use **Create from template** for Privacy and Terms of 
 
 > Wrong size? We offer free exchanges within 30 days of delivery. Because items are made to order, we can only refund items that arrive damaged or with a printing or manufacturing fault. Contact us within 30 days with a photo and we will make it right.
 
-### 6. Shipping and payments
+### 6. Payments: Shopify processes them for you
+Payment processing, the checkout page, order records, receipts, refunds and fraud checks are all
+built into Shopify. There's nothing to install. You just switch it on with your details.
+
+1. **Settings → Payments → Shopify Payments → Activate** (or "Complete account setup"). Have ready:
+   your legal name and address, date of birth, SSN or EIN (for a business), and the bank account
+   your money should go to.
+2. **Settings → Payments → Shopify Payments → Manage**:
+   - **Wallets**: make sure **Shop Pay, Apple Pay and Google Pay** are on. These power the express
+     checkout buttons on the VEYA product page and bag page.
+   - **Statement descriptor**: `VEYA`, so customers recognise the charge on their bank statement.
+   - **Payout schedule**: sales are paid into your bank account automatically.
+3. Optional: **Settings → Payments → PayPal → Activate** to offer PayPal too.
+
+Every card payment goes through Shopify's own checkout, so card details never touch the theme and
+the store is PCI compliant without any extra work.
+
+### 7. Checkout page and order emails
+1. **Settings → Checkout**:
+   - Customer contact method: **Email**.
+   - Marketing options: tick **Show a sign-up option at checkout** (sign-ups go to your email list).
+   - Tipping: off.
+   - Order processing: leave **Don't fulfill any of the order's line items automatically**. Printful
+     marks orders as fulfilled when it ships them (step 10).
+2. **Settings → Checkout → Customize** (the checkout editor), then the **gear / Settings** panel:
+   - Logo: upload `brand/veya-logo.png`, width about 140px.
+   - Colours: background **#F5EFE4** (cream), buttons and accents **#1B2A41** (navy).
+   - Typography: pick a serif for headings (e.g. Bodoni Moda or Playfair Display, whichever is listed)
+     and a clean sans for body text.
+3. **Settings → Notifications → Customize email templates**: upload `brand/veya-logo.png` and set the
+   accent colour to **#1B2A41**. That brands every email Shopify sends: order confirmation,
+   shipping confirmation with tracking, refunds and account emails.
+4. **Online Store → Themes → Customize → Theme settings → Store → Favicon**: upload `brand/veya-icon.png`.
+
+### 8. Shipping and taxes
 1. **Settings → Shipping and delivery → General shipping rates → Manage**, then add two rates to your zone:
    - "Standard", **$6.00**, condition: order price **$0 – $74.99**
    - "Free shipping", **$0.00**, condition: order price **$75.00 and up**
-2. **Settings → Payments** → activate **Shopify Payments** (cards, Apple Pay, Google Pay).
+2. **Settings → Taxes and duties → United States**: turn on collecting sales tax for your home state.
+   Shopify works out the right rate for every order, and tells you if you need to register in
+   another state as sales grow.
 
 The free-shipping amount shown on the site is set in **Online Store → Themes → Customize → Theme settings → Store**.
 
-### 7. Connect Printful, so orders fulfil themselves
+### 9. Refunds, exchanges and fraud
+- **Refund**: Orders → open the order → **Refund**. The money goes back to the customer's card or wallet.
+- **Exchange**: Orders → open the order → **Return** → choose the item and the new size. Then
+  place the replacement in Printful (Orders → New order) or let Printful reprint it if it was faulty.
+- **Fraud**: Shopify checks every order and shows a risk level on it. If an order is marked
+  **high risk**, cancel and refund it, and cancel it in Printful before it goes into production.
+
+### 10. Connect Printful, so orders fulfil themselves
 1. Shopify admin → **Apps → App Store** → install **Printful** and sign in or create an account.
-2. In Printful go to **Stores → your Shopify store**. The 13 imported products show as **not synced**.
+2. In Printful go to **Stores → your Shopify store**. The 16 imported products show as **not synced**.
    For each one, click **Edit** (or "Sync"), pick the blank from the VEYA supplier spreadsheet, upload
    your VEYA logo, and match each Shopify colour to the Printful colour. Save.
-3. Printful → **Settings → Stores → Order import** → turn on **automatic order confirmation**.
+3. Printful → **Settings → Stores → Order import** → turn on **automatic order confirmation**
+   (do this after your test order in step 12, so the test doesn't get printed).
 4. Printful → **Billing** → add a card. Printful charges you the cost + shipping for each order.
 
 After that, a paid order goes straight to Printful, which prints it, ships it under your brand
 and sends the tracking back to Shopify. Shopify then emails your customer.
 
-### 8. Email sign-ups
+### 11. Email sign-ups and abandoned checkouts
 The "Join the list" form adds people to **Customers** with email marketing turned on. Send
 campaigns from **Marketing → Campaigns → Shopify Email**. To bring over people who signed up on the
 old site, download the CSV from the old admin page (Subscribers → Download CSV), rename the `email`
 column to `Email`, add an `Accepts Email Marketing` column set to `yes`, and import it in **Customers → Import**.
 
-### 9. Go live
+Turn on **Marketing → Automations → Recover abandoned checkout**. Shopify then emails people who
+reached checkout but didn't pay, with a link straight back to their bag.
+
+### 12. Place a test order
+1. **Settings → Payments → Shopify Payments → Manage → Test mode** → turn it on.
+2. On your store, add something to the bag and check out with card **4242 4242 4242 4242**, any
+   future expiry date, any 3-digit CVC and any name.
+3. Check: the order appears in **Orders** (marked as a test), the confirmation email arrives with
+   the VEYA logo, and the express checkout buttons show on a product page once a size is chosen.
+4. Turn **Test mode off** again, then switch on Printful's automatic order confirmation (step 10).
+
+### 13. Go live
 1. **Settings → Plan** → choose a plan. A paid plan is needed to open the store to the public.
 2. **Online Store → Preferences → Password protection** → untick to open the store.
 3. Optional: **Settings → Domains** → connect your own domain.
 
-Place one test order with a cheap item and check it reaches Printful. Cancel it in Printful
-before it prints if you don't want it.
+After you go live, place one real order for a cheap item and check it reaches Printful. Cancel it
+in Printful before it prints, and refund it in Shopify, if you don't want it.
 
 ## Editing the look
 **Online Store → Themes → Customize** lets you change the hero photo and text, the banner
