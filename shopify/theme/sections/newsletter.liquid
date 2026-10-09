@@ -1,46 +1,171 @@
 {%- comment -%}
-  Email sign-up. Uses Shopify's customer form: sign-ups appear in Shopify admin → Customers with email
-  marketing consent, ready to email with Shopify Email (Marketing → Campaigns).
+  The VEYA Collective: the email sign-up, as a free membership. Sign-ups go to Shopify admin →
+  Customers with email marketing consent, tagged "newsletter" and "collective", ready to email with
+  Shopify Email (Marketing → Campaigns).
+
+  The member card beside it is a placeholder until someone joins. Shopify can't number members, so
+  it shows the year they joined (or a signed-in member's first name), plus a Founding Member badge
+  while "Founding membership is open" is ticked. veya.js remembers the membership in the browser.
 {%- endcomment -%}
-<section id="vip" class="py-24 px-6 md:px-12 bg-surface-container-low relative overflow-hidden border-t border-outline-variant/20">
-  <div class="absolute -top-48 right-0 w-96 h-96 bg-secondary/10 rounded-full blur-3xl pointer-events-none"></div>
-  <div class="max-w-4xl mx-auto text-center space-y-8 relative z-10">
-    <div class="inline-flex items-center gap-2">
-      <span class="w-2 h-2 rounded-full bg-secondary"></span>
-      <span class="font-label-sm text-secondary uppercase tracking-[0.25em]">{{ section.settings.eyebrow | escape }}</span>
-    </div>
-    <h2 class="font-headline-lg md:font-display text-headline-lg md:text-display text-primary">{{ section.settings.heading | escape }}</h2>
-    <p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto leading-relaxed">{{ section.settings.text | escape }}</p>
-    {%- form 'customer', id: 'vip-form', class: 'max-w-md mx-auto pt-4' -%}
-      <input type="hidden" name="contact[tags]" value="newsletter">
-      {%- if form.posted_successfully? -%}
-        <p class="font-label-md text-secondary tracking-wider uppercase" role="status">You're on the list. We'll email you about the next drop.</p>
-      {%- else -%}
-        <div class="flex flex-col sm:flex-row gap-3">
-          <input class="flex-grow w-full h-[52px] px-5 rounded-full bg-surface-container-lowest/80 border border-outline-variant/40 text-primary placeholder-on-surface-variant/50 focus:border-secondary focus:ring-0 font-body-md transition-colors duration-200 outline-none" placeholder="Your email address" required type="email" name="contact[email]" aria-label="Email address" autocomplete="email" value="{{ form.email }}">
-          <button class="h-[52px] px-8 rounded-full bg-primary text-on-primary font-headline-sm text-headline-sm hover:bg-secondary transition-colors duration-300 amber-glow-hover whitespace-nowrap flex items-center justify-center gap-2" type="submit">
-            <span>Sign Up</span><span class="material-symbols-outlined text-[18px]" aria-hidden="true">arrow_forward</span>
-          </button>
-        </div>
-        {%- if form.errors -%}
-          <p class="mt-3 font-label-md text-error tracking-wider" role="alert">
-            {%- if form.errors contains 'email' -%}Please enter a valid email address.{%- else -%}{{ form.errors | default_errors }}{%- endif -%}
-          </p>
-        {%- endif -%}
+{%- liquid
+  assign joined = false
+  assign member_name = ''
+  if customer and customer.accepts_marketing
+    assign joined = true
+    assign member_name = customer.first_name | default: customer.name
+  endif
+  assign year = 'now' | date: '%Y'
+-%}
+<section id="collective" class="py-24 px-6 md:px-12 bg-surface-container-low relative overflow-hidden border-t border-outline-variant/20" data-collective>
+  <div class="absolute -top-48 right-0 w-96 h-96 bg-secondary/10 rounded-full blur-3xl pointer-events-none" aria-hidden="true"></div>
+  <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-14 lg:gap-16 items-center relative z-10">
+    <div class="lg:col-span-7 space-y-8">
+      <div class="inline-flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-secondary"></span>
+        <span class="font-label-sm text-secondary uppercase tracking-[0.25em]">{{ section.settings.eyebrow | escape }}</span>
+      </div>
+      <h2 class="font-headline-lg md:font-display text-headline-lg md:text-display text-primary">{{ section.settings.heading | escape }}</h2>
+      <p class="font-body-lg text-body-lg text-on-surface-variant max-w-xl leading-relaxed">{{ section.settings.text | escape }}</p>
+      {%- if section.blocks.size > 0 -%}
+        <ul class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5 max-w-2xl">
+          {%- for block in section.blocks -%}
+            <li class="flex gap-3" {{ block.shopify_attributes }}>
+              <span class="material-symbols-outlined text-secondary text-[22px]" aria-hidden="true">{{ block.settings.icon }}</span>
+              <div>
+                <p class="font-label-md uppercase tracking-wider text-primary">{{ block.settings.title | escape }}</p>
+                <p class="font-body-sm text-body-sm text-on-surface-variant mt-1">{{ block.settings.text | escape }}</p>
+              </div>
+            </li>
+          {%- endfor -%}
+        </ul>
       {%- endif -%}
-    {%- endform -%}
-    <p class="font-label-sm text-outline tracking-wider">NO SPAM. UNSUBSCRIBE ANYTIME.</p>
+
+      {%- form 'customer', id: 'collective-form', class: 'space-y-3' -%}
+        <input type="hidden" name="contact[tags]" value="newsletter, collective">
+        {%- if form.posted_successfully? -%}{%- assign joined = true -%}{%- assign just_joined = true -%}{%- endif -%}
+        {%- if joined -%}
+          <div class="max-w-xl space-y-4" role="status" data-collective-welcome>
+            <p class="font-headline-md text-headline-md text-primary">
+              {%- if member_name != blank -%}You're in, {{ member_name | escape }}.{%- else -%}Welcome to the Collective.{%- endif -%}
+            </p>
+            <p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+              {%- if just_joined -%}You're on the list.{%- else -%}Thanks for being part of the Collective.{%- endif %}
+              {% if section.settings.founding_open %}You joined while founding membership is open, which makes you a Founding Member. {% endif -%}
+              New drops reach you first, and your vote on what we make next is just below.
+            </p>
+            <a href="#vote" class="inline-flex h-11 px-6 rounded-full border border-primary/30 text-primary font-label-md text-label-md uppercase tracking-widest items-center gap-2 hover:bg-primary hover:text-on-primary transition-colors duration-200"><span>Cast your vote</span><span class="material-symbols-outlined text-[16px]" aria-hidden="true">arrow_downward</span></a>
+          </div>
+        {%- else -%}
+          <div class="max-w-xl space-y-4" role="status" data-collective-welcome hidden>
+            <p class="font-headline-md text-headline-md text-primary">You're in the Collective.</p>
+            <p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">New drops reach you first, and your vote on what we make next is just below.</p>
+            <div class="flex flex-wrap items-center gap-4">
+              <a href="#vote" class="inline-flex h-11 px-6 rounded-full border border-primary/30 text-primary font-label-md text-label-md uppercase tracking-widest items-center gap-2 hover:bg-primary hover:text-on-primary transition-colors duration-200"><span>Cast your vote</span><span class="material-symbols-outlined text-[16px]" aria-hidden="true">arrow_downward</span></a>
+              <button type="button" class="font-label-sm text-label-sm uppercase tracking-widest text-on-surface-variant hover:text-primary underline underline-offset-4" data-collective-again>Join with another email</button>
+            </div>
+          </div>
+          <div class="space-y-3" data-collective-join>
+            <div class="max-w-lg flex flex-col sm:flex-row gap-3">
+              <input class="flex-grow w-full h-[52px] px-5 rounded-full bg-surface-container-lowest/80 border border-outline-variant/40 text-primary placeholder-on-surface-variant/50 focus:border-secondary focus:ring-0 font-body-md transition-colors duration-200 outline-none" placeholder="Your email address" required type="email" name="contact[email]" aria-label="Email address" autocomplete="email" value="{{ form.email }}">
+              <button class="h-[52px] px-8 rounded-full bg-primary text-on-primary font-headline-sm text-headline-sm hover:bg-secondary transition-colors duration-300 amber-glow-hover whitespace-nowrap flex items-center justify-center gap-2" type="submit">
+                <span>{{ section.settings.button | escape }}</span><span class="material-symbols-outlined text-[18px]" aria-hidden="true">arrow_forward</span>
+              </button>
+            </div>
+            {%- if form.errors -%}
+              <p class="font-label-md text-label-lg text-error tracking-wider" role="alert">
+                {%- if form.errors contains 'email' -%}Please enter a valid email address.{%- else -%}{{ form.errors | default_errors }}{%- endif -%}
+              </p>
+            {%- endif -%}
+            {%- if section.settings.small_print != blank -%}
+              <p class="font-label-sm text-outline tracking-wider">{{ section.settings.small_print | escape }}</p>
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+      {%- endform -%}
+    </div>
+
+    <div class="lg:col-span-5 flex justify-center lg:justify-end">
+      <div class="member-card{% if joined %} is-member{% endif %} relative w-full max-w-[400px] aspect-[1.586/1] rounded-2xl p-6 sm:p-7 text-on-primary overflow-hidden flex flex-col justify-between"
+        data-member-card data-founding="{{ section.settings.founding_open }}" data-year="{{ year }}">
+        <div class="relative flex items-start justify-between gap-4">
+          <div>
+            <span class="block font-display text-[30px] leading-none tracking-tight">{{ shop.name | upcase | escape }}</span>
+            <span class="block font-label-sm text-label-sm uppercase tracking-[0.35em] text-on-primary/70 mt-1.5">Collective</span>
+          </div>
+          {%- liquid
+            assign badge = ''
+            if section.settings.founding_open
+              if joined
+                assign badge = 'Founding member'
+              else
+                assign badge = 'Founding spots open'
+              endif
+            endif
+          -%}
+          <span class="{% if badge == blank %}hidden {% endif %}font-label-sm text-label-sm uppercase tracking-[0.16em] px-2.5 py-1 rounded-full border border-on-primary/35 whitespace-nowrap" data-card-badge>{{ badge }}</span>
+        </div>
+        <div class="relative">
+          <span class="block font-label-sm text-label-sm uppercase tracking-[0.25em] text-on-primary/60" data-card-label>{% if member_name != blank %}Member{% else %}Member since{% endif %}</span>
+          <span class="block font-display text-[52px] sm:text-[60px] leading-none tracking-tight mt-1 truncate" data-card-big>
+            {%- if member_name != blank -%}{{ member_name | escape }}{%- elsif joined -%}{{ year }}{%- else -%}••••{%- endif -%}
+          </span>
+        </div>
+        <div class="relative flex items-end justify-between gap-4">
+          <span class="font-label-sm text-label-sm uppercase tracking-[0.2em] text-on-primary/75" data-card-status>{% if joined %}VEYA Collective member{% else %}Join to claim your card{% endif %}</span>
+          <span class="w-2 h-2 rounded-full bg-on-primary/80 shrink-0" aria-hidden="true"></span>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
 {% schema %}
 {
-  "name": "Email sign-up",
+  "name": "The VEYA Collective",
+  "class": "section-collective",
+  "max_blocks": 4,
   "settings": [
-    { "type": "text", "id": "eyebrow", "label": "Small label", "default": "JOIN THE LIST" },
-    { "type": "text", "id": "heading", "label": "Heading", "default": "Be first to the next drop." },
-    { "type": "textarea", "id": "text", "label": "Text", "default": "New releases, restocks and members-only offers, straight to your inbox." }
+    { "type": "text", "id": "eyebrow", "label": "Small label", "default": "THE VEYA COLLECTIVE" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Built with the people who wear it." },
+    { "type": "textarea", "id": "text", "label": "Text", "default": "Join the Collective, free. Members get first access to every drop, a vote on what we make next and offers that only go to members." },
+    { "type": "text", "id": "button", "label": "Button", "default": "Join the Collective" },
+    { "type": "text", "id": "small_print", "label": "Small print", "default": "FREE TO JOIN. NO SPAM. LEAVE ANYTIME." },
+    {
+      "type": "checkbox", "id": "founding_open", "label": "Founding membership is open", "default": true,
+      "info": "New members get a Founding Member badge on their card. Untick it once you have as many founding members as you want (see Customers, filtered by the \"collective\" tag)."
+    }
   ],
-  "presets": [{ "name": "Email sign-up" }]
+  "blocks": [
+    {
+      "type": "perk",
+      "name": "Member perk",
+      "settings": [
+        {
+          "type": "select", "id": "icon", "label": "Icon", "default": "bolt",
+          "options": [
+            { "value": "bolt", "label": "Lightning (first access)" },
+            { "value": "how_to_vote", "label": "Ballot (vote)" },
+            { "value": "sell", "label": "Tag (offers)" },
+            { "value": "workspace_premium", "label": "Badge (founding)" },
+            { "value": "local_shipping", "label": "Van (shipping)" },
+            { "value": "favorite", "label": "Heart" }
+          ]
+        },
+        { "type": "text", "id": "title", "label": "Title", "default": "First access" },
+        { "type": "textarea", "id": "text", "label": "Text", "default": "New drops and restocks reach members before anyone else." }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "The VEYA Collective",
+      "blocks": [
+        { "type": "perk", "settings": { "icon": "bolt", "title": "First access", "text": "New drops and restocks reach members before anyone else." } },
+        { "type": "perk", "settings": { "icon": "how_to_vote", "title": "A say in what's next", "text": "Vote on the pieces we make next." } },
+        { "type": "perk", "settings": { "icon": "sell", "title": "Member-only offers", "text": "Offers that only go to the Collective, straight to your inbox." } },
+        { "type": "perk", "settings": { "icon": "workspace_premium", "title": "Founding members", "text": "Join while founding membership is open and you're a Founding Member for good." } }
+      ]
+    }
+  ]
 }
 {% endschema %}

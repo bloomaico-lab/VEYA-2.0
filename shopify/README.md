@@ -69,6 +69,8 @@ Shopify admin → **Online Store → Pages → Add page**. Create these three pa
 > We keep our colours to a small, earthy palette that mixes and matches.
 >
 > Fewer, better basics: a small range of everyday pieces we keep improving instead of chasing trends.
+>
+> Built with the people who wear it: members of the VEYA Collective get new drops first and vote on what we make next.
 
 ### 5. Policies
 Shopify admin → **Settings → Policies**. Fill in **Shipping** (text below), **Refund** (use the
@@ -142,7 +144,7 @@ After that, a paid order goes straight to Printful, which prints it, ships it un
 and sends the tracking back to Shopify. Shopify then emails your customer.
 
 ### 11. Email sign-ups and abandoned checkouts
-The "Join the list" form adds people to **Customers** with email marketing turned on. Send
+The "Join the Collective" form adds people to **Customers** with email marketing turned on. Send
 campaigns from **Marketing → Campaigns → Shopify Email**. To bring over people who signed up on the
 old site, download the CSV from the old admin page (Subscribers → Download CSV), rename the `email`
 column to `Email`, add an `Accepts Email Marketing` column set to `yes`, and import it in **Customers → Import**.
@@ -156,15 +158,21 @@ enter their email to unlock a discount code. Their email goes to **Customers**, 
 email marketing and tagged `spin-to-win` and `prize:CODE`, so you can see who won what. The code is
 added to their cart and comes off at checkout.
 
-**Each slice's code has to exist in Shopify**, or checkout will say it isn't valid. Go to Shopify
-admin → **Discounts → Create discount** and make these seven:
+**Every spin lands on 25% off** out of the box, so the one code you must create is `SPIN25`. Go to
+Shopify admin → **Discounts → Create discount** and make it:
+
+| Code | Type | Value | Minimum |
+|---|---|---|---|
+| `SPIN25` | Amount off order | 25% | none |
+
+The other slices show the range of deals but can't be landed on until you give them a chance (see
+below). If you do, create their codes too, or checkout will say the code isn't valid:
 
 | Code | Type | Value | Minimum | Slices |
 |---|---|---|---|---|
 | `SPIN10` | Amount off order | 10% | none | 2 of 8 |
 | `SPIN15` | Amount off order | 15% | none | 1 |
 | `SPIN20` | Amount off order | 20% | none | 1 |
-| `SPIN25` | Amount off order | 25% | none | 1 |
 | `TAKE5` | Amount off order | $5.00 fixed amount | none | 1 |
 | `TAKE10` | Amount off order | $10.00 fixed amount | Minimum purchase $60 | 1 |
 | `SHIPFREE` | Free shipping | All countries you ship to | none | 1 |
@@ -180,11 +188,39 @@ section list. From there you can:
 - change the heading and the small print
 - change the delay before it pops up, or turn it off
 
-A slice's **Chance** sets how often it wins: the defaults add up to 100, so 25% off wins 4 spins in 100.
-Any new code you put on a slice must also be created under Discounts.
+A slice's **Chance** sets how often it wins. Out of the box 25% off has 100 and every other slice 0,
+so every spin lands on 25% off. To mix the deals up, spread the chances out, for example 15, 18, 16,
+14, 8, 15, 10 and 4 (25% off then wins 4 spins in 100). Any code on a slice with a chance above 0 must
+also be created under Discounts.
+
+At 25% off, a $22 baby tee sells for $16.50 and a $60 hoodie for $45. Check the deal still covers
+your Printful costs and shipping before going live.
 
 To email winners their code as well, turn on **Marketing → Automations → Welcome new subscribers**.
 It's sent to everyone who joins the list. Mention that their spin-to-win code is already in their bag.
+
+### 11c. The VEYA Collective and the members' vote
+The home page invites people to join **the VEYA Collective**, a free membership: first access to
+drops, a vote on what you make next and member-only offers. Under the hood it's your email list, so
+there is nothing extra to run, but a few things are yours to keep true:
+
+- **Members are your email subscribers.** Everyone who joins (through the Collective form, the vote
+  or the spin wheel) is in **Customers** with email marketing on and the `collective` tag.
+- **First access and member offers:** email new drops to subscribers (Marketing → Campaigns) before
+  you announce them anywhere else, and send member-only offers from time to time.
+- **The member card** next to the sign-up shows "Founding member" while **Founding membership is
+  open** is ticked in the Collective section's settings. Untick it once you have as many founding
+  members as you want; filter Customers by the `collective` tag to see how many you have.
+- **Welcome email:** in **Marketing → Automations → Welcome new subscribers**, welcome people to
+  the Collective and link to the vote (your store address followed by `/#vote`).
+
+**The members' vote.** Open **Members' vote** in the theme editor to change the question and the
+options (up to six). Each voter joins the Collective and is tagged with their pick, for example
+`vote:next-drop-1:ribbed-beanie`. To count the votes, go to **Customers**, filter by that tag and
+note the number for each option. For a new vote, change the options and the **Vote id** (for
+example to `next-drop-2`) so earlier votes don't mix in, then share the results with the
+Collective by email. Shopify may not add tags to someone who was already a customer before they
+voted, so treat the counts as a guide rather than an exact tally.
 
 ### 12. Place a test order
 1. **Settings → Payments → Shopify Payments → Manage → Test mode** → turn it on.
@@ -193,9 +229,11 @@ It's sent to everyone who joins the list. Mention that their spin-to-win code is
 3. Check: the order appears in **Orders** (marked as a test), the confirmation email arrives with
    the VEYA logo, and the express checkout buttons show on a product page once a size is chosen.
 4. Spin to win: open the store in a private window, wait for the wheel, spin and enter an email.
-   Check that the code comes off at checkout, and that the email appears in **Customers** with the
-   `spin-to-win` tag.
-5. Turn **Test mode off** again, then switch on Printful's automatic order confirmation (step 10).
+   Check that the wheel lands on 25% off, the code comes off at checkout, and the email appears in
+   **Customers** with the `spin-to-win` and `collective` tags.
+5. The members' vote: pick an option on the home page and vote with another email. Check it
+   appears in **Customers** with a `vote:` tag.
+6. Turn **Test mode off** again, then switch on Printful's automatic order confirmation (step 10).
 
 ### 13. Go live
 1. **Settings → Plan** → choose a plan. A paid plan is needed to open the store to the public.
@@ -208,7 +246,8 @@ in Printful before it prints, and refund it in Shopify, if you don't want it.
 ## Editing the look
 **Online Store → Themes → Customize** lets you change the hero photo and text, the banner
 messages (Header → add or edit "Banner message" blocks), the Men/Women and category photos,
-the fabric cards, the email sign-up text and the spin-to-win wheel (step 11b), all without code.
+the "Who we're for" values, the fabric cards, the Collective's perks, the members' vote (step 11c)
+and the spin-to-win wheel (step 11b), all without code.
 
 ## For developers
 - `npm run build:theme` compiles `shopify/src/veya.css` with Tailwind (same tokens as the site)

@@ -98,7 +98,8 @@ SHOPIFY_STORE_DOMAIN=mock.shop npm start
 | Product “+”, colour swatches                  | Quick-add in the chosen colour                                   |
 | Product image / name                          | Product detail: colour, size, quantity, size guide, Add to Bag   |
 | Checkout                                      | Shopify mode: Shopify checkout. Built-in mode: shipping form → order saved (demo or Stripe) |
-| Sign Up                                       | Joins the mailing list (no duplicate sign-ups)                   |
+| Join the Collective                           | Joins the mailing list as a member of the VEYA Collective and fills in their member card |
+| Members' vote                                 | Members vote on what VEYA makes next and see the results         |
 | Spin to win popup                             | New visitors spin a prize wheel; their email unlocks a discount code that goes on their bag |
 | Bag → Have a discount code?                   | Apply or remove a code; the discount shows in the bag and checkout totals |
 | Mobile menu (☰)                               | Nav for small screens                                            |
@@ -146,9 +147,10 @@ A few seconds after a new visitor arrives, a prize wheel pops up. Every slice is
 10% off up to 25% off, $5 off, $10 off orders of $60 or more, and free shipping. The visitor spins, then
 enters their email to unlock their code:
 
-- **The server decides where the wheel lands**, using each slice's chance in `discounts.js`. Bigger deals
-  come up less often (25% off is 4 spins in 100). Reloading the page can't re-spin.
-- **Each winner gets their own code**, like `SPIN15-7KQ2M`. It works once, lasts 14 days, and each email
+- **Every spin lands on 25% off.** The server decides where the wheel lands, using each slice's
+  chance in `discounts.js`, and 25% off has all of it (100 of 100). Spread the weights out to mix the
+  deals up again. Reloading the page can't re-spin.
+- **Each winner gets their own code**, like `SPIN25-7KQ2M`. It works once, lasts 14 days, and each email
   gets one. It's added to their bag straight away, and the bag, checkout and Stripe all charge the
   discounted total.
 - **Their email joins your list**, and the code is emailed to them when email sending is set up (see below).
@@ -156,18 +158,43 @@ enters their email to unlock their code:
 - **`/admin` → Spin to win** shows every code, who won it and whether it's been used.
 
 Change the deals, their odds or the wheel's labels in `discounts.js`. In Shopify mode, winners get
-each deal's shared Shopify code instead (`SPIN10`, `SPIN15`, …). Create those in Shopify as described
-in [shopify/README.md](shopify/README.md), step 11b.
+the deal's shared Shopify code instead (`SPIN25` while every spin lands on 25% off). Create it in
+Shopify as described in [shopify/README.md](shopify/README.md), step 11b.
+
+At 25% off, a $22 baby tee sells for $16.50 and a $60 hoodie for $45, so check the deal still
+covers your costs before going live.
+
+## The VEYA Collective
+
+The home page invites shoppers to see themselves in VEYA and become part of it:
+
+- **Who we're for:** a short brand promise ("For who you're becoming.") with the four things VEYA
+  stands for.
+- **The Collective:** the email list as a free membership: first access to drops, a vote on what
+  VEYA makes next and member-only offers. Everyone who joins, through the sign-up form, the vote or
+  the spin wheel, gets a **member number** (No. 0001 joined first) that stays theirs for good, even if
+  they leave and come back. The first 1,000 are **Founding Members**. Their member card fills in as
+  soon as they join, and the site recognises them when they come back.
+- **The members' vote:** "What should we make next?" Members vote once each and see the live results
+  straight after. Change the question and options in `community.js`; give the vote a new `id` to
+  start a fresh one.
+- **Welcome email:** new members get one, with their number and a link to the vote, when email
+  sending is set up (see "Emailing subscribers"). Spin winners get it as part of their code email.
+
+Everything shown is real: member numbers come from the sign-up order and the vote shows actual
+counts (the total appears once 20 members have voted). Keep the promises true by emailing new drops
+to members first and sending them the occasional member-only offer. `/admin` → **The VEYA
+Collective** shows the member count and the vote results.
 
 ## Admin
 
 Set `ADMIN_TOKEN`, open `/admin` and enter the token. From there you can view orders and change
-their status, edit stock levels, see spin-to-win codes, email your subscribers and download the
-subscriber list.
+their status, edit stock levels, see the Collective's members and vote results, see spin-to-win
+codes, email your subscribers and download the subscriber list.
 
 ## Emailing subscribers
 
-Everyone who signs up with the newsletter form ("Join the list") is stored as a subscriber. In
+Everyone who joins the VEYA Collective (the sign-up form, the vote or the spin wheel) is stored as a subscriber. In
 `/admin` → **Email your subscribers**:
 
 1. Write a subject and message (leave a blank line between paragraphs).
@@ -199,6 +226,7 @@ GET    /api/cart                      POST /api/cart {productId,size?,color?,qty
 PATCH  /api/cart/:itemId {qty}        DELETE /api/cart/:itemId
 POST   /api/cart/discount {code}      DELETE /api/cart/discount
 GET    /api/spin   POST /api/spin   POST /api/spin/claim {email}
+GET    /api/collective                POST /api/vote {option, email?}
 POST   /api/checkout {name,email,address,city,postalCode,country}
 POST   /api/auth/register|login|logout   GET /api/auth/me   GET /api/orders
 POST   /api/subscribe {email}         GET|POST /unsubscribe?token=

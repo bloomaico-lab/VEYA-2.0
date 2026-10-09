@@ -7,6 +7,7 @@ const { shopifyFromEnv, registerShopifyRoutes, ShopifyError } = require('./shopi
 const { mailerFromEnv, renderCampaign } = require('./email');
 const { openDb, transaction } = require('./db');
 const discounts = require('./discounts');
+const community = require('./community');
 const seed = require('./seed');
 
 const SESSION_COOKIE = 'veya_sid';
@@ -566,25 +567,111 @@ function createApp(db = openDb(), {
     })));
   });
 
-  // ----- VIP club -----
+  // ----- the VEYA Collective -----
+  // Everyone on the mailing list is a member. Their member number is their place in the queue
+  // (No. 0001 joined first) and stays theirs for good, even if they leave and come back. Members
+  // vote on what VEYA makes next (community.js).
 
-  // Adds an email to the list, or signs it up again. Returns false if it was already subscribed.
+  // Adds an email to the list, or signs it up again. `joined` is false if it was already subscribed;
+  // `isNew` is true only the first time this email ever joins.
   function subscribe(email) {
     const existing = db.prepare('SELECT id, unsubscribed_at FROM subscribers WHERE email = ?').get(email);
-    if (existing && !existing.unsubscribed_at) return false;
+    if (existing && !existing.unsubscribed_at) return { id: existing.id, joined: false, isNew: false };
     if (existing) {
       db.prepare('UPDATE subscribers SET unsubscribed_at = NULL WHERE id = ?').run(existing.id); // signed up again
-    } else {
-      db.prepare('INSERT INTO subscribers (email, unsubscribe_token) VALUES (?, ?)')
-        .run(email, crypto.randomBytes(24).toString('hex'));
+      return { id: existing.id, joined: true, isNew: false };
     }
+    const { lastInsertRowid } = db.prepare('INSERT INTO subscribers (email, unsubscribe_token) VALUES (?, ?)')
+      .run(email, crypto.randomBytes(24).toString('hex'));
+    return { id: Number(lastInsertRowid), joined: true, isNew: true };
+  }
+
+  // A current member's public details, or null if they've left the list.
+  function memberInfo(subscriberId) {
+    const row = subscriberId && db.prepare('SELECT id, created_at, unsubscribed_at FROM subscribers WHERE id = ?').get(subscriberId);
+    return row && !row.unsubscribed_at ? community.member(row) : null;
+  }
+  const sessionMemberId = (sessionId) => db.prepare('SELECT member_id FROM sessions WHERE id = ?').get(sessionId)?.member_id || null;
+  const sessionMember = (sessionId) => memberInfo(sessionMemberId(sessionId));
+
+  // Joins the Collective (or welcomes a member back) and remembers the member on this browser.
+  // New members get a welcome email, once, when email sending is set up.
+  function join(req, email, { welcome = true } = {}) {
+    const result = subscribe(email);
+    db.prepare('UPDATE sessions SET member_id = ? WHERE id = ?').run(result.id, req.session.id);
+    const member = memberInfo(result.id);
+    const emailed = welcome && result.isNew && welcomeMember(email, member, publicUrl(req));
+    return { ...result, member, emailed };
+  }
+
+  function welcomeMember(email, member, base) {
+    if (!canSendEmail()) return false;
+    const token = db.prepare('SELECT unsubscribe_token FROM subscribers WHERE email = ?').get(email)?.unsubscribe_token || 'none';
+    const founding = member.founding
+      ? ` You're one of our first ${community.FOUNDING_MEMBERS.toLocaleString('en-US')} members, which makes you a Founding Member.` : '';
+    const body = [
+      "You're in. Welcome to the VEYA Collective.",
+      `Your member number is No. ${member.number}, and it's yours for good.${founding}`,
+      "Here's what membership means:\n- First access to new drops and restocks.\n- A vote on what we make next.\n- Offers that only go to members.",
+      `The members' vote is open now: ${community.POLL.question} Cast yours at ${base}/#vote`,
+      "We're building VEYA with the people who wear it. Thanks for being one of them.",
+    ].join('\n\n');
+    const message = buildMessage({ subject: 'Welcome to the VEYA Collective', body }, email, token, base);
+    mailer.sendAll([message], { idempotencyPrefix: `welcome-${member.number}` })
+      .catch((err) => console.error('Welcome email failed:', err.message));
     return true;
   }
 
+  const pollResults = () => community.tally(community.POLL,
+    db.prepare('SELECT option, COUNT(*) AS n FROM votes WHERE poll = ? GROUP BY option').all(community.POLL.id));
+
+  // The vote, with the results once this browser has voted. `yourVote` is only ever the option voted
+  // for from this browser, so typing someone else's email can't reveal how they voted.
+  function pollState(sessionId, { showResults = false } = {}) {
+    const { POLL } = community;
+    const yourVote = db.prepare('SELECT option FROM votes WHERE poll = ? AND session_id = ? ORDER BY id DESC').get(POLL.id, sessionId)?.option || null;
+    return { ...POLL, yourVote, results: yourVote || showResults ? pollResults() : null };
+  }
+
+  const foundingOpen = () => (db.prepare('SELECT MAX(id) AS n FROM subscribers').get().n || 0) < community.FOUNDING_MEMBERS;
+
+  app.get('/api/collective', (req, res) => res.json({
+    member: sessionMember(req.session.id),
+    foundingOpen: foundingOpen(),
+    foundingMembers: community.FOUNDING_MEMBERS,
+    poll: pollState(req.session.id),
+  }));
+
   app.post('/api/subscribe', (req, res) => {
     const email = cleanEmail(req.body?.email);
-    if (!subscribe(email)) return res.json({ alreadySubscribed: true, message: 'You are already on the list.' });
-    res.status(201).json({ alreadySubscribed: false, message: "You're on the list. We'll email you about the next drop." });
+    const { joined, member, emailed } = join(req, email);
+    if (!joined) {
+      return res.json({ alreadySubscribed: true, member, message: `You're already in the Collective, member No. ${member.number}.` });
+    }
+    res.status(201).json({ alreadySubscribed: false, member, emailed, message: `Welcome to the Collective. You're member No. ${member.number}.` });
+  });
+
+  // Members vote once per poll. Someone who isn't a member yet joins with their email as they vote.
+  app.post('/api/vote', (req, res) => {
+    const { POLL } = community;
+    const option = typeof req.body?.option === 'string' ? req.body.option : '';
+    if (!POLL.options.some((o) => o.id === option)) throw new HttpError(400, 'Please pick one of the options.');
+    let memberId = sessionMember(req.session.id) ? sessionMemberId(req.session.id) : null; // null if they've left the list
+    let emailed = false;
+    if (req.body?.email || !memberId) {
+      if (!req.body?.email) throw new HttpError(400, 'Enter your email to vote.');
+      const joined = join(req, cleanEmail(req.body.email));
+      memberId = joined.id;
+      emailed = joined.emailed;
+    }
+    const { changes } = db.prepare(`INSERT INTO votes (poll, option, subscriber_id, session_id) VALUES (?, ?, ?, ?)
+      ON CONFLICT (poll, subscriber_id) DO NOTHING`).run(POLL.id, option, memberId, req.session.id);
+    res.status(changes ? 201 : 200).json({
+      counted: Boolean(changes),
+      member: memberInfo(memberId),
+      emailed,
+      poll: pollState(req.session.id, { showResults: true }),
+    });
   });
 
   // ----- spin to win -----
@@ -625,14 +712,16 @@ function createApp(db = openDb(), {
   const canSendEmail = () => Boolean(mailer && process.env.EMAIL_FROM && process.env.MAILING_ADDRESS);
 
   // Emails the code too (when email sending is set up), so it isn't lost if they close the page.
-  function emailCode(email, { code, title, expiresAt }, base) {
+  function emailCode(email, { code, title, expiresAt, member }, base) {
     if (!canSendEmail()) return false;
     const token = db.prepare('SELECT unsubscribe_token FROM subscribers WHERE email = ?').get(email)?.unsubscribe_token || 'none';
     const until = expiresAt ? ` It works once and is valid until ${new Date(`${expiresAt.replace(' ', 'T')}Z`)
       .toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}.` : '';
     const body = `Thanks for spinning the VEYA wheel. You won ${title.charAt(0).toLowerCase()}${title.slice(1)}.\n\n`
       + `Your code: ${code}\n\n`
-      + `It's already in your bag on the device you used. Shopping somewhere else? Enter it in your bag before you check out.${until}`;
+      + `It's already in your bag on the device you used. Shopping somewhere else? Enter it in your bag before you check out.${until}`
+      + (member ? `\n\nYou're also member No. ${member.number} of the VEYA Collective${member.founding ? ', one of our Founding Members' : ''}: `
+        + `first access to new drops, offers that only go to members and a vote on what we make next (${base}/#vote).` : '');
     const message = buildMessage({ subject: `Your VEYA code: ${title}`, body }, email, token, base);
     mailer.sendAll([message], { idempotencyPrefix: `spin-${code}-${email}` })
       .catch((err) => console.error('Spin code email failed:', err.message));
@@ -676,9 +765,9 @@ function createApp(db = openDb(), {
         expiresAt = row.expires_at;
       }
       db.prepare('UPDATE sessions SET spin_code = ?, discount_code = ? WHERE id = ?').run(code, code, req.session.id);
-      subscribe(email);
-      const emailed = !existing && emailCode(email, { code, title, expiresAt }, publicUrl(req));
-      res.status(existing ? 200 : 201).json({ code, title, expiresAt, existing, emailed });
+      const { member } = join(req, email, { welcome: false }); // the code email welcomes them instead
+      const emailed = !existing && emailCode(email, { code, title, expiresAt, member }, publicUrl(req));
+      res.status(existing ? 200 : 201).json({ code, title, expiresAt, existing, emailed, member });
     } catch (err) {
       next(err);
     }
@@ -739,6 +828,12 @@ function createApp(db = openDb(), {
       discountCodes: db.prepare(`SELECT code, email, prize, created_at, expires_at, used_at, order_number,
         expires_at <= datetime('now') AS expired FROM discount_codes ORDER BY id DESC LIMIT 200`).all()
         .map((c) => ({ ...c, title: discounts.PRIZES[c.prize]?.title || c.prize, expired: Boolean(c.expired) })),
+      collective: {
+        members: db.prepare('SELECT COUNT(*) AS n FROM subscribers WHERE unsubscribed_at IS NULL').get().n,
+        foundingMembers: db.prepare('SELECT COUNT(*) AS n FROM subscribers WHERE unsubscribed_at IS NULL AND id <= ?')
+          .get(community.FOUNDING_MEMBERS).n,
+        poll: { ...community.POLL, results: pollResults() },
+      },
     });
   });
 

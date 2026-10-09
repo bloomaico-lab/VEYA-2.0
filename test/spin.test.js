@@ -29,24 +29,40 @@ function clientFor(base) {
   };
 }
 
-test('the wheel: weights, deals and codes', () => {
+test('the wheel: every spin lands on 25% off', () => {
   assert.equal(discounts.SLICES.length, 8);
   assert.equal(discounts.SLICES.reduce((s, x) => s + x.weight, 0), 100);
   assert.ok(discounts.SLICES.every((s) => discounts.PRIZES[s.prize]), 'every slice is a real deal');
+  const top = discounts.SLICES.findIndex((s) => s.prize === 'pct25');
+  assert.equal(top, 7);
+  for (const r of [0, 0.15, 0.35, 0.5, 0.97, 0.999999]) assert.equal(discounts.pickSlice(() => r), top, `random ${r}`);
+});
+
+test('the wheel: weighted picks when the deals are mixed up', () => {
+  const { pickSlice } = discounts;
   // Cumulative weights 15, 33, 49, 63, 71, 86, 96, 100.
-  assert.equal(discounts.pickSlice(() => 0), 0);
-  assert.equal(discounts.pickSlice(() => 0.149), 0);
-  assert.equal(discounts.pickSlice(() => 0.15), 1);
-  assert.equal(discounts.pickSlice(() => 0.35), 2);
-  assert.equal(discounts.pickSlice(() => 0.97), 7);
-  assert.equal(discounts.pickSlice(() => 0.999999), 7);
-  // The 25% slice really is rare.
+  const mixed = [15, 18, 16, 14, 8, 15, 10, 4].map((weight, i) => ({ ...discounts.SLICES[i], weight }));
+  assert.equal(pickSlice(() => 0, mixed), 0);
+  assert.equal(pickSlice(() => 0.149, mixed), 0);
+  assert.equal(pickSlice(() => 0.15, mixed), 1);
+  assert.equal(pickSlice(() => 0.35, mixed), 2);
+  assert.equal(pickSlice(() => 0.97, mixed), 7);
+  assert.equal(pickSlice(() => 0.999999, mixed), 7);
+  // The 25% slice comes up about 4 times in 100.
   const counts = Array(8).fill(0);
   let seed = 7;
   const rng = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
-  for (let i = 0; i < 20000; i += 1) counts[discounts.pickSlice(rng)] += 1;
+  for (let i = 0; i < 20000; i += 1) counts[pickSlice(rng, mixed)] += 1;
   assert.ok(counts[7] / 20000 > 0.03 && counts[7] / 20000 < 0.05, `25% off came up ${counts[7]} times`);
+  // Slices with no weight never win, even at the very ends of the range.
+  const sparse = [{ weight: 0 }, { weight: 3 }, { weight: 0 }, { weight: 1 }, { weight: 0 }];
+  assert.equal(pickSlice(() => 0, sparse), 1);
+  assert.equal(pickSlice(() => 0.74, sparse), 1);
+  assert.equal(pickSlice(() => 0.75, sparse), 3);
+  assert.equal(pickSlice(() => 0.999999, sparse), 3);
+});
 
+test('discount codes and maths', () => {
   assert.match(discounts.uniqueCode('pct15'), /^SPIN15-[ABCDEFGHJKMNPQRSTUVWXYZ2-9]{5}$/);
   assert.equal(discounts.normalizeCode('  spin15-ab2cd '), 'SPIN15-AB2CD');
 
@@ -66,7 +82,7 @@ describe('spin to win on the built-in store', () => {
   let client;
   before(async () => {
     db = openDb(':memory:');
-    // random() = 0.35 always lands on the third slice: 15% off.
+    // Whatever random() says, the wheel lands on 25% off.
     server = await startServer(db, { stripe: null, random: () => 0.35 });
     client = clientFor(`http://127.0.0.1:${server.address().port}`);
   });
@@ -84,17 +100,17 @@ describe('spin to win on the built-in store', () => {
 
     const spin = await api('/api/spin', { method: 'POST' });
     assert.equal(spin.status, 201);
-    assert.deepEqual(spin.body, { slice: 2, title: '15% off your order', claimed: null });
+    assert.deepEqual(spin.body, { slice: 7, title: '25% off your order', claimed: null });
     const again = await api('/api/spin', { method: 'POST' });
     assert.equal(again.status, 200);
-    assert.equal(again.body.slice, 2, 'spinning again returns the first result');
+    assert.equal(again.body.slice, 7, 'spinning again returns the first result');
 
     await api('/api/cart', { method: 'POST', body: { productId: 'oversized-hoodie', size: 'M', color: 'Black', qty: 2 } });
     assert.equal((await api('/api/spin/claim', { method: 'POST', body: { email: 'not-an-email' } })).status, 400);
     const claim = await api('/api/spin/claim', { method: 'POST', body: { email: 'Win@Example.com' } });
     assert.equal(claim.status, 201);
-    assert.match(claim.body.code, /^SPIN15-[A-Z2-9]{5}$/);
-    assert.equal(claim.body.title, '15% off your order');
+    assert.match(claim.body.code, /^SPIN25-[A-Z2-9]{5}$/);
+    assert.equal(claim.body.title, '25% off your order');
     assert.equal(claim.body.existing, false);
     assert.equal(claim.body.emailed, false, 'no email provider in this test');
     assert.match(claim.body.expiresAt, /^\d{4}-\d{2}-\d{2} /);
@@ -102,9 +118,9 @@ describe('spin to win on the built-in store', () => {
     const cart = (await api('/api/cart')).body;
     assert.equal(cart.subtotal, 120);
     assert.deepEqual(cart.discount, {
-      code: claim.body.code, title: '15% off your order', amount: 18, freeShipping: false, applied: true, note: '',
+      code: claim.body.code, title: '25% off your order', amount: 30, freeShipping: false, applied: true, note: '',
     });
-    assert.equal(cart.total, 102);
+    assert.equal(cart.total, 90, '$120 - 25% ($30), with free shipping over $75');
     assert.equal((await api('/api/spin')).body.result.claimed.code, claim.body.code);
 
     // Claiming again (any email) gives the same code back.
@@ -116,7 +132,7 @@ describe('spin to win on the built-in store', () => {
     const admin = await api('/api/admin/summary', { headers: { 'x-admin-token': 'test-admin-token' } });
     assert.ok(admin.body.subscribers.some((s) => s.email === 'win@example.com'));
     assert.equal(admin.body.discountCodes[0].code, claim.body.code);
-    assert.equal(admin.body.discountCodes[0].title, '15% off your order');
+    assert.equal(admin.body.discountCodes[0].title, '25% off your order');
     assert.ok(admin.body.spins >= 1);
   });
 
@@ -139,10 +155,10 @@ describe('spin to win on the built-in store', () => {
     await api('/api/cart', { method: 'POST', body: { productId: 'heavyweight-crewneck', size: 'M', color: 'Black' } });
     const order = await api('/api/checkout', { method: 'POST', body: details });
     assert.equal(order.status, 201);
-    assert.equal(order.body.total, 46.8, '$48 - 15% ($7.20) + $6 shipping');
+    assert.equal(order.body.total, 42, '$48 - 25% ($12) + $6 shipping');
     const row = db.prepare('SELECT * FROM orders WHERE number = ?').get(order.body.number);
     assert.equal(row.discount_code, code);
-    assert.equal(row.discount_cents, 720);
+    assert.equal(row.discount_cents, 1200);
     assert.equal(row.subtotal_cents, 4800);
     assert.ok(db.prepare('SELECT used_at FROM discount_codes WHERE code = ?').get(code).used_at, 'code is spent');
     assert.equal((await api('/api/cart')).body.discount, null, 'the spent code leaves the bag');
@@ -211,17 +227,17 @@ test('the won code is emailed when email sending is set up', async () => {
   const saved = { from: process.env.EMAIL_FROM, address: process.env.MAILING_ADDRESS };
   process.env.EMAIL_FROM = 'VEYA <hello@veya.example>';
   process.env.MAILING_ADDRESS = '1 Example St, Miami FL';
-  const server = await startServer(openDb(':memory:'), { stripe: null, mailer, random: () => 0.5 }); // 0.5 → $5 off
+  const server = await startServer(openDb(':memory:'), { stripe: null, mailer });
   try {
     const api = clientFor(`http://127.0.0.1:${server.address().port}`)();
     await api('/api/spin', { method: 'POST' });
     const claim = await api('/api/spin/claim', { method: 'POST', body: { email: 'mail@example.com' } });
     assert.equal(claim.body.emailed, true);
-    assert.match(claim.body.code, /^TAKE5-/);
+    assert.match(claim.body.code, /^SPIN25-/);
     assert.equal(sent.length, 1);
     const [message] = sent[0].messages;
     assert.equal(message.to, 'mail@example.com');
-    assert.equal(message.subject, 'Your VEYA code: $5 off your order');
+    assert.equal(message.subject, 'Your VEYA code: 25% off your order');
     assert.ok(message.text.includes(claim.body.code));
     assert.match(message.unsubscribeUrl, /\/unsubscribe\?token=[0-9a-f]{48}$/);
   } finally {

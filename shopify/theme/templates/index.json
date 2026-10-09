@@ -18,6 +18,48 @@
         "limit": 48
       }
     },
+    "manifesto": {
+      "type": "manifesto",
+      "blocks": {
+        "value-1": {
+          "type": "value",
+          "settings": {
+            "title": "Fewer, better",
+            "text": "A small range of heavyweight basics we keep improving, instead of a new trend every week."
+          }
+        },
+        "value-2": {
+          "type": "value",
+          "settings": {
+            "title": "Made for you",
+            "text": "Every piece is made when you order it. No overstock, no end-of-season pile."
+          }
+        },
+        "value-3": {
+          "type": "value",
+          "settings": {
+            "title": "One palette",
+            "text": "Earthy colours that all go together, so every new piece works with the ones you already own."
+          }
+        },
+        "value-4": {
+          "type": "value",
+          "settings": {
+            "title": "Built to stay",
+            "text": "Pre-shrunk cotton and heavyweight fleece that keep their shape, so today's favourites are still in rotation years from now."
+          }
+        }
+      },
+      "block_order": [
+        "value-1",
+        "value-2",
+        "value-3",
+        "value-4"
+      ],
+      "settings": {
+        "link": "/pages/our-approach"
+      }
+    },
     "fabrics": {
       "type": "fabrics",
       "blocks": {
@@ -69,6 +111,86 @@
     },
     "newsletter": {
       "type": "newsletter",
+      "blocks": {
+        "perk-1": {
+          "type": "perk",
+          "settings": {
+            "icon": "bolt",
+            "title": "First access",
+            "text": "New drops and restocks reach members before anyone else."
+          }
+        },
+        "perk-2": {
+          "type": "perk",
+          "settings": {
+            "icon": "how_to_vote",
+            "title": "A say in what's next",
+            "text": "Vote on the pieces we make next."
+          }
+        },
+        "perk-3": {
+          "type": "perk",
+          "settings": {
+            "icon": "sell",
+            "title": "Member-only offers",
+            "text": "Offers that only go to the Collective, straight to your inbox."
+          }
+        },
+        "perk-4": {
+          "type": "perk",
+          "settings": {
+            "icon": "workspace_premium",
+            "title": "Founding members",
+            "text": "Join while founding membership is open and you're a Founding Member for good."
+          }
+        }
+      },
+      "block_order": [
+        "perk-1",
+        "perk-2",
+        "perk-3",
+        "perk-4"
+      ],
+      "settings": {}
+    },
+    "member-vote": {
+      "type": "member-vote",
+      "blocks": {
+        "option-1": {
+          "type": "option",
+          "settings": {
+            "name": "Ribbed Beanie",
+            "note": "A chunky rib-knit beanie with a small embroidered VEYA."
+          }
+        },
+        "option-2": {
+          "type": "option",
+          "settings": {
+            "name": "Washed Dad Cap",
+            "note": "Soft washed cotton, low profile, in the VEYA colours."
+          }
+        },
+        "option-3": {
+          "type": "option",
+          "settings": {
+            "name": "Heavyweight Crew Socks",
+            "note": "Thick ribbed socks to finish every sweat set."
+          }
+        },
+        "option-4": {
+          "type": "option",
+          "settings": {
+            "name": "Canvas Tote",
+            "note": "A heavy canvas tote for the everyday carry."
+          }
+        }
+      },
+      "block_order": [
+        "option-1",
+        "option-2",
+        "option-3",
+        "option-4"
+      ],
       "settings": {}
     }
   },
@@ -77,7 +199,9 @@
     "shop-gender",
     "categories",
     "collection",
+    "manifesto",
     "fabrics",
-    "newsletter"
+    "newsletter",
+    "member-vote"
   ]
 }

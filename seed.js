@@ -386,6 +386,7 @@ const pages = {
       'Everything is made to order. Nothing is produced until you buy it, so there is no overstock to burn or bin.',
       'We use OEKO-TEX certified cotton and keep our colours to a small, earthy palette that mixes and matches.',
       'Fewer, better basics: a small range of everyday pieces we keep improving instead of chasing trends.',
+      'Built with the people who wear it: members of the VEYA Collective get new drops first and vote on what we make next.',
     ],
   },
   privacy: {

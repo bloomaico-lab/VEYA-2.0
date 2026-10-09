@@ -112,6 +112,18 @@ function openDb(file = process.env.DB_FILE || path.join(__dirname, 'data', 'veya
       order_number TEXT
     );
     CREATE INDEX IF NOT EXISTS discount_codes_email ON discount_codes (email);
+    -- The VEYA Collective's vote on what to make next: one vote per member per poll. session_id is
+    -- the browser it was cast from, so that browser can see which option it picked.
+    CREATE TABLE IF NOT EXISTS votes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      poll TEXT NOT NULL,
+      option TEXT NOT NULL,
+      subscriber_id INTEGER NOT NULL REFERENCES subscribers(id) ON DELETE CASCADE,
+      session_id TEXT REFERENCES sessions(id) ON DELETE SET NULL ON UPDATE CASCADE,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      UNIQUE (poll, subscriber_id)
+    );
+    CREATE INDEX IF NOT EXISTS votes_session ON votes (session_id);
   `);
   const addColumn = (table, name, type) => {
     if (!db.prepare(`PRAGMA table_info(${table})`).all().some((c) => c.name === name)) {
@@ -143,6 +155,8 @@ function openDb(file = process.env.DB_FILE || path.join(__dirname, 'data', 'veya
   addColumn('sessions', 'discount_code', 'TEXT');
   addColumn('orders', 'discount_code', 'TEXT');
   addColumn('orders', 'discount_cents', 'INTEGER NOT NULL DEFAULT 0');
+  // The VEYA Collective: the member (subscriber) this browser joined or signed in to the Collective as.
+  addColumn('sessions', 'member_id', 'INTEGER');
 
   // Products taken out of the range: remove them (and any bags holding them) from older databases.
   // Past orders keep their own copy of the name and price, so order history is unaffected.

@@ -647,7 +647,7 @@
       const label = $('#spin-btn-label', root);
       const idle = label.textContent;
       btn.disabled = true;
-      label.textContent = 'Good luck…';
+      label.textContent = 'Spinning…';
       const index = pickSlice();
       await turnWheel(index, true);
       rememberSpin({ spin: { slice: index, code: slices[index].code, title: slices[index].title } });
@@ -665,7 +665,7 @@
       const email = $('input[type=email]', form).value.trim();
       const error = $('#spin-error', root);
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { error.textContent = 'Please enter a valid email address.'; return; }
-      $('[data-spin-tags]', form).value = `spin-to-win, prize:${spin.code}`;
+      $('[data-spin-tags]', form).value = `spin-to-win, collective, prize:${spin.code}`;
       const btn = $('[type=submit]', form);
       btn.disabled = true;
       try {
@@ -678,6 +678,7 @@
       }
       error.textContent = '';
       rememberSpin({ claimed: true });
+      rememberMember(); // their email joined the Collective
       note = 'Copy it somewhere safe in case you shop on another device.';
       // Put the code on their cart; Shopify applies it at checkout.
       await fetch(`/discount/${encodeURIComponent(spin.code)}?redirect=${encodeURIComponent(`${routes.cart}.js`)}`, { credentials: 'same-origin' }).catch(() => {});
@@ -732,6 +733,105 @@
     };
     setTimeout(tryOpen, (Number(root.dataset.delay) || 0) * 1000);
   }
+
+  // ---------- the VEYA Collective ----------
+  // The member card is a placeholder until someone joins. Shopify can't tell a returning visitor is a
+  // member unless they're signed in, so joining (here, through the vote or the spin wheel) is
+  // remembered in this browser and the card shows "Member since <year>".
+  const MEMBER_KEY = 'veya-member';
+  const memberMemory = () => { try { return JSON.parse(localStorage.getItem(MEMBER_KEY)); } catch { return null; } };
+  function rememberMember() {
+    if (memberMemory()) return;
+    const card = $('[data-member-card]');
+    const member = { since: String(new Date().getFullYear()), founding: card ? card.dataset.founding === 'true' : false };
+    try { localStorage.setItem(MEMBER_KEY, JSON.stringify(member)); } catch { /* private browsing */ }
+    document.dispatchEvent(new CustomEvent('veya:member'));
+  }
+
+  function setupCollective(root) {
+    const card = $('[data-member-card]', root);
+    const join = $('[data-collective-join]', root);
+    const welcome = $('[data-collective-welcome]', root);
+    if (!card) return;
+    // Just signed up with this form (Shopify shows the welcome), or signed in as a subscriber.
+    if (!join) { rememberMember(); return; }
+    const render = () => {
+      const member = memberMemory();
+      const show = Boolean(member) && !root.dataset.joiningAgain;
+      join.hidden = show;
+      welcome.hidden = !show;
+      card.classList.toggle('is-member', show);
+      $('[data-card-label]', card).textContent = 'Member since';
+      $('[data-card-big]', card).textContent = show ? member.since : '••••';
+      $('[data-card-status]', card).textContent = show ? 'VEYA Collective member' : 'Join to claim your card';
+      const badge = card.dataset.founding === 'true' ? (show ? (member.founding ? 'Founding member' : '') : 'Founding spots open') : '';
+      $('[data-card-badge]', card).textContent = badge;
+      $('[data-card-badge]', card).classList.toggle('hidden', !badge);
+    };
+    $('[data-collective-again]', root)?.addEventListener('click', () => {
+      root.dataset.joiningAgain = 'true';
+      render();
+      $('input[type=email]', join)?.focus();
+    });
+    document.addEventListener('veya:member', () => { delete root.dataset.joiningAgain; render(); });
+    render();
+  }
+  $$('[data-collective]').forEach(setupCollective);
+
+  // ---------- the members' vote ----------
+  // Sent with Shopify's customer form (the voter joins the Collective, tagged with their pick) without
+  // leaving the page. If Shopify wants a spam check first, the form is submitted normally instead and
+  // the vote is confirmed when they come back. The pick is remembered in this browser per vote id.
+  const VOTE_KEY = 'veya-vote';
+  const voteMemory = () => { try { return JSON.parse(localStorage.getItem(VOTE_KEY)) || {}; } catch { return {}; } };
+
+  function setupVote(root) {
+    const form = $('#vote-form', root);
+    if (!form) return;
+    form.noValidate = true; // our own messages instead of the browser's bubbles
+    const poll = root.dataset.poll;
+    const error = $('[data-vote-error]', root);
+    const remember = (vote) => {
+      try { localStorage.setItem(VOTE_KEY, JSON.stringify({ ...voteMemory(), [poll]: vote })); } catch { /* private browsing */ }
+    };
+    const showVoted = (name) => {
+      $('[data-vote-ballot]', form).hidden = true;
+      $('[data-vote-done]', form).hidden = false;
+      $('[data-vote-choice]', form).textContent = name;
+    };
+
+    const vote = voteMemory()[poll];
+    const backFromShopify = window.location.hash === '#vote-form' && new URLSearchParams(window.location.search).get('customer_posted') === 'true';
+    if (vote && (vote.cast || backFromShopify)) {
+      if (!vote.cast) { remember({ ...vote, cast: true }); rememberMember(); }
+      showVoted(vote.name);
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const choice = $('input[type=radio]:checked', form);
+      const email = $('input[type=email]', form).value.trim();
+      if (!choice) { error.textContent = 'Pick one of the options first.'; return; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { error.textContent = 'Enter your email to vote.'; $('input[type=email]', form).focus(); return; }
+      error.textContent = '';
+      const name = choice.dataset.voteOption;
+      remember({ name, cast: false });
+      const btn = $('[type=submit]', form);
+      btn.disabled = true;
+      try {
+        const res = await fetch(form.action, { method: 'POST', body: new URLSearchParams(new FormData(form)), credentials: 'same-origin', headers: { Accept: 'text/html' } });
+        if (!res.ok || /\/challenge/.test(res.url)) throw new Error('needs the full page');
+      } catch {
+        form.submit(); // Shopify's own flow (e.g. its spam check), then back here
+        return;
+      }
+      remember({ name, cast: true });
+      rememberMember();
+      btn.disabled = false;
+      showVoted(name);
+    });
+  }
+  $$('[data-vote]').forEach(setupVote);
 
   const spinRoot = $('#spin-overlay[data-spin]');
   if (spinRoot) setupSpin(spinRoot);

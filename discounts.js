@@ -1,5 +1,5 @@
 // Spin to win: the wheel's slices, how a spin is decided, and the discount maths the bag and
-// checkout use. Every slice is a real deal; the bigger deals come up less often.
+// checkout use. Every slice is a real deal, and the weights decide which one a spin lands on.
 const crypto = require('node:crypto');
 
 const CODE_DAYS = 14; // a code won on the wheel is valid for 14 days
@@ -19,26 +19,32 @@ const PRIZES = {
 
 // The wheel, clockwise from the pointer at the top. `weight` is the chance (out of 100) of
 // landing on that slice; `style` is its colour (the two biggest deals stand out in blue and navy).
+// Every spin lands on 25% off: it has all the weight, and the other slices show the range of deals.
+// To mix the deals up again, spread the weights out (e.g. 15/18/16/14/8/15/10/4).
 const SLICES = [
-  { prize: 'pct10', big: '10%', small: 'OFF', weight: 15, style: 'cream' },
-  { prize: 'ship', big: 'FREE', small: 'SHIPPING', weight: 18, style: 'sand' },
-  { prize: 'pct15', big: '15%', small: 'OFF', weight: 16, style: 'cream' },
-  { prize: 'usd5', big: '$5', small: 'OFF', weight: 14, style: 'sand' },
-  { prize: 'pct20', big: '20%', small: 'OFF', weight: 8, style: 'blue' },
-  { prize: 'pct10', big: '10%', small: 'OFF', weight: 15, style: 'sand' },
-  { prize: 'usd10', big: '$10', small: 'OFF $60+', weight: 10, style: 'cream' },
-  { prize: 'pct25', big: '25%', small: 'OFF', weight: 4, style: 'navy' },
+  { prize: 'pct10', big: '10%', small: 'OFF', weight: 0, style: 'cream' },
+  { prize: 'ship', big: 'FREE', small: 'SHIPPING', weight: 0, style: 'sand' },
+  { prize: 'pct15', big: '15%', small: 'OFF', weight: 0, style: 'cream' },
+  { prize: 'usd5', big: '$5', small: 'OFF', weight: 0, style: 'sand' },
+  { prize: 'pct20', big: '20%', small: 'OFF', weight: 0, style: 'blue' },
+  { prize: 'pct10', big: '10%', small: 'OFF', weight: 0, style: 'sand' },
+  { prize: 'usd10', big: '$10', small: 'OFF $60+', weight: 0, style: 'cream' },
+  { prize: 'pct25', big: '25%', small: 'OFF', weight: 100, style: 'navy' },
 ];
 
 // Index of the slice a spin lands on, chosen by weight. `random` returns a number in [0, 1).
-function pickSlice(random = Math.random) {
-  const total = SLICES.reduce((sum, s) => sum + s.weight, 0);
+// Slices with no weight are never picked.
+function pickSlice(random = Math.random, slices = SLICES) {
+  const total = slices.reduce((sum, s) => sum + s.weight, 0);
   let r = random() * total;
-  for (let i = 0; i < SLICES.length; i += 1) {
-    r -= SLICES[i].weight;
+  let last = 0;
+  for (let i = 0; i < slices.length; i += 1) {
+    if (slices[i].weight <= 0) continue;
+    last = i;
+    r -= slices[i].weight;
     if (r < 0) return i;
   }
-  return SLICES.length - 1;
+  return last;
 }
 
 // A code nobody can guess: the deal's name plus five characters that can't be misread (no 0/O, 1/I/L).

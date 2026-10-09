@@ -26,11 +26,11 @@ function renderCampaign({ subject, body, unsubscribeUrl, mailingAddress, siteUrl
 <tr><td style="padding:16px 32px 8px;">${htmlParagraphs}
 <p style="margin:24px 0 8px;"><a href="${escapeHtml(siteUrl)}" style="display:inline-block;background:#1B2A41;color:#F5EFE4;text-decoration:none;padding:12px 24px;border-radius:999px;font-size:14px;">Shop VEYA</a></p></td></tr>
 <tr><td style="padding:24px 32px 28px;border-top:1px solid #E2D8C6;font-size:12px;line-height:18px;color:#4A5568;">
-You're receiving this because you joined the VEYA list.<br>
+You're receiving this because you joined the VEYA Collective.<br>
 <a href="${escapeHtml(unsubscribeUrl)}" style="color:#4A5568;">Unsubscribe</a><br>
 ${escapeHtml(mailingAddress)}</td></tr>
 </table></td></tr></table></body></html>`;
-  const text = `${paragraphs.join('\n\n')}\n\nShop VEYA: ${siteUrl}\n\n--\nYou're receiving this because you joined the VEYA list.\nUnsubscribe: ${unsubscribeUrl}\n${mailingAddress}\n`;
+  const text = `${paragraphs.join('\n\n')}\n\nShop VEYA: ${siteUrl}\n\n--\nYou're receiving this because you joined the VEYA Collective.\nUnsubscribe: ${unsubscribeUrl}\n${mailingAddress}\n`;
   return { html, text };
 }
 

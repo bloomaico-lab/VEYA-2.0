@@ -37,9 +37,11 @@
         <div>
           <h4 class="text-headline-sm font-headline-sm text-primary mb-4">About</h4>
           <ul class="space-y-3">
+            <li><a class="{{ link }}" href="{{ routes.root_url }}#manifesto">Who We're For</a></li>
             <li><a class="{{ link }}" href="/pages/our-approach">Our Approach</a></li>
             <li><a class="{{ link }}" href="{{ routes.root_url }}#fabric-lab">The Fabrics</a></li>
-            <li><a class="{{ link }}" href="{{ routes.root_url }}#vip">Join the List</a></li>
+            <li><a class="{{ link }}" href="{{ routes.root_url }}#collective">The Collective</a></li>
+            <li><a class="{{ link }}" href="{{ routes.root_url }}#vote">Members' Vote</a></li>
             {%- if section.settings.instagram != blank -%}
               <li><a class="{{ link }}" href="{{ section.settings.instagram }}" target="_blank" rel="noopener">Instagram</a></li>
             {%- endif -%}

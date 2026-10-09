@@ -67,6 +67,14 @@
     .spin-code { border: 1.5px dashed #34507A; }
     .spin-step[hidden], #spin-teaser[hidden] { display: none !important; }
     #bag-code > summary::-webkit-details-marker { display: none; }
+    /* The VEYA Collective member card: navy with fine engraved rings, tilted slightly. */
+    .member-card { background: radial-gradient(120% 140% at 100% 0%, #34507A 0%, #1B2A41 55%, #111A28 100%); box-shadow: 0 30px 60px -28px rgba(17, 26, 40, 0.6), inset 0 0 0 1px rgba(245, 239, 228, 0.12); transform: rotate(-2.5deg); transition: transform 500ms ease-out; }
+    .member-card::before { content: ""; position: absolute; inset: 0; background: repeating-radial-gradient(circle at 112% -12%, transparent 0 13px, rgba(245, 239, 228, 0.055) 13px 14px); pointer-events: none; }
+    .member-card:hover, .member-card.is-member { transform: rotate(0deg); }
+    .member-reveal { animation: member-reveal 700ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+    @keyframes member-reveal { from { opacity: 0; transform: translateY(10px); filter: blur(4px); } to { opacity: 1; transform: none; filter: none; } }
+    .vote-bar { transition: width 900ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+    @media (prefers-reduced-motion: reduce) { .member-card { transition: none; } .member-reveal { animation: none; } .vote-bar { transition: none; } }
     @media (prefers-reduced-motion: reduce) { .ticker-track { animation-duration: 80s; } }
   </style>
 </head>
@@ -76,23 +84,24 @@
        ========================================== -->
 <header class="fixed top-0 inset-x-0 z-50 bg-surface/80 backdrop-blur-2xl shadow-sm">
 <div class="ticker bg-primary text-on-primary font-label-sm text-label-sm uppercase tracking-widest py-2" role="region" aria-label="Offers and shipping">
-<div class="ticker-track"><div class="ticker-group"><a data-page="shipping" href="#shipping" class="hover:underline underline-offset-4">Free shipping on orders over $75</a><span class="ticker-dot" aria-hidden="true"></span><a data-filter="all" data-gender="women" href="#collections" class="hover:underline underline-offset-4">New for women: racer tanks &amp; track pants</a><span class="ticker-dot" aria-hidden="true"></span><a data-filter="all" data-gender="men" href="#collections" class="hover:underline underline-offset-4">New for men: quarter-zips &amp; cargo sweats</a><span class="ticker-dot" aria-hidden="true"></span><a data-page="shipping" href="#shipping" class="hover:underline underline-offset-4">Free 30-day size exchanges</a><span class="ticker-dot" aria-hidden="true"></span><a data-page="shipping" href="#shipping" class="hover:underline underline-offset-4">Made to order · ships in 2–4 business days</a><span class="ticker-dot" aria-hidden="true"></span><a data-search="matching set" href="#collections" class="hover:underline underline-offset-4">Matching hoodie &amp; sweatpant sets</a><span class="ticker-dot" aria-hidden="true"></span></div><div class="ticker-group" aria-hidden="true"><a data-page="shipping" href="#shipping" tabindex="-1" class="hover:underline underline-offset-4">Free shipping on orders over $75</a><span class="ticker-dot" aria-hidden="true"></span><a data-filter="all" data-gender="women" href="#collections" tabindex="-1" class="hover:underline underline-offset-4">New for women: racer tanks &amp; track pants</a><span class="ticker-dot" aria-hidden="true"></span><a data-filter="all" data-gender="men" href="#collections" tabindex="-1" class="hover:underline underline-offset-4">New for men: quarter-zips &amp; cargo sweats</a><span class="ticker-dot" aria-hidden="true"></span><a data-page="shipping" href="#shipping" tabindex="-1" class="hover:underline underline-offset-4">Free 30-day size exchanges</a><span class="ticker-dot" aria-hidden="true"></span><a data-page="shipping" href="#shipping" tabindex="-1" class="hover:underline underline-offset-4">Made to order · ships in 2–4 business days</a><span class="ticker-dot" aria-hidden="true"></span><a data-search="matching set" href="#collections" tabindex="-1" class="hover:underline underline-offset-4">Matching hoodie &amp; sweatpant sets</a><span class="ticker-dot" aria-hidden="true"></span></div></div>
+<div class="ticker-track"><div class="ticker-group"><a data-page="shipping" href="#shipping" class="hover:underline underline-offset-4">Free shipping on orders over $75</a><span class="ticker-dot" aria-hidden="true"></span><a data-filter="all" data-gender="women" href="#collections" class="hover:underline underline-offset-4">New for women: racer tanks &amp; track pants</a><span class="ticker-dot" aria-hidden="true"></span><a data-filter="all" data-gender="men" href="#collections" class="hover:underline underline-offset-4">New for men: quarter-zips &amp; cargo sweats</a><span class="ticker-dot" aria-hidden="true"></span><a data-page="shipping" href="#shipping" class="hover:underline underline-offset-4">Free 30-day size exchanges</a><span class="ticker-dot" aria-hidden="true"></span><a data-page="shipping" href="#shipping" class="hover:underline underline-offset-4">Made to order · ships in 2–4 business days</a><span class="ticker-dot" aria-hidden="true"></span><a data-search="matching set" href="#collections" class="hover:underline underline-offset-4">Matching hoodie &amp; sweatpant sets</a><span class="ticker-dot" aria-hidden="true"></span><a href="#collective" class="hover:underline underline-offset-4">Join the VEYA Collective: vote on what we make next</a><span class="ticker-dot" aria-hidden="true"></span></div><div class="ticker-group" aria-hidden="true"><a data-page="shipping" href="#shipping" tabindex="-1" class="hover:underline underline-offset-4">Free shipping on orders over $75</a><span class="ticker-dot" aria-hidden="true"></span><a data-filter="all" data-gender="women" href="#collections" tabindex="-1" class="hover:underline underline-offset-4">New for women: racer tanks &amp; track pants</a><span class="ticker-dot" aria-hidden="true"></span><a data-filter="all" data-gender="men" href="#collections" tabindex="-1" class="hover:underline underline-offset-4">New for men: quarter-zips &amp; cargo sweats</a><span class="ticker-dot" aria-hidden="true"></span><a data-page="shipping" href="#shipping" tabindex="-1" class="hover:underline underline-offset-4">Free 30-day size exchanges</a><span class="ticker-dot" aria-hidden="true"></span><a data-page="shipping" href="#shipping" tabindex="-1" class="hover:underline underline-offset-4">Made to order · ships in 2–4 business days</a><span class="ticker-dot" aria-hidden="true"></span><a data-search="matching set" href="#collections" tabindex="-1" class="hover:underline underline-offset-4">Matching hoodie &amp; sweatpant sets</a><span class="ticker-dot" aria-hidden="true"></span><a href="#collective" tabindex="-1" class="hover:underline underline-offset-4">Join the VEYA Collective: vote on what we make next</a><span class="ticker-dot" aria-hidden="true"></span></div></div>
 </div>
 <div class="flex justify-between items-center w-full px-6 md:px-12 py-4 max-w-7xl mx-auto">
 <a class="text-headline-md font-display tracking-tight text-primary transition-all duration-300 ease-out active:scale-95 flex items-center gap-2" href="#top">
 <span>VEYA</span>
 <span class="inline-block w-1.5 h-1.5 rounded-full bg-secondary"></span>
 </a>
-<nav class="hidden lg:flex items-center gap-8" aria-label="Main">
+<nav class="hidden lg:flex items-center gap-5 xl:gap-8 whitespace-nowrap" aria-label="Main">
 <a class="nav-link text-primary border-b border-secondary pb-1 tracking-widest font-label-md uppercase" href="#collections" data-filter="all">Shop All</a>
 <a class="text-on-surface-variant hover:text-primary tracking-widest font-label-md uppercase transition-colors duration-200 nav-link border-b border-transparent pb-1" href="#collections" data-filter="all" data-gender="men">Men</a>
 <a class="text-on-surface-variant hover:text-primary tracking-widest font-label-md uppercase transition-colors duration-200 nav-link border-b border-transparent pb-1" href="#collections" data-filter="all" data-gender="women">Women</a>
 <a class="text-on-surface-variant hover:text-primary tracking-widest font-label-md uppercase transition-colors duration-200 nav-link border-b border-transparent pb-1" href="#collections" data-filter="tops">Tops</a>
 <a class="text-on-surface-variant hover:text-primary tracking-widest font-label-md uppercase transition-colors duration-200 nav-link border-b border-transparent pb-1" href="#collections" data-filter="layers">Layers</a>
 <a class="text-on-surface-variant hover:text-primary tracking-widest font-label-md uppercase transition-colors duration-200 nav-link border-b border-transparent pb-1" href="#collections" data-filter="bottoms">Bottoms</a>
+<a class="hidden xl:inline text-on-surface-variant hover:text-primary tracking-widest font-label-md uppercase transition-colors duration-200 border-b border-transparent pb-1" href="#collective">Collective</a>
 <a class="text-on-surface-variant hover:text-primary tracking-widest font-label-md uppercase transition-colors duration-200" href="#shipping" data-page="shipping">Help</a>
 </nav>
-<div class="flex items-center gap-6">
+<div class="flex items-center gap-5 xl:gap-6 whitespace-nowrap">
 <button id="menu-btn" type="button" aria-label="Open menu" class="lg:hidden text-on-surface-variant hover:text-secondary transition-colors duration-200 flex items-center"><span class="material-symbols-outlined text-[22px]">menu</span></button>
 <button id="search-btn" aria-label="Search products" class="text-on-surface-variant hover:text-secondary transition-colors duration-200 flex items-center" type="button">
 <span class="material-symbols-outlined text-[20px]" data-icon="search">search</span>
@@ -325,7 +334,49 @@
 <p class="col-span-full font-label-md text-on-surface-variant">LOADING COLLECTION…</p>
 </div>
 </section>
-<!-- 5. FABRICS -->
+<!-- 5. WHO WE'RE FOR -->
+<section id="manifesto" class="relative bg-primary text-on-primary overflow-hidden">
+<div class="absolute -top-48 -right-40 w-[560px] h-[560px] rounded-full bg-secondary/40 blur-3xl pointer-events-none" aria-hidden="true"></div>
+<div class="relative max-w-7xl mx-auto px-6 md:px-12 py-24 md:py-32 grid grid-cols-1 lg:grid-cols-12 gap-14 lg:gap-16 items-center">
+<div class="lg:col-span-6 space-y-8">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-on-primary/70"></span>
+<span class="font-label-sm text-label-sm uppercase tracking-[0.25em] text-on-primary/70">WHO WE'RE FOR</span>
+</div>
+<h2 class="font-display text-[44px] leading-[1.04] md:text-[64px] md:leading-[1.02] tracking-tight">For who you're becoming.</h2>
+<p class="font-body-lg text-body-lg text-on-primary/80 max-w-xl leading-relaxed">VEYA is for people building something: a routine, a craft, a life that's theirs. We make the everyday pieces that come along for all of it. Made to order, made to last and made to go with everything else you own.</p>
+<div class="flex flex-col sm:flex-row gap-4 pt-2">
+<a href="#collective" class="h-[52px] px-8 rounded-full bg-on-primary text-primary font-headline-sm text-headline-sm flex items-center justify-center gap-2 hover:bg-surface-container-high transition-colors duration-300">
+<span>Join the Collective</span><span class="material-symbols-outlined text-[18px]" aria-hidden="true">arrow_forward</span>
+</a>
+<a href="#sustainability" data-page="sustainability" class="h-[52px] px-8 rounded-full border border-on-primary/30 text-on-primary font-headline-sm text-headline-sm flex items-center justify-center hover:border-on-primary transition-colors duration-300">Our approach</a>
+</div>
+</div>
+<ol class="lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-9" aria-label="What VEYA stands for">
+<li class="border-t border-on-primary/20 pt-5">
+<span class="font-label-sm text-label-sm tracking-[0.2em] text-on-primary/60">01</span>
+<h3 class="font-headline-sm text-headline-sm mt-2">Fewer, better</h3>
+<p class="font-body-md text-body-md text-on-primary/75 mt-1">A small range of heavyweight basics we keep improving, instead of a new trend every week.</p>
+</li>
+<li class="border-t border-on-primary/20 pt-5">
+<span class="font-label-sm text-label-sm tracking-[0.2em] text-on-primary/60">02</span>
+<h3 class="font-headline-sm text-headline-sm mt-2">Made for you</h3>
+<p class="font-body-md text-body-md text-on-primary/75 mt-1">Every piece is made when you order it. No overstock, no end-of-season pile.</p>
+</li>
+<li class="border-t border-on-primary/20 pt-5">
+<span class="font-label-sm text-label-sm tracking-[0.2em] text-on-primary/60">03</span>
+<h3 class="font-headline-sm text-headline-sm mt-2">One palette</h3>
+<p class="font-body-md text-body-md text-on-primary/75 mt-1">Earthy colours that all go together, so every new piece works with the ones you already own.</p>
+</li>
+<li class="border-t border-on-primary/20 pt-5">
+<span class="font-label-sm text-label-sm tracking-[0.2em] text-on-primary/60">04</span>
+<h3 class="font-headline-sm text-headline-sm mt-2">Built to stay</h3>
+<p class="font-body-md text-body-md text-on-primary/75 mt-1">Pre-shrunk cotton and heavyweight fleece that keep their shape, so today's favourites are still in rotation years from now.</p>
+</li>
+</ol>
+</div>
+</section>
+<!-- 6. FABRICS -->
 <section class="py-24 px-6 md:px-12 bg-surface-container-lowest border-y border-outline-variant/20" id="fabric-lab">
 <div class="max-w-7xl mx-auto">
 <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
@@ -419,32 +470,89 @@
 </div>
 </div>
 </section>
-<!-- 6. NEWSLETTER -->
-<section id="vip" class="py-24 px-6 md:px-12 bg-surface-container-low relative overflow-hidden border-t border-outline-variant/20">
-<div class="absolute -top-48 right-0 w-96 h-96 bg-secondary/10 rounded-full blur-3xl pointer-events-none"></div>
-<div class="max-w-4xl mx-auto text-center space-y-8 relative z-10">
+<!-- 7. THE VEYA COLLECTIVE (sign-up; wired up in app.js) -->
+<section id="collective" class="py-24 px-6 md:px-12 bg-surface-container-low relative overflow-hidden border-t border-outline-variant/20">
+<div class="absolute -top-48 right-0 w-96 h-96 bg-secondary/10 rounded-full blur-3xl pointer-events-none" aria-hidden="true"></div>
+<div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-14 lg:gap-16 items-center relative z-10">
+<div class="lg:col-span-7 space-y-8">
 <div class="inline-flex items-center gap-2">
 <span class="w-2 h-2 rounded-full bg-secondary"></span>
-<span class="font-label-sm text-secondary uppercase tracking-[0.25em]">JOIN THE LIST</span>
+<span class="font-label-sm text-secondary uppercase tracking-[0.25em]">THE VEYA COLLECTIVE</span>
 </div>
-<h2 class="font-headline-lg md:font-display text-headline-lg md:text-display text-primary">
-          Be first to the next drop.
-        </h2>
-<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto leading-relaxed">
-          New releases, restocks and members-only offers, straight to your inbox.
-        </p>
-<form id="vip-form" class="max-w-md mx-auto flex flex-col sm:flex-row gap-3 pt-4" novalidate>
-<div class="relative flex-grow">
-<input class="w-full h-[52px] px-5 rounded-full bg-surface-container-lowest/80 border border-outline-variant/40 text-primary placeholder-on-surface-variant/50 focus:border-secondary focus:ring-0 font-body-md transition-colors duration-200 outline-none" placeholder="Your email address" required="" type="email" name="email" aria-label="Email address" autocomplete="email"/>
-</div>
-<button class="h-[52px] px-8 rounded-full bg-primary text-on-primary font-headline-sm text-headline-sm hover:bg-secondary transition-colors duration-300 amber-glow-hover whitespace-nowrap flex items-center justify-center gap-2" type="submit">
-<span>Sign Up</span>
-<span class="material-symbols-outlined text-[18px]" data-icon="arrow_forward">arrow_forward</span>
+<h2 class="font-headline-lg md:font-display text-headline-lg md:text-display text-primary">Built with the people who wear it.</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-xl leading-relaxed">Join the Collective, free. Members get first access to every drop, a vote on what we make next and offers that only go to members.</p>
+<ul class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5 max-w-2xl">
+<li class="flex gap-3"><span class="material-symbols-outlined text-secondary text-[22px]" aria-hidden="true">bolt</span><div><p class="font-label-md uppercase tracking-wider text-primary">First access</p><p class="font-body-sm text-body-sm text-on-surface-variant mt-1">New drops and restocks reach members before anyone else.</p></div></li>
+<li class="flex gap-3"><span class="material-symbols-outlined text-secondary text-[22px]" aria-hidden="true">how_to_vote</span><div><p class="font-label-md uppercase tracking-wider text-primary">A say in what's next</p><p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Vote on the pieces we make next and see the results as they come in.</p></div></li>
+<li class="flex gap-3"><span class="material-symbols-outlined text-secondary text-[22px]" aria-hidden="true">sell</span><div><p class="font-label-md uppercase tracking-wider text-primary">Member-only offers</p><p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Offers that only go to the Collective, straight to your inbox.</p></div></li>
+<li class="flex gap-3"><span class="material-symbols-outlined text-secondary text-[22px]" aria-hidden="true">workspace_premium</span><div><p class="font-label-md uppercase tracking-wider text-primary">A number for good</p><p class="font-body-sm text-body-sm text-on-surface-variant mt-1"><span data-founding-count>The first 1,000 members</span> are Founding Members. Your member number is yours to keep.</p></div></li>
+</ul>
+<div id="collective-join" class="space-y-3">
+<form id="collective-form" class="max-w-lg flex flex-col sm:flex-row gap-3" novalidate>
+<input class="flex-grow w-full h-[52px] px-5 rounded-full bg-surface-container-lowest/80 border border-outline-variant/40 text-primary placeholder-on-surface-variant/50 focus:border-secondary focus:ring-0 font-body-md transition-colors duration-200 outline-none" placeholder="Your email address" required="" type="email" name="email" aria-label="Email address" autocomplete="email"/>
+<button class="h-[52px] px-8 rounded-full bg-primary text-on-primary font-headline-sm text-headline-sm hover:bg-secondary transition-colors duration-300 amber-glow-hover whitespace-nowrap flex items-center justify-center gap-2 disabled:opacity-60" type="submit">
+<span>Join the Collective</span>
+<span class="material-symbols-outlined text-[18px]" aria-hidden="true">arrow_forward</span>
 </button>
 </form>
-<p id="vip-message" class="font-label-md text-secondary tracking-wider min-h-[16px]" aria-live="polite"></p>
-<p class="font-label-sm text-outline tracking-wider">NO SPAM. UNSUBSCRIBE ANYTIME.</p>
+<p id="collective-message" class="font-label-md text-label-lg text-error tracking-wider min-h-[18px]" aria-live="polite"></p>
+<p class="font-label-sm text-outline tracking-wider">FREE TO JOIN. NO SPAM. LEAVE ANYTIME.</p>
 </div>
+<div id="collective-welcome" class="hidden max-w-xl space-y-4" aria-live="polite">
+<p id="collective-welcome-title" class="font-headline-md text-headline-md text-primary"></p>
+<p id="collective-welcome-text" class="font-body-md text-body-md text-on-surface-variant leading-relaxed"></p>
+<a href="#vote" class="inline-flex h-11 px-6 rounded-full border border-primary/30 text-primary font-label-md text-label-md uppercase tracking-widest items-center gap-2 hover:bg-primary hover:text-on-primary transition-colors duration-200"><span id="collective-vote-link">Cast your vote</span><span class="material-symbols-outlined text-[16px]" aria-hidden="true">arrow_downward</span></a>
+</div>
+</div>
+<div class="lg:col-span-5 flex justify-center lg:justify-end">
+<!-- The member card: a placeholder until you join, then your real member number. -->
+<div id="member-card" class="member-card relative w-full max-w-[400px] aspect-[1.586/1] rounded-2xl p-6 sm:p-7 text-on-primary overflow-hidden flex flex-col justify-between">
+<div class="relative flex items-start justify-between gap-4">
+<div>
+<span class="block font-display text-[30px] leading-none tracking-tight">VEYA</span>
+<span class="block font-label-sm text-label-sm uppercase tracking-[0.35em] text-on-primary/70 mt-1.5">Collective</span>
+</div>
+<span id="member-card-badge" class="hidden font-label-sm text-label-sm uppercase tracking-[0.16em] px-2.5 py-1 rounded-full border border-on-primary/35 whitespace-nowrap"></span>
+</div>
+<div class="relative">
+<span class="block font-label-sm text-label-sm uppercase tracking-[0.25em] text-on-primary/60">Member No.</span>
+<span id="member-card-number" class="block font-display text-[52px] sm:text-[60px] leading-none tracking-tight mt-1">••••</span>
+</div>
+<div class="relative flex items-end justify-between gap-4">
+<span id="member-card-status" class="font-label-sm text-label-sm uppercase tracking-[0.2em] text-on-primary/75">Join to claim your number</span>
+<span class="w-2 h-2 rounded-full bg-on-primary/80 shrink-0" aria-hidden="true"></span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 8. THE MEMBERS' VOTE (options and results come from /api/collective; wired up in app.js) -->
+<section id="vote" class="py-24 px-6 md:px-12 max-w-7xl mx-auto w-full">
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
+<div>
+<div class="flex items-center gap-2 mb-3">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span class="font-label-sm text-secondary uppercase tracking-widest">THE MEMBERS' VOTE</span>
+</div>
+<h2 id="vote-question" class="font-headline-lg text-headline-lg text-primary">What should we make next?</h2>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-md">Members choose what VEYA makes next. One vote each, and you'll see the results as soon as yours is in.</p>
+</div>
+<form id="vote-form" novalidate>
+<fieldset>
+<legend class="sr-only">What should we make next?</legend>
+<div id="vote-options" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6"></div>
+</fieldset>
+<p id="vote-summary" class="hidden mt-6 font-body-md text-body-md text-on-surface-variant" aria-live="polite"></p>
+<div id="vote-actions" class="mt-8 flex flex-col md:flex-row md:items-center gap-4">
+<label id="vote-email-row" class="w-full md:max-w-sm"><span class="sr-only">Email address</span><input id="vote-email" name="email" type="email" autocomplete="email" placeholder="Your email address" class="w-full h-[52px] px-5 rounded-full bg-surface-container-lowest border border-outline-variant/40 text-primary placeholder-on-surface-variant/50 focus:border-secondary focus:ring-0 font-body-md outline-none"/></label>
+<button id="vote-submit" type="submit" class="h-[52px] px-8 rounded-full bg-primary text-on-primary font-headline-sm text-headline-sm hover:bg-secondary transition-colors duration-300 amber-glow-hover whitespace-nowrap flex items-center justify-center gap-2 disabled:opacity-60">
+<span>Cast my vote</span><span class="material-symbols-outlined text-[18px]" aria-hidden="true">how_to_vote</span>
+</button>
+<p id="vote-note" class="font-body-sm text-body-sm text-outline md:max-w-xs">Voting makes you a member of the VEYA Collective. Leave anytime.</p>
+</div>
+<p id="vote-message" class="mt-4 font-body-md text-body-md text-error min-h-[22px]" aria-live="polite"></p>
+</form>
 </section>
 </main>
 <!-- ==========================================
@@ -487,9 +595,11 @@
 <div>
 <h4 class="text-headline-sm font-headline-sm text-primary mb-4">About</h4>
 <ul class="space-y-3">
+<li><a class="text-label-sm font-label-sm text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#manifesto">Who We're For</a></li>
 <li><a class="text-label-sm font-label-sm text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#sustainability" data-page="sustainability">Our Approach</a></li>
 <li><a class="text-label-sm font-label-sm text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#fabric-lab">The Fabrics</a></li>
-<li><a class="text-label-sm font-label-sm text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#vip">Join the List</a></li>
+<li><a class="text-label-sm font-label-sm text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#collective">The Collective</a></li>
+<li><a class="text-label-sm font-label-sm text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#vote">Members' Vote</a></li>
 </ul>
 </div>
 </div>
@@ -718,7 +828,7 @@
 <div class="spin-step flex flex-col gap-4" data-spin-step="intro">
 <span class="font-label-sm text-secondary uppercase tracking-[0.2em]">SPIN TO WIN</span>
 <h2 id="spin-title" class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary">Spin for a deal.</h2>
-<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">Every slice wins something: up to 25% off, money off your order or free shipping. Spin, then pop in your email to unlock your code.</p>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">Give the wheel a spin to unlock your welcome deal, then pop in your email to get your code. It goes straight on your bag.</p>
 <button id="spin-btn" type="button" class="w-full h-[52px] rounded-full bg-primary text-on-primary font-headline-sm text-headline-sm flex items-center justify-center gap-2 hover:bg-secondary transition-colors duration-300 amber-glow-hover disabled:opacity-60">
 <span id="spin-btn-label">Spin the wheel</span><span class="material-symbols-outlined text-[18px]" aria-hidden="true">autorenew</span>
 </button>
@@ -733,7 +843,7 @@
 <button type="submit" class="w-full h-[52px] rounded-full bg-primary text-on-primary font-headline-sm text-headline-sm flex items-center justify-center gap-2 hover:bg-secondary transition-colors duration-300 amber-glow-hover disabled:opacity-60">
 <span>Unlock my code</span><span class="material-symbols-outlined text-[18px]" aria-hidden="true">lock_open</span>
 </button>
-<p class="font-body-sm text-body-sm text-outline">You'll also join the VEYA list for new drops and offers. Unsubscribe anytime.</p>
+<p class="font-body-sm text-body-sm text-outline">You'll also join the VEYA Collective for early access to drops, member offers and a vote on what we make next. Unsubscribe anytime.</p>
 </form>
 <div class="spin-step flex flex-col gap-4" data-spin-step="claimed" hidden>
 <span class="font-label-sm text-secondary uppercase tracking-[0.2em]">YOUR CODE</span>
@@ -743,6 +853,7 @@
 <button id="spin-copy" type="button" class="shrink-0 h-9 px-4 rounded-full border border-primary/30 text-primary font-label-md uppercase tracking-widest hover:bg-primary hover:text-on-primary transition-colors">Copy</button>
 </div>
 <p id="spin-claimed-note" class="font-body-md text-body-md text-on-surface-variant leading-relaxed" aria-live="polite"></p>
+<p id="spin-member" class="hidden items-center gap-2 font-label-sm text-label-sm text-secondary uppercase tracking-widest"><span class="material-symbols-outlined text-[16px]" aria-hidden="true">workspace_premium</span><span id="spin-member-text"></span></p>
 <button type="button" data-close data-filter="all" class="w-full h-[52px] rounded-full bg-primary text-on-primary font-headline-sm text-headline-sm flex items-center justify-center gap-2 hover:bg-secondary transition-colors duration-300 amber-glow-hover">
 <span>Start shopping</span><span class="material-symbols-outlined text-[18px]" aria-hidden="true">arrow_forward</span>
 </button>
@@ -772,6 +883,7 @@
 <a data-close data-filter="layers" href="#collections" class="font-label-lg text-label-lg uppercase tracking-widest text-on-surface-variant hover:text-primary">Layers</a>
 <a data-close data-filter="bottoms" href="#collections" class="font-label-lg text-label-lg uppercase tracking-widest text-on-surface-variant hover:text-primary">Bottoms</a>
 <a data-close href="#fabric-lab" class="font-label-lg text-label-lg uppercase tracking-widest text-on-surface-variant hover:text-primary">Fabrics</a>
+<a data-close href="#collective" class="font-label-lg text-label-lg uppercase tracking-widest text-on-surface-variant hover:text-primary">The Collective</a>
 <a data-page="shipping" href="#shipping" class="font-label-lg text-label-lg uppercase tracking-widest text-on-surface-variant hover:text-primary">Help</a>
 <button id="menu-account-btn" type="button" class="text-left font-label-lg text-label-lg uppercase tracking-widest text-secondary">Account</button>
 </nav>

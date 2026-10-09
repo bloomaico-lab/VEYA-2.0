@@ -80,9 +80,9 @@ describe('Shopify mode routes (fake Storefront client)', () => {
       },
     }));
     const qty = lines.reduce((n, l) => n + l.quantity, 0);
-    // The store has the wheel's shared codes set up; SPIN10 takes 10% off the order.
-    const codes = (cart.discountCodes || []).map((code) => ({ code, applicable: ['SPIN10', 'SHIPFREE'].includes(code) }));
-    const off = codes.some((c) => c.code === 'SPIN10' && c.applicable) ? 5.8 * qty : 0;
+    // The store has the wheel's shared codes set up; SPIN25 takes 25% off the order.
+    const codes = (cart.discountCodes || []).map((code) => ({ code, applicable: ['SPIN25', 'SHIPFREE'].includes(code) }));
+    const off = codes.some((c) => c.code === 'SPIN25' && c.applicable) ? 14.5 * qty : 0;
     return {
       id: cart.id,
       checkoutUrl: `https://veya.example/checkouts/${cart.id}`,
@@ -132,7 +132,7 @@ describe('Shopify mode routes (fake Storefront client)', () => {
   let server;
   let base;
   before(async () => {
-    // random() = 0 lands the wheel on its first slice: 10% off (Shopify code SPIN10).
+    // The wheel always lands on 25% off (Shopify code SPIN25), whatever random() says.
     server = createApp(openDb(':memory:'), { stripe: null, shopify: fake, random: () => 0 }).listen(0);
     await new Promise((r) => server.once('listening', r));
     base = `http://127.0.0.1:${server.address().port}`;
@@ -197,11 +197,13 @@ describe('Shopify mode routes (fake Storefront client)', () => {
     await api('/api/spin', { method: 'POST' });
     const claim = await api('/api/spin/claim', { method: 'POST', body: { email: 'shop@example.com' } });
     assert.equal(claim.status, 201);
-    assert.deepEqual(claim.body, { code: 'SPIN10', title: '10% off your order', expiresAt: null, existing: false, emailed: false });
+    const { member, ...won } = claim.body;
+    assert.deepEqual(won, { code: 'SPIN25', title: '25% off your order', expiresAt: null, existing: false, emailed: false });
+    assert.equal(member.number, '0001', 'winners join the VEYA Collective');
     // The bag was empty when they won, so the code goes on the cart when it's made.
     let r = await api('/api/cart', { method: 'POST', body: { productId: 'heavyweight-hoodie', size: 'M', color: 'Black' } });
-    assert.deepEqual(r.body.discount, { code: 'SPIN10', title: '', amount: 5.8, freeShipping: false, applied: true, note: '' });
-    assert.equal(r.body.total, 52.2);
+    assert.deepEqual(r.body.discount, { code: 'SPIN25', title: '', amount: 14.5, freeShipping: false, applied: true, note: '' });
+    assert.equal(r.body.total, 43.5);
     r = await api('/api/cart/discount', { method: 'DELETE' });
     assert.equal(r.body.discount, null);
     assert.equal(r.body.total, 58);
@@ -216,7 +218,7 @@ describe('Shopify mode routes (fake Storefront client)', () => {
     await other('/api/cart', { method: 'POST', body: { productId: 'heavyweight-hoodie', size: 'M', color: 'Black' } });
     await other('/api/spin', { method: 'POST' });
     await other('/api/spin/claim', { method: 'POST', body: { email: 'shop2@example.com' } });
-    assert.equal((await other('/api/cart')).body.discount.code, 'SPIN10');
+    assert.equal((await other('/api/cart')).body.discount.code, 'SPIN25');
   });
 
   test('a cart that Shopify no longer returns (checked out) resets to empty', async () => {

@@ -25,6 +25,7 @@
       <span class="ticker-text">Free 30-day size exchanges</span><span class="ticker-dot" aria-hidden="true"></span>
       <span class="ticker-text">Made to order · ships in 2–4 business days</span><span class="ticker-dot" aria-hidden="true"></span>
       <a href="{{ routes.search_url }}?q=matching+set&type=product" class="hover:underline underline-offset-4">Matching hoodie &amp; sweatpant sets</a><span class="ticker-dot" aria-hidden="true"></span>
+      <a href="{{ routes.root_url }}#collective" class="hover:underline underline-offset-4">Join the VEYA Collective: vote on what we make next</a><span class="ticker-dot" aria-hidden="true"></span>
     {%- endif -%}
   {%- endcapture -%}
   <div class="ticker bg-primary text-on-primary font-label-sm text-label-sm uppercase tracking-widest py-2" role="region" aria-label="Offers and shipping">
@@ -44,17 +45,18 @@
       {%- endif -%}
     </a>
 
-    <nav class="hidden lg:flex items-center gap-8" aria-label="Main">
+    <nav class="hidden lg:flex items-center gap-5 xl:gap-8 whitespace-nowrap" aria-label="Main">
       <a class="{{ nav_class }}" href="{{ all_url }}" data-nav-gender="all" data-nav-filter="all">Shop All</a>
       <a class="{{ nav_class }}" href="{{ all_url }}/gender-men" data-nav-gender="men" data-nav-filter="all">Men</a>
       <a class="{{ nav_class }}" href="{{ all_url }}/gender-women" data-nav-gender="women" data-nav-filter="all">Women</a>
       <a class="{{ nav_class }}" href="{{ all_url }}/category-tops" data-nav-gender="all" data-nav-filter="tops">Tops</a>
       <a class="{{ nav_class }}" href="{{ all_url }}/category-layers" data-nav-gender="all" data-nav-filter="layers">Layers</a>
       <a class="{{ nav_class }}" href="{{ all_url }}/category-bottoms" data-nav-gender="all" data-nav-filter="bottoms">Bottoms</a>
+      <a class="hidden xl:inline text-on-surface-variant hover:text-primary tracking-widest font-label-md uppercase transition-colors duration-200 border-b border-transparent pb-1" href="{{ routes.root_url }}#collective">Collective</a>
       <a class="text-on-surface-variant hover:text-primary tracking-widest font-label-md uppercase transition-colors duration-200" href="{{ section.settings.help_link | default: '/policies/shipping-policy' }}">Help</a>
     </nav>
 
-    <div class="flex items-center gap-5 md:gap-6">
+    <div class="flex items-center gap-5 xl:gap-6 whitespace-nowrap">
       <button id="menu-btn" type="button" aria-label="Open menu" class="lg:hidden text-on-surface-variant hover:text-secondary transition-colors duration-200 flex items-center" data-open="menu-overlay">
         <span class="material-symbols-outlined text-[22px]" aria-hidden="true">menu</span>
       </button>

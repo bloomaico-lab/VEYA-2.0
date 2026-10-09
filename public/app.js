@@ -39,6 +39,8 @@
   // Unisex pieces show in both the men's and the women's section.
   const matchesGender = (p, gender) => gender === 'all' || !p.gender || p.gender === gender || p.gender === 'unisex';
 
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
   function esc(s) {
     return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   }
@@ -704,31 +706,171 @@
     if (e.key === 'Enter') openPage(el.dataset.page);
   }));
 
-  // ---------- VIP club ----------
+  // ---------- the VEYA Collective ----------
+  // Everyone on the list is a member, with a member number for good and a vote on what VEYA makes
+  // next. The member card is a placeholder until you join; the server remembers which member this
+  // browser joined as, so the card and the vote recognise you when you come back.
 
-  $('#vip-form').addEventListener('submit', async (e) => {
+  const collective = { member: null, foundingOpen: true, foundingMembers: 1000, poll: null, welcome: 'back' };
+  const foundingCount = () => collective.foundingMembers.toLocaleString('en-US');
+  const memberSince = (since) => new Date(`${String(since).replace(' ', 'T')}Z`)
+    .toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+
+  function renderMemberCard(reveal) {
+    const m = collective.member;
+    const number = $('#member-card-number');
+    $('#member-card').classList.toggle('is-member', Boolean(m));
+    number.textContent = m ? m.number : '••••';
+    $('#member-card-status').textContent = m ? `Member since ${memberSince(m.since)}` : 'Join to claim your number';
+    const badge = m ? (m.founding ? 'Founding member' : '') : (collective.foundingOpen ? 'Founding spots open' : '');
+    $('#member-card-badge').textContent = badge;
+    $('#member-card-badge').classList.toggle('hidden', !badge);
+    if (reveal) {
+      number.classList.remove('member-reveal');
+      void number.offsetWidth; // restart the animation
+      number.classList.add('member-reveal');
+    }
+  }
+
+  function renderCollective(reveal = false) {
+    const m = collective.member;
+    $$('[data-founding-count]').forEach((el) => { el.textContent = `The first ${foundingCount()} members`; });
+    $('#collective-join').classList.toggle('hidden', Boolean(m));
+    $('#collective-welcome').classList.toggle('hidden', !m);
+    if (m) {
+      const founding = m.founding ? ` You're one of our first ${foundingCount()} members, which makes you a Founding Member.` : '';
+      const vote = collective.poll?.yourVote ? 'See how the members’ vote is going below.' : 'Your vote on what we make next is waiting below.';
+      $('#collective-welcome-title').textContent = collective.welcome === 'joined'
+        ? `Welcome to the Collective, member No. ${m.number}.` : `You're in, member No. ${m.number}.`;
+      $('#collective-welcome-text').textContent = `Your number is yours for good.${founding} New drops reach you first. ${vote}`;
+      $('#collective-vote-link').textContent = collective.poll?.yourVote ? 'See the vote' : 'Cast your vote';
+    }
+    renderMemberCard(reveal);
+    renderVote();
+    renderSpinMember();
+  }
+
+  $('#collective-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const form = e.target;
-    const msg = $('#vip-message');
+    const msg = $('#collective-message');
+    const email = form.email.value.trim();
+    if (!EMAIL_RE.test(email)) { msg.textContent = 'PLEASE ENTER A VALID EMAIL ADDRESS.'; return; }
     const btn = form.querySelector('[type=submit]');
     btn.disabled = true;
     try {
-      const res = await api('/api/subscribe', { method: 'POST', body: { email: form.email.value } });
-      msg.classList.replace('text-error', 'text-secondary');
-      msg.textContent = res.message.toUpperCase();
+      const res = await api('/api/subscribe', { method: 'POST', body: { email } });
+      msg.textContent = '';
       form.reset();
+      collective.member = res.member;
+      collective.welcome = res.alreadySubscribed ? 'back' : 'joined';
+      renderCollective(true);
     } catch (err) {
-      msg.classList.replace('text-secondary', 'text-error');
       msg.textContent = err.message.toUpperCase();
     } finally {
       btn.disabled = false;
     }
   });
 
+  // ----- the members' vote -----
+
+  const voteError = (text) => { $('#vote-message').textContent = text; };
+
+  function renderVote() {
+    const { poll, member } = collective;
+    $('#vote').hidden = !poll;
+    if (!poll) return;
+    const { results } = poll;
+    const picked = $('#vote-options input[name=option]:checked')?.value; // keep a pick made before joining
+    $('#vote-question').textContent = poll.question;
+    $('#vote-options').innerHTML = poll.options.map((o, i) => {
+      const num = String(i + 1).padStart(2, '0');
+      if (results) {
+        const { percent } = results.options.find((r) => r.id === o.id) || { percent: 0 };
+        const mine = poll.yourVote === o.id;
+        return `<div class="rounded-xl border ${mine ? 'border-secondary bg-surface-container-lowest' : 'border-outline-variant/40 bg-surface-container-low/60'} p-5 md:p-6 flex flex-col gap-2 sm:min-h-[196px]">
+          <div class="h-6 flex items-center justify-between gap-2">
+            <span class="font-label-sm text-label-sm tracking-[0.2em] text-on-surface-variant">${num}</span>
+            ${mine ? '<span class="inline-flex items-center gap-1 h-6 px-2.5 rounded-full bg-secondary text-on-secondary font-label-sm text-label-sm uppercase tracking-widest"><span class="material-symbols-outlined text-[13px]" aria-hidden="true">check</span>Your vote</span>' : ''}
+          </div>
+          <h3 class="font-headline-sm text-headline-sm text-primary">${esc(o.name)}</h3>
+          <p class="font-body-sm text-body-sm text-on-surface-variant">${esc(o.note)}</p>
+          <div class="mt-auto pt-4">
+            <p class="font-display text-[30px] leading-none text-primary mb-3">${percent}<span class="text-[18px]">%</span><span class="sr-only"> of votes</span></p>
+            <div class="h-1.5 rounded-full bg-surface-container-high overflow-hidden"><div class="vote-bar h-full rounded-full ${mine ? 'bg-secondary' : 'bg-primary/60'}" style="width:0" data-width="${percent}"></div></div>
+          </div>
+        </div>`;
+      }
+      return `<label class="group rounded-xl border border-outline-variant/40 bg-surface-container-low/60 p-5 md:p-6 flex flex-col gap-2 sm:min-h-[196px] cursor-pointer transition-colors duration-200 hover:border-secondary/50 has-[:checked]:border-secondary has-[:checked]:bg-surface-container-lowest has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-secondary">
+          <input type="radio" name="option" value="${esc(o.id)}" class="sr-only"${o.id === picked ? ' checked' : ''}/>
+          <div class="h-6 flex items-center justify-between gap-2">
+            <span class="font-label-sm text-label-sm tracking-[0.2em] text-on-surface-variant">${num}</span>
+            <span class="w-5 h-5 rounded-full border border-outline-variant flex items-center justify-center transition-colors group-has-[:checked]:border-secondary group-has-[:checked]:bg-secondary" aria-hidden="true"><span class="material-symbols-outlined text-[13px] text-on-secondary opacity-0 group-has-[:checked]:opacity-100">check</span></span>
+          </div>
+          <h3 class="font-headline-sm text-headline-sm text-primary">${esc(o.name)}</h3>
+          <p class="font-body-sm text-body-sm text-on-surface-variant">${esc(o.note)}</p>
+          <span class="mt-auto pt-4 font-label-sm text-label-sm uppercase tracking-widest text-secondary">
+            <span class="opacity-0 transition-opacity group-hover:opacity-100 group-has-[:checked]:hidden">Pick this</span>
+            <span class="hidden group-has-[:checked]:inline">Your pick</span>
+          </span>
+        </label>`;
+    }).join('');
+    $('#vote-actions').classList.toggle('hidden', Boolean(results));
+    $('#vote-email-row').classList.toggle('hidden', Boolean(member));
+    $('#vote-note').textContent = member
+      ? `Voting as member No. ${member.number}. One vote per member.`
+      : 'Voting makes you a member of the VEYA Collective. Leave anytime.';
+    const summary = $('#vote-summary');
+    summary.classList.toggle('hidden', !results);
+    if (results) {
+      const standing = results.total >= 20
+        ? `${results.total.toLocaleString('en-US')} members have voted so far.` : 'Early results: every vote moves the needle.';
+      summary.textContent = `${collective.voteNote || ''} ${standing} Results update as votes come in.`.trim();
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        $$('#vote-options .vote-bar').forEach((bar) => { bar.style.width = `${bar.dataset.width}%`; });
+      }));
+    }
+  }
+
+  $('#vote-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const option = $('#vote-options input[name=option]:checked')?.value;
+    if (!option) { voteError('Pick one of the options first.'); return; }
+    const email = $('#vote-email').value.trim();
+    if (!collective.member && !EMAIL_RE.test(email)) { voteError('Enter your email to vote.'); $('#vote-email').focus(); return; }
+    const btn = $('#vote-submit');
+    btn.disabled = true;
+    try {
+      const res = await api('/api/vote', { method: 'POST', body: collective.member ? { option } : { option, email } });
+      const joined = !collective.member;
+      collective.member = res.member;
+      collective.poll = res.poll;
+      if (joined) collective.welcome = 'joined';
+      collective.voteNote = res.counted ? 'Thanks, your vote is in.' : 'That email has already voted, so here’s where it stands.';
+      voteError('');
+      renderCollective(joined);
+    } catch (err) {
+      voteError(err.message);
+      // They may have left the list since this page loaded: ask for their email again.
+      if (collective.member) api('/api/collective').then((data) => { Object.assign(collective, data); renderCollective(); }).catch(() => {});
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  async function initCollective() {
+    try {
+      Object.assign(collective, await api('/api/collective'));
+    } catch {
+      collective.poll = null; // no vote if it can't load; the sign-up still works
+    }
+    renderCollective();
+  }
+
   // ---------- spin to win ----------
-  // New visitors see the wheel after a few seconds. The server decides where it lands; every slice is
-  // a real deal. Entering an email unlocks the code, which goes straight on the bag. Closing it leaves a
-  // small tab in the corner to come back to it.
+  // New visitors see the wheel after a few seconds. The server decides where it lands (discounts.js;
+  // currently always 25% off). Entering an email unlocks the code, which goes straight on the bag, and
+  // makes them a Collective member. Closing it leaves a small tab in the corner to come back to it.
 
   const SPIN_KEY = 'veya-spin';
   const SPIN_DELAY_MS = 4000;
@@ -793,6 +935,14 @@
     });
   }
 
+  // Their member number, under the code (spinning and claiming joins the Collective).
+  function renderSpinMember() {
+    const m = spin.result?.claimed && collective.member;
+    $('#spin-member-text').textContent = m ? `Collective member No. ${m.number}${m.founding ? ' · Founding' : ''}` : '';
+    $('#spin-member').classList.toggle('hidden', !m);
+    $('#spin-member').classList.toggle('flex', Boolean(m));
+  }
+
   function showSpinStep(step) {
     $$('[data-spin-step]').forEach((el) => { el.hidden = el.dataset.spinStep !== step; });
   }
@@ -805,6 +955,7 @@
       const until = r.claimed.expiresAt
         ? ` Valid until ${new Date(`${r.claimed.expiresAt.replace(' ', 'T')}Z`).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}.` : '';
       $('#spin-claimed-note').textContent = `It's in your bag and comes off at checkout.${until} ${spin.note}`.trim();
+      renderSpinMember();
       showSpinStep('claimed');
     } else if (r) {
       $('#spin-won-title').textContent = `${r.title.charAt(0).toUpperCase()}${r.title.slice(1)}!`;
@@ -848,7 +999,7 @@
     spin.spinning = true;
     const btn = $('#spin-btn');
     btn.disabled = true;
-    $('#spin-btn-label').textContent = 'Good luck…';
+    $('#spin-btn-label').textContent = 'Spinning…';
     try {
       const result = await api('/api/spin', { method: 'POST' });
       await turnWheel(result.slice, true);
@@ -869,7 +1020,7 @@
     const form = e.target;
     const email = form.email.value.trim();
     const error = $('#spin-error');
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { error.textContent = 'Please enter a valid email address.'; return; }
+    if (!EMAIL_RE.test(email)) { error.textContent = 'Please enter a valid email address.'; return; }
     const btn = form.querySelector('[type=submit]');
     btn.disabled = true;
     try {
@@ -879,6 +1030,12 @@
         : claim.emailed ? `We've emailed it to ${email} too.` : 'Copy it somewhere safe in case you shop on another device.';
       error.textContent = '';
       rememberSpin({ claimedAt: Date.now() });
+      if (claim.member) {
+        const joined = !collective.member;
+        collective.member = claim.member;
+        if (joined) collective.welcome = 'joined';
+        renderCollective(joined);
+      }
       renderSpin();
       loadCart();
     } catch (err) {
@@ -940,5 +1097,6 @@
   loadConfig();
   handleCheckoutReturn();
   initSpin();
+  initCollective();
   api('/api/auth/me').then(({ user }) => { state.user = user; renderAccount(); }).catch(() => {});
 })();

@@ -47,6 +47,13 @@
     <div class="panel"><table><thead><tr><th>Order</th><th>Customer</th><th>Items</th><th>Total</th><th>Status</th></tr></thead><tbody id="orders"></tbody></table></div>
     <h2>Inventory</h2>
     <div class="panel"><table><thead><tr><th>Product</th><th>Price</th><th>Stock</th></tr></thead><tbody id="inventory"></tbody></table></div>
+    <h2>The VEYA Collective</h2>
+    <div class="panel">
+      <p id="collective-summary" class="note"></p>
+      <p class="mono" id="poll-question" style="margin:12px 0 4px"></p>
+      <table><thead><tr><th>Option</th><th>Votes</th><th>Share</th></tr></thead><tbody id="poll-results"></tbody></table>
+      <p class="note">Change the question and options in <span class="mono">community.js</span>, and give the vote a new id to start a fresh one.</p>
+    </div>
     <h2>Spin to win</h2>
     <div class="panel">
       <p id="spin-summary" class="note"></p>
@@ -100,7 +107,7 @@
       const revenue = d.orders.filter((o) => o.paid_at && o.status !== 'cancelled').reduce((s, o) => s + o.total, 0);
       document.getElementById('stats').innerHTML = [
         ['Orders', d.orders.length], ['Revenue', `$${revenue.toLocaleString()}`],
-        ['Accounts', d.users], ['Subscribers', d.email.activeSubscribers],
+        ['Accounts', d.users], ['Collective members', d.email.activeSubscribers],
       ].map(([k, v]) => `<div class="panel stat"><span class="mono">${k}</span><b>${v}</b></div>`).join('');
       document.getElementById('orders').innerHTML = d.orders.map((o) => `<tr>
         <td><b>${esc(o.number)}</b><br><span class="mono">${esc(o.created_at)}</span></td>
@@ -113,6 +120,13 @@
       document.getElementById('inventory').innerHTML = d.inventory.map((p) => `<tr>
         <td>${esc(p.name)}</td><td>$${(p.price_cents / 100).toLocaleString()}</td>
         <td class="row"><input type="number" min="0" value="${p.stock}" style="width:90px" data-stock="${esc(p.id)}"/><button data-save="${esc(p.id)}">Save</button></td></tr>`).join('');
+      const { collective } = d;
+      document.getElementById('collective-summary').textContent = `${collective.members} members · ${collective.foundingMembers} founding members · ${collective.poll.results.total} votes in the current vote`;
+      document.getElementById('poll-question').textContent = collective.poll.question;
+      document.getElementById('poll-results').innerHTML = collective.poll.options.map((o) => {
+        const r = collective.poll.results.options.find((x) => x.id === o.id) || { votes: 0, percent: 0 };
+        return `<tr><td>${esc(o.name)}</td><td>${r.votes}</td><td class="mono">${r.percent}%</td></tr>`;
+      }).join('');
       const used = d.discountCodes.filter((c) => c.used_at).length;
       document.getElementById('spin-summary').textContent = `${d.spins} spins · ${d.discountCodes.length} codes claimed · ${used} used on an order`;
       document.getElementById('spin-codes').innerHTML = d.discountCodes.map((c) => `<tr>
