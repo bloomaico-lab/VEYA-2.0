@@ -5,6 +5,8 @@
 // Env: SHOPIFY_STORE_DOMAIN (e.g. veya.myshopify.com, or "mock.shop" for Shopify's public demo store),
 //      SHOPIFY_STOREFRONT_TOKEN (public Storefront API access token), SHOPIFY_API_VERSION (optional).
 
+const { normalizeCode } = require('./discounts');
+
 const DEFAULT_API_VERSION = '2026-10';
 const CACHE_MS = 60 * 1000;
 
@@ -37,6 +39,8 @@ const PRODUCT_FIELDS = `
 const CART_FIELDS = `
   id checkoutUrl totalQuantity
   cost { subtotalAmount { amount currencyCode } totalAmount { amount } }
+  discountCodes { code applicable }
+  discountAllocations { discountedAmount { amount } }
   lines(first: 100) {
     nodes {
       id quantity
@@ -152,14 +156,28 @@ function toSiteCart(cart, freeShippingThreshold) {
     };
   });
   const subtotal = money(cart.cost.subtotalAmount.amount);
+  // A discount code on the cart: Shopify says whether it applies and what it takes off (order
+  // discounts show here; free-shipping codes come off at checkout).
+  const codes = cart.discountCodes || [];
+  const applicable = codes.find((c) => c.applicable);
+  const discountAmount = money((cart.discountAllocations || []).reduce((sum, a) => sum + Number(a.discountedAmount.amount), 0));
+  const discount = codes.length ? {
+    code: (applicable || codes[0]).code,
+    title: '',
+    amount: discountAmount,
+    freeShipping: false,
+    applied: Boolean(applicable),
+    note: !applicable ? "This code can't be used with your bag." : discountAmount ? '' : 'Comes off at checkout.',
+  } : null;
   return {
     items,
     count: cart.totalQuantity,
     subtotal,
+    discount,
     // Shipping and tax are calculated by Shopify at checkout.
     shipping: 0,
     shippingAtCheckout: true,
-    total: subtotal,
+    total: money(subtotal - discountAmount),
     currency: cart.cost.subtotalAmount.currencyCode,
     freeShippingThreshold,
     checkoutUrl: cart.checkoutUrl,
@@ -237,11 +255,19 @@ function createShopifyClient({
     return data.cart; // null once the cart has been checked out or has expired
   }
 
-  async function createCart(lines) {
+  async function createCart(lines, discountCodes = []) {
     const data = await gql(`mutation Create($input: CartInput!) {
       cartCreate(input: $input) { cart { ${CART_FIELDS} } userErrors { field message } }
-    }`, { input: { lines } });
+    }`, { input: { lines, ...(discountCodes.length ? { discountCodes } : {}) } });
     return checkUserErrors(data.cartCreate);
+  }
+
+  // Replaces the cart's discount codes (an empty list removes them). Shopify checks each code.
+  async function updateDiscountCodes(cartId, discountCodes) {
+    const data = await gql(`mutation Discounts($cartId: ID!, $discountCodes: [String!]) {
+      cartDiscountCodesUpdate(cartId: $cartId, discountCodes: $discountCodes) { cart { ${CART_FIELDS} } userErrors { field message } }
+    }`, { cartId, discountCodes });
+    return checkUserErrors(data.cartDiscountCodesUpdate);
   }
 
   async function addLines(cartId, lines) {
@@ -275,6 +301,7 @@ function createShopifyClient({
     addLines,
     updateLine,
     removeLine,
+    updateDiscountCodes,
     toSiteCart: (cart) => toSiteCart(cart, freeShippingThreshold),
   };
 }
@@ -346,9 +373,33 @@ function registerShopifyRoutes(app, shopify, db) {
 
     const lines = [{ merchandiseId: variant.id, quantity: qty }];
     const existing = await currentCart(req);
-    const cart = existing ? await shopify.addLines(existing.id, lines) : await shopify.createCart(lines);
+    // A code added before there was a cart (e.g. won on the wheel) goes on the new cart.
+    const cart = existing ? await shopify.addLines(existing.id, lines)
+      : await shopify.createCart(lines, req.session.discount_code ? [req.session.discount_code] : []);
     if (!existing) setCartId(req, cart.id);
     res.status(201).json(shopify.toSiteCart(cart));
+  }));
+
+  // Discount codes go on the Shopify cart, which checks them. A code added while the bag is empty is
+  // kept on the session and added to the cart when it's made. (Before /api/cart/:itemId on purpose.)
+  app.post('/api/cart/discount', wrap(async (req, res) => {
+    const code = normalizeCode(req.body?.code);
+    if (!code) throw new ShopifyError('Please enter a code.', 400);
+    db.prepare('UPDATE sessions SET discount_code = ? WHERE id = ?').run(code, req.session.id);
+    const cart = await currentCart(req);
+    if (!cart) {
+      return res.json({
+        ...shopify.toSiteCart(null),
+        discount: { code, title: '', amount: 0, freeShipping: false, applied: false, note: 'It will be added when you put something in your bag.' },
+      });
+    }
+    res.json(shopify.toSiteCart(await shopify.updateDiscountCodes(cart.id, [code])));
+  }));
+
+  app.delete('/api/cart/discount', wrap(async (req, res) => {
+    db.prepare('UPDATE sessions SET discount_code = NULL WHERE id = ?').run(req.session.id);
+    const cart = await currentCart(req);
+    res.json(shopify.toSiteCart(cart ? await shopify.updateDiscountCodes(cart.id, []) : null));
   }));
 
   app.patch('/api/cart/:itemId', wrap(async (req, res) => {

@@ -12,7 +12,14 @@ process.env.ADMIN_TOKEN = 'test-admin-token';
 // Webhook verification uses the real SDK so signature handling is exercised for real.
 const realStripe = new Stripe('sk_test_dummy');
 const sessions = new Map();
+const coupons = [];
 const fakeStripe = {
+  coupons: {
+    async create(params) {
+      coupons.push(params);
+      return { id: `coupon_${coupons.length}`, ...params };
+    },
+  },
   checkout: {
     sessions: {
       async create(params) {
@@ -136,4 +143,22 @@ test('unpaid orders stay out of the customer order history', async () => {
   session.payment_status = 'paid';
   await api(`/api/checkout/confirm?session_id=${session.id}`);
   assert.equal((await api('/api/orders')).body.length, 1);
+});
+
+test('a discount code on the bag goes to Stripe as a one-off coupon for the same amount', async () => {
+  db.prepare(`INSERT INTO discount_codes (code, email, prize, kind, value, expires_at)
+    VALUES ('SPIN20-STRPE', 'ada@example.com', 'pct20', 'percent', 20, datetime('now', '+14 days'))`).run();
+  const api = client();
+  await api('/api/cart', { method: 'POST', body: { productId: 'oversized-heavyweight-tee', size: 'M', qty: 2 } }); // $48
+  const cart = (await api('/api/cart/discount', { method: 'POST', body: { code: 'SPIN20-STRPE' } })).body;
+  assert.equal(cart.discount.amount, 9.6);
+  const r = await api('/api/checkout', { method: 'POST', body: details });
+  assert.equal(r.status, 201);
+  assert.deepEqual(coupons.at(-1), { amount_off: 960, currency: 'usd', duration: 'once', max_redemptions: 1, name: 'SPIN20-STRPE' });
+  const session = [...sessions.values()].at(-1);
+  assert.deepEqual(session.params.discounts, [{ coupon: `coupon_${coupons.length}` }]);
+  const order = db.prepare('SELECT total_cents, discount_cents FROM orders WHERE stripe_session_id = ?').get(session.id);
+  assert.deepEqual({ ...order }, { total_cents: 4800 - 960 + 600, discount_cents: 960 });
+  // The code is only spent once the payment goes through.
+  assert.equal(db.prepare("SELECT used_at FROM discount_codes WHERE code = 'SPIN20-STRPE'").get().used_at, null);
 });

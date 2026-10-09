@@ -6,6 +6,7 @@ const Stripe = require('stripe');
 const { shopifyFromEnv, registerShopifyRoutes, ShopifyError } = require('./shopify');
 const { mailerFromEnv, renderCampaign } = require('./email');
 const { openDb, transaction } = require('./db');
+const discounts = require('./discounts');
 const seed = require('./seed');
 
 const SESSION_COOKIE = 'veya_sid';
@@ -98,7 +99,9 @@ function defaultStripe() {
   return key ? new Stripe(key) : null;
 }
 
-function createApp(db = openDb(), { stripe = defaultStripe(), shopify = shopifyFromEnv(), mailer = mailerFromEnv() } = {}) {
+function createApp(db = openDb(), {
+  stripe = defaultStripe(), shopify = shopifyFromEnv(), mailer = mailerFromEnv(), random = Math.random,
+} = {}) {
   const app = express();
   const isProd = process.env.NODE_ENV === 'production';
   app.disable('x-powered-by');
@@ -158,7 +161,11 @@ function createApp(db = openDb(), { stripe = defaultStripe(), shopify = shopifyF
       FROM cart_items c JOIN products p ON p.id = c.product_id
       WHERE c.session_id = ? ORDER BY c.id`).all(sessionId);
     const subtotal = rows.reduce((sum, r) => sum + r.price_cents * r.qty, 0);
-    const shipping = subtotal === 0 || subtotal >= FREE_SHIPPING_CENTS ? 0 : SHIPPING_CENTS;
+    const discount = bagDiscount(sessionId, subtotal);
+    const discountCents = discount?.applied ? discount.amountCents : 0;
+    // Free shipping is judged on the bag before discounts, so a code never makes an order cost more.
+    const shipping = subtotal === 0 || subtotal >= FREE_SHIPPING_CENTS || (discount?.applied && discount.freeShipping)
+      ? 0 : SHIPPING_CENTS;
     return {
       items: rows.map((r) => ({
         id: r.id,
@@ -173,9 +180,53 @@ function createApp(db = openDb(), { stripe = defaultStripe(), shopify = shopifyF
       })),
       count: rows.reduce((n, r) => n + r.qty, 0),
       subtotal: subtotal / 100,
+      discount: discount && {
+        code: discount.code,
+        title: discount.title,
+        amount: discountCents / 100,
+        freeShipping: Boolean(discount.applied && discount.freeShipping),
+        applied: discount.applied,
+        note: discount.note,
+      },
       shipping: shipping / 100,
-      total: (subtotal + shipping) / 100,
+      total: (subtotal - discountCents + shipping) / 100,
       freeShippingThreshold: FREE_SHIPPING_CENTS / 100,
+    };
+  }
+
+  // ----- discount codes (won on the spin-to-win wheel) -----
+
+  function findCode(code) {
+    const normalized = discounts.normalizeCode(code);
+    return normalized ? db.prepare(`SELECT *, expires_at <= datetime('now') AS expired FROM discount_codes WHERE code = ?`)
+      .get(normalized) : undefined;
+  }
+
+  // Why a code can't be used, or null when it can.
+  function codeProblem(row) {
+    if (!row) return "We don't recognise that code.";
+    if (row.used_at) return 'That code has already been used.';
+    if (row.expired) return 'That code has expired.';
+    return null;
+  }
+
+  const dealOf = (row) => ({
+    kind: row.kind, value: row.value, min: row.min_subtotal_cents, title: discounts.PRIZES[row.prize]?.title || 'Discount',
+  });
+
+  // The code on a visitor's bag and what it takes off a bag of this subtotal (cents).
+  function bagDiscount(sessionId, subtotalCents) {
+    const code = db.prepare('SELECT discount_code FROM sessions WHERE id = ?').get(sessionId)?.discount_code;
+    if (!code) return null;
+    const row = findCode(code);
+    const problem = codeProblem(row);
+    if (problem) {
+      return { code, title: row ? dealOf(row).title : '', amountCents: 0, freeShipping: false, applied: false, problem: true, note: problem };
+    }
+    const deal = dealOf(row);
+    const result = discounts.evaluate(deal, subtotalCents);
+    return {
+      code, title: deal.title, amountCents: result.amount, freeShipping: result.freeShipping, applied: result.eligible, note: result.note || '',
     };
   }
 
@@ -244,6 +295,22 @@ function createApp(db = openDb(), { stripe = defaultStripe(), shopify = shopifyF
     res.status(201).json(getCart(req.session.id));
   });
 
+  // Discount codes on the bag. Registered before /api/cart/:itemId so "discount" isn't read as an item id.
+  app.post('/api/cart/discount', (req, res) => {
+    const code = discounts.normalizeCode(req.body?.code);
+    if (!code) throw new HttpError(400, 'Please enter a code.');
+    const row = findCode(code);
+    const problem = codeProblem(row);
+    if (problem) throw new HttpError(row ? 409 : 404, problem);
+    db.prepare('UPDATE sessions SET discount_code = ? WHERE id = ?').run(code, req.session.id);
+    res.json(getCart(req.session.id));
+  });
+
+  app.delete('/api/cart/discount', (req, res) => {
+    db.prepare('UPDATE sessions SET discount_code = NULL WHERE id = ?').run(req.session.id);
+    res.json(getCart(req.session.id));
+  });
+
   app.patch('/api/cart/:itemId', (req, res) => {
     const qty = req.body?.qty;
     if (!Number.isInteger(qty) || qty < 0 || qty > MAX_QTY) {
@@ -281,6 +348,13 @@ function createApp(db = openDb(), { stripe = defaultStripe(), shopify = shopifyF
   }
 
   function createPendingOrder(req, details) {
+    // A code that has expired or been used since it went on the bag comes off before anything is
+    // charged (outside the transaction below, so a failed checkout doesn't put it back).
+    const onBag = bagDiscount(req.session.id, 0);
+    if (onBag?.problem) {
+      db.prepare('UPDATE sessions SET discount_code = NULL WHERE id = ?').run(req.session.id);
+      throw new HttpError(409, `${onBag.note} We took code ${onBag.code} off your bag, so please check your total.`);
+    }
     return transaction(db, () => {
       const lines = db.prepare(`
         SELECT c.product_id, c.size, c.color, c.qty, p.name, p.image, p.colors, p.price_cents, p.stock
@@ -295,20 +369,27 @@ function createApp(db = openDb(), { stripe = defaultStripe(), shopify = shopifyF
         if (needed[l.product_id] > l.stock) throw new HttpError(409, `${l.name}: only ${l.stock} left in stock.`);
       }
       const subtotal = lines.reduce((s, l) => s + l.price_cents * l.qty, 0);
-      const shipping = subtotal >= FREE_SHIPPING_CENTS ? 0 : SHIPPING_CENTS;
+      const discount = bagDiscount(req.session.id, subtotal);
+      // A code whose minimum spend isn't met yet simply isn't used.
+      const discountCents = discount?.applied ? discount.amountCents : 0;
+      const discountCode = discount?.applied ? discount.code : null;
+      const shipping = subtotal >= FREE_SHIPPING_CENTS || (discount?.applied && discount.freeShipping) ? 0 : SHIPPING_CENTS;
+      const total = subtotal - discountCents + shipping;
       const number = orderNumber();
 
       const { lastInsertRowid: id } = db.prepare(`INSERT INTO orders
         (number, user_id, email, name, address, city, postal_code, country, subtotal_cents, shipping_cents,
-         total_cents, status, cart_session_id)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending_payment', ?)`).run(
+         total_cents, status, cart_session_id, discount_code, discount_cents)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending_payment', ?, ?, ?)`).run(
         number, req.user?.id ?? null, details.email, details.name, details.address, details.city,
-        details.postalCode, details.country, subtotal, shipping, subtotal + shipping, req.session.id,
+        details.postalCode, details.country, subtotal, shipping, total, req.session.id, discountCode, discountCents,
       );
       const addItem = db.prepare(`INSERT INTO order_items
         (order_id, product_id, name, size, color, qty, unit_price_cents) VALUES (?, ?, ?, ?, ?, ?, ?)`);
       for (const l of lines) addItem.run(id, l.product_id, l.name, l.size, l.color, l.qty, l.price_cents);
-      return { id: Number(id), number, lines, shipping, total: subtotal + shipping, email: details.email };
+      return {
+        id: Number(id), number, lines, shipping, total, email: details.email, discountCents, discountCode,
+      };
     });
   }
 
@@ -323,6 +404,14 @@ function createApp(db = openDb(), { stripe = defaultStripe(), shopify = shopifyF
         db.prepare('UPDATE products SET stock = MAX(stock - ?, 0) WHERE id = ?').run(i.qty, i.product_id);
       }
       if (order.cart_session_id) db.prepare('DELETE FROM cart_items WHERE session_id = ?').run(order.cart_session_id);
+      // The wheel's codes are single use: spend it, and take it off the bag.
+      if (order.discount_code) {
+        db.prepare("UPDATE discount_codes SET used_at = datetime('now'), order_number = ? WHERE code = ? AND used_at IS NULL")
+          .run(order.number, order.discount_code);
+        if (order.cart_session_id) {
+          db.prepare('UPDATE sessions SET discount_code = NULL WHERE id = ? AND discount_code = ?').run(order.cart_session_id, order.discount_code);
+        }
+      }
     });
   }
 
@@ -356,8 +445,13 @@ function createApp(db = openDb(), { stripe = defaultStripe(), shopify = shopifyF
       const base = publicUrl(req);
       let session;
       try {
+        // The discount goes to Stripe as a one-off coupon for the exact amount the bag showed.
+        const coupon = order.discountCents > 0 && await stripe.coupons.create({
+          amount_off: order.discountCents, currency: 'usd', duration: 'once', max_redemptions: 1, name: order.discountCode,
+        });
         session = await stripe.checkout.sessions.create({
           mode: 'payment',
+          ...(coupon ? { discounts: [{ coupon: coupon.id }] } : {}),
           customer_email: order.email,
           client_reference_id: order.number,
           metadata: { order_number: order.number },
@@ -474,19 +568,120 @@ function createApp(db = openDb(), { stripe = defaultStripe(), shopify = shopifyF
 
   // ----- VIP club -----
 
-  app.post('/api/subscribe', (req, res) => {
-    const email = cleanEmail(req.body?.email);
+  // Adds an email to the list, or signs it up again. Returns false if it was already subscribed.
+  function subscribe(email) {
     const existing = db.prepare('SELECT id, unsubscribed_at FROM subscribers WHERE email = ?').get(email);
-    if (existing && !existing.unsubscribed_at) {
-      return res.json({ alreadySubscribed: true, message: 'You are already on the list.' });
-    }
+    if (existing && !existing.unsubscribed_at) return false;
     if (existing) {
       db.prepare('UPDATE subscribers SET unsubscribed_at = NULL WHERE id = ?').run(existing.id); // signed up again
     } else {
       db.prepare('INSERT INTO subscribers (email, unsubscribe_token) VALUES (?, ?)')
         .run(email, crypto.randomBytes(24).toString('hex'));
     }
+    return true;
+  }
+
+  app.post('/api/subscribe', (req, res) => {
+    const email = cleanEmail(req.body?.email);
+    if (!subscribe(email)) return res.json({ alreadySubscribed: true, message: 'You are already on the list.' });
     res.status(201).json({ alreadySubscribed: false, message: "You're on the list. We'll email you about the next drop." });
+  });
+
+  // ----- spin to win -----
+  // A visitor spins once (the result is kept on their session, so reloading can't re-spin), then
+  // enters their email to unlock a code. Each email gets one code, and it goes on their bag straight away.
+  // With a Shopify store connected, winners get the deal's shared Shopify code instead (see discounts.js).
+
+  const wheel = discounts.SLICES.map(({ big, small, style, prize }) => ({ big, small, style, title: discounts.PRIZES[prize].title }));
+
+  function spinState(sessionId) {
+    const s = db.prepare('SELECT spin_slice, spin_code FROM sessions WHERE id = ?').get(sessionId);
+    // No spin yet, or a slice that has since been taken off the wheel.
+    if (!discounts.SLICES[s?.spin_slice ?? -1]) return null;
+    const prizeId = discounts.SLICES[s.spin_slice].prize;
+    const row = s.spin_code && !shopify ? findCode(s.spin_code) : null;
+    return {
+      slice: s.spin_slice,
+      title: row ? dealOf(row).title : discounts.PRIZES[prizeId].title,
+      claimed: s.spin_code ? { code: s.spin_code, expiresAt: row?.expires_at || null } : null,
+    };
+  }
+
+  function createCode(email, prizeId) {
+    const prize = discounts.PRIZES[prizeId];
+    for (let attempt = 1; ; attempt += 1) {
+      const code = discounts.uniqueCode(prizeId);
+      try {
+        db.prepare(`INSERT INTO discount_codes (code, email, prize, kind, value, min_subtotal_cents, expires_at)
+          VALUES (?, ?, ?, ?, ?, ?, datetime('now', ?))`)
+          .run(code, email, prizeId, prize.kind, prize.value, prize.min || 0, `+${discounts.CODE_DAYS} days`);
+        return findCode(code);
+      } catch (err) {
+        if (attempt >= 5 || !/UNIQUE/.test(err.message)) throw err;
+      }
+    }
+  }
+
+  const canSendEmail = () => Boolean(mailer && process.env.EMAIL_FROM && process.env.MAILING_ADDRESS);
+
+  // Emails the code too (when email sending is set up), so it isn't lost if they close the page.
+  function emailCode(email, { code, title, expiresAt }, base) {
+    if (!canSendEmail()) return false;
+    const token = db.prepare('SELECT unsubscribe_token FROM subscribers WHERE email = ?').get(email)?.unsubscribe_token || 'none';
+    const until = expiresAt ? ` It works once and is valid until ${new Date(`${expiresAt.replace(' ', 'T')}Z`)
+      .toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}.` : '';
+    const body = `Thanks for spinning the VEYA wheel. You won ${title.charAt(0).toLowerCase()}${title.slice(1)}.\n\n`
+      + `Your code: ${code}\n\n`
+      + `It's already in your bag on the device you used. Shopping somewhere else? Enter it in your bag before you check out.${until}`;
+    const message = buildMessage({ subject: `Your VEYA code: ${title}`, body }, email, token, base);
+    mailer.sendAll([message], { idempotencyPrefix: `spin-${code}-${email}` })
+      .catch((err) => console.error('Spin code email failed:', err.message));
+    return true;
+  }
+
+  app.get('/api/spin', (req, res) => res.json({ slices: wheel, result: spinState(req.session.id) }));
+
+  app.post('/api/spin', (req, res) => {
+    const existing = spinState(req.session.id);
+    if (existing) return res.json(existing);
+    // Only a session without a (current) spin gets one, so a double click can't spin twice.
+    db.prepare('UPDATE sessions SET spin_slice = ? WHERE id = ? AND (spin_slice IS NULL OR spin_slice >= ?)')
+      .run(discounts.pickSlice(random), req.session.id, discounts.SLICES.length);
+    res.status(201).json(spinState(req.session.id));
+  });
+
+  app.post('/api/spin/claim', async (req, res, next) => {
+    try {
+      const spin = spinState(req.session.id);
+      if (!spin) throw new HttpError(400, 'Spin the wheel first.');
+      const email = cleanEmail(req.body?.email);
+      if (spin.claimed) return res.json({ ...spin.claimed, title: spin.title, existing: true, emailed: false });
+
+      const prizeId = discounts.SLICES[spin.slice].prize;
+      let code;
+      let title = discounts.PRIZES[prizeId].title;
+      let expiresAt = null;
+      let existing = false;
+      if (shopify) {
+        code = discounts.PRIZES[prizeId].code; // shared code, set up in Shopify admin → Discounts
+        if (req.session.shopify_cart_id) await shopify.updateDiscountCodes(req.session.shopify_cart_id, [code]).catch(() => {});
+      } else {
+        // One code per email: someone who already won keeps their first code.
+        let row = db.prepare(`SELECT *, 0 AS expired FROM discount_codes
+          WHERE email = ? AND used_at IS NULL AND expires_at > datetime('now') ORDER BY id DESC`).get(email);
+        existing = Boolean(row);
+        if (!row) row = createCode(email, prizeId);
+        ({ code } = row);
+        title = dealOf(row).title;
+        expiresAt = row.expires_at;
+      }
+      db.prepare('UPDATE sessions SET spin_code = ?, discount_code = ? WHERE id = ?').run(code, code, req.session.id);
+      subscribe(email);
+      const emailed = !existing && emailCode(email, { code, title, expiresAt }, publicUrl(req));
+      res.status(existing ? 200 : 201).json({ code, title, expiresAt, existing, emailed });
+    } catch (err) {
+      next(err);
+    }
   });
 
   // Unsubscribe link from newsletter emails. GET shows a confirm button (so link scanners in
@@ -540,6 +735,10 @@ function createApp(db = openDb(), { stripe = defaultStripe(), shopify = shopifyF
       email: emailSettings(),
       users: db.prepare('SELECT COUNT(*) AS n FROM users').get().n,
       inventory: db.prepare('SELECT id, name, stock, price_cents FROM products ORDER BY sort').all(),
+      spins: db.prepare('SELECT COUNT(*) AS n FROM sessions WHERE spin_slice IS NOT NULL').get().n,
+      discountCodes: db.prepare(`SELECT code, email, prize, created_at, expires_at, used_at, order_number,
+        expires_at <= datetime('now') AS expired FROM discount_codes ORDER BY id DESC LIMIT 200`).all()
+        .map((c) => ({ ...c, title: discounts.PRIZES[c.prize]?.title || c.prize, expired: Boolean(c.expired) })),
     });
   });
 

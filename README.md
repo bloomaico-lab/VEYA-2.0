@@ -99,6 +99,8 @@ SHOPIFY_STORE_DOMAIN=mock.shop npm start
 | Product image / name                          | Product detail: colour, size, quantity, size guide, Add to Bag   |
 | Checkout                                      | Shopify mode: Shopify checkout. Built-in mode: shipping form → order saved (demo or Stripe) |
 | Sign Up                                       | Joins the mailing list (no duplicate sign-ups)                   |
+| Spin to win popup                             | New visitors spin a prize wheel; their email unlocks a discount code that goes on their bag |
+| Bag → Have a discount code?                   | Apply or remove a code; the discount shows in the bag and checkout totals |
 | Mobile menu (☰)                               | Nav for small screens                                            |
 
 In built-in mode, prices, stock and totals are always calculated on the server. Shipping is $6, or
@@ -138,10 +140,30 @@ docker run -p 3000:3000 -v veya-data:/data -e ADMIN_TOKEN=change-me veya
 
 Keep the database (`DB_FILE`) on persistent storage, or orders and accounts are lost on redeploy.
 
+## Spin to win
+
+A few seconds after a new visitor arrives, a prize wheel pops up. Every slice is a real deal, from
+10% off up to 25% off, $5 off, $10 off orders of $60 or more, and free shipping. The visitor spins, then
+enters their email to unlock their code:
+
+- **The server decides where the wheel lands**, using each slice's chance in `discounts.js`. Bigger deals
+  come up less often (25% off is 4 spins in 100). Reloading the page can't re-spin.
+- **Each winner gets their own code**, like `SPIN15-7KQ2M`. It works once, lasts 14 days, and each email
+  gets one. It's added to their bag straight away, and the bag, checkout and Stripe all charge the
+  discounted total.
+- **Their email joins your list**, and the code is emailed to them when email sending is set up (see below).
+- **Someone who closes it** gets a small "Spin to win" tab in the corner, and the popup stays away for a week.
+- **`/admin` → Spin to win** shows every code, who won it and whether it's been used.
+
+Change the deals, their odds or the wheel's labels in `discounts.js`. In Shopify mode, winners get
+each deal's shared Shopify code instead (`SPIN10`, `SPIN15`, …). Create those in Shopify as described
+in [shopify/README.md](shopify/README.md), step 11b.
+
 ## Admin
 
 Set `ADMIN_TOKEN`, open `/admin` and enter the token. From there you can view orders and change
-their status, edit stock levels, email your subscribers and download the subscriber list.
+their status, edit stock levels, see spin-to-win codes, email your subscribers and download the
+subscriber list.
 
 ## Emailing subscribers
 
@@ -175,6 +197,8 @@ Until all three are set, the admin screen works in preview mode and nothing is s
 GET    /api/products?category=&q=     GET /api/products/:id
 GET    /api/cart                      POST /api/cart {productId,size?,color?,qty?}
 PATCH  /api/cart/:itemId {qty}        DELETE /api/cart/:itemId
+POST   /api/cart/discount {code}      DELETE /api/cart/discount
+GET    /api/spin   POST /api/spin   POST /api/spin/claim {email}
 POST   /api/checkout {name,email,address,city,postalCode,country}
 POST   /api/auth/register|login|logout   GET /api/auth/me   GET /api/orders
 POST   /api/subscribe {email}         GET|POST /unsubscribe?token=

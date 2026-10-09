@@ -47,6 +47,11 @@
     <div class="panel"><table><thead><tr><th>Order</th><th>Customer</th><th>Items</th><th>Total</th><th>Status</th></tr></thead><tbody id="orders"></tbody></table></div>
     <h2>Inventory</h2>
     <div class="panel"><table><thead><tr><th>Product</th><th>Price</th><th>Stock</th></tr></thead><tbody id="inventory"></tbody></table></div>
+    <h2>Spin to win</h2>
+    <div class="panel">
+      <p id="spin-summary" class="note"></p>
+      <table><thead><tr><th>Code</th><th>Email</th><th>Deal</th><th>Won</th><th>Status</th></tr></thead><tbody id="spin-codes"></tbody></table>
+    </div>
     <h2>Email your subscribers</h2>
     <div class="panel">
       <p id="email-setup" class="note"></p>
@@ -108,6 +113,12 @@
       document.getElementById('inventory').innerHTML = d.inventory.map((p) => `<tr>
         <td>${esc(p.name)}</td><td>$${(p.price_cents / 100).toLocaleString()}</td>
         <td class="row"><input type="number" min="0" value="${p.stock}" style="width:90px" data-stock="${esc(p.id)}"/><button data-save="${esc(p.id)}">Save</button></td></tr>`).join('');
+      const used = d.discountCodes.filter((c) => c.used_at).length;
+      document.getElementById('spin-summary').textContent = `${d.spins} spins · ${d.discountCodes.length} codes claimed · ${used} used on an order`;
+      document.getElementById('spin-codes').innerHTML = d.discountCodes.map((c) => `<tr>
+        <td class="mono"><b>${esc(c.code)}</b></td><td>${esc(c.email)}</td><td>${esc(c.title)}</td><td class="mono">${esc(c.created_at)}</td>
+        <td class="mono">${c.used_at ? `Used on ${esc(c.order_number || 'an order')}` : c.expired ? 'Expired' : `<span class="ok">Active</span> until ${esc(c.expires_at.slice(0, 10))}`}</td></tr>`).join('')
+        || '<tr><td colspan="5">No codes claimed yet.</td></tr>';
       document.getElementById('subs').innerHTML = d.subscribers.map((s) => `<tr><td>${esc(s.email)}</td><td class="mono">${esc(s.created_at)}</td>
         <td class="mono">${s.unsubscribed_at ? 'Unsubscribed' : '<span class="ok">Subscribed</span>'}</td></tr>`).join('')
         || '<tr><td colspan="3">No subscribers yet.</td></tr>';

@@ -1,0 +1,134 @@
+{%- comment -%}
+  Spin to win. Pops up for new visitors after a few seconds (veya.js). Every slice is a real deal:
+  the visitor spins, then enters their email to unlock the slice's discount code.
+
+  - Each slice's code must exist in Shopify admin → Discounts (see the README for the seven codes).
+  - The email goes to Shopify admin → Customers (subscribed to email marketing), tagged
+    "spin-to-win" and "prize:CODE" so you can see who won what.
+  - The code is added to the visitor's cart and comes off at checkout.
+{%- endcomment -%}
+{%- if section.settings.enabled and section.blocks.size > 1 -%}
+  <div id="spin-overlay" class="overlay" aria-hidden="true" data-spin
+    data-delay="{{ section.settings.delay }}" data-snooze="{{ section.settings.snooze_days }}"
+    data-teaser="{% if section.settings.show_teaser %}true{% else %}false{% endif %}" data-section-id="{{ section.id }}">
+    <div class="overlay-backdrop" data-close></div>
+    <div class="relative h-full w-full flex items-center justify-center p-4 pointer-events-none">
+      <div class="pointer-events-auto relative w-full max-w-3xl max-h-full overflow-y-auto rounded-xl bg-surface-container-low border border-outline-variant/30 grid grid-cols-1 md:grid-cols-2" role="dialog" aria-modal="true" aria-labelledby="spin-title">
+        <button type="button" data-close aria-label="Close" class="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-surface-container-low/90 border border-outline-variant/40 flex items-center justify-center text-primary hover:border-secondary hover:text-secondary transition-colors"><span class="material-symbols-outlined text-[18px]" aria-hidden="true">close</span></button>
+        <div class="bg-primary flex items-center justify-center px-6 pt-10 pb-8 md:p-10">
+          <div class="relative w-full max-w-[250px] md:max-w-[330px]">
+            <div class="spin-sway"><div id="spin-wheel" class="spin-wheel aspect-square" role="img" aria-label="Prize wheel"></div></div>
+            <svg class="spin-pointer absolute left-1/2 -top-5 -translate-x-1/2 w-9 h-11" viewBox="0 0 36 44" aria-hidden="true"><path d="M18 43 4.6 16.5A15 15 0 1 1 31.4 16.5Z" fill="#F5EFE4" stroke="#1B2A41" stroke-width="2"/><circle cx="18" cy="15" r="5" fill="#34507A"/></svg>
+          </div>
+        </div>
+        <div class="p-6 md:p-10 flex flex-col justify-center gap-5">
+          <div class="spin-step flex flex-col gap-4" data-spin-step="intro">
+            <span class="font-label-sm text-secondary uppercase tracking-[0.2em]">{{ section.settings.eyebrow | escape }}</span>
+            <h2 id="spin-title" class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary">{{ section.settings.heading | escape }}</h2>
+            <p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">{{ section.settings.text | escape }}</p>
+            <button id="spin-btn" type="button" class="w-full h-[52px] rounded-full bg-primary text-on-primary font-headline-sm text-headline-sm flex items-center justify-center gap-2 hover:bg-secondary transition-colors duration-300 amber-glow-hover disabled:opacity-60">
+              <span id="spin-btn-label">{{ section.settings.button | escape }}</span><span class="material-symbols-outlined text-[18px]" aria-hidden="true">autorenew</span>
+            </button>
+            <button type="button" data-close class="self-center font-label-sm text-on-surface-variant uppercase tracking-widest hover:text-primary">No thanks</button>
+          </div>
+
+          <div class="spin-step" data-spin-step="won" hidden>
+            {%- form 'customer', id: 'spin-form', class: 'flex flex-col gap-4', novalidate: 'novalidate' -%}
+              <input type="hidden" name="contact[tags]" value="spin-to-win" data-spin-tags>
+              <span class="font-label-sm text-secondary uppercase tracking-[0.2em]">YOU WON</span>
+              <h2 id="spin-won-title" class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary"></h2>
+              <p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">Enter your email to unlock your code. We'll add it to your bag so it comes off at checkout.</p>
+              <label class="block"><span class="field-label">Email</span><input class="field" name="contact[email]" type="email" autocomplete="email" required placeholder="you@example.com"></label>
+              <p id="spin-error" class="font-label-md text-error min-h-[16px] -mt-2" aria-live="polite"></p>
+              <button type="submit" class="w-full h-[52px] rounded-full bg-primary text-on-primary font-headline-sm text-headline-sm flex items-center justify-center gap-2 hover:bg-secondary transition-colors duration-300 amber-glow-hover disabled:opacity-60">
+                <span>Unlock my code</span><span class="material-symbols-outlined text-[18px]" aria-hidden="true">lock_open</span>
+              </button>
+              <p class="font-body-sm text-body-sm text-outline">{{ section.settings.consent | escape }}</p>
+            {%- endform -%}
+          </div>
+
+          <div class="spin-step flex flex-col gap-4" data-spin-step="claimed" hidden>
+            <span class="font-label-sm text-secondary uppercase tracking-[0.2em]">YOUR CODE</span>
+            <h2 id="spin-claimed-title" class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary"></h2>
+            <div class="spin-code rounded-lg bg-surface-container-lowest px-4 py-3 flex items-center justify-between gap-3">
+              <span id="spin-code" class="font-label-lg text-label-lg text-primary tracking-[0.12em] select-all break-all"></span>
+              <button id="spin-copy" type="button" class="shrink-0 h-9 px-4 rounded-full border border-primary/30 text-primary font-label-md uppercase tracking-widest hover:bg-primary hover:text-on-primary transition-colors">Copy</button>
+            </div>
+            <p id="spin-claimed-note" class="font-body-md text-body-md text-on-surface-variant leading-relaxed" aria-live="polite"></p>
+            <a href="{{ routes.all_products_collection_url }}" data-close class="w-full h-[52px] rounded-full bg-primary text-on-primary font-headline-sm text-headline-sm flex items-center justify-center gap-2 hover:bg-secondary transition-colors duration-300 amber-glow-hover">
+              <span>Start shopping</span><span class="material-symbols-outlined text-[18px]" aria-hidden="true">arrow_forward</span>
+            </a>
+          </div>
+
+          {%- if section.settings.terms != blank -%}
+            <p class="font-body-sm text-body-sm text-outline border-t border-outline-variant/20 pt-4">{{ section.settings.terms | escape }}</p>
+          {%- endif -%}
+        </div>
+      </div>
+    </div>
+  </div>
+  <button id="spin-teaser" type="button" hidden class="fixed left-4 bottom-4 z-50 h-11 pl-3 pr-4 rounded-full bg-primary text-on-primary font-label-md uppercase tracking-widest shadow-lg flex items-center gap-2 hover:bg-secondary transition-colors">
+    <span class="material-symbols-outlined text-[18px]" aria-hidden="true">redeem</span><span id="spin-teaser-label">Spin to win</span>
+  </button>
+  <script type="application/json" id="spin-config">[
+    {%- for block in section.blocks -%}
+      { "big": {{ block.settings.big | json }}, "small": {{ block.settings.small | json }}, "title": {{ block.settings.title | json }},
+        "code": {{ block.settings.code | strip | upcase | json }}, "weight": {{ block.settings.weight | json }}, "style": {{ block.settings.style | json }} }
+      {%- unless forloop.last -%},{%- endunless -%}
+    {%- endfor -%}
+  ]</script>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Spin to win",
+  "class": "section-spin-wheel",
+  "max_blocks": 12,
+  "settings": [
+    { "type": "checkbox", "id": "enabled", "label": "Show the spin-to-win wheel", "default": true },
+    { "type": "range", "id": "delay", "label": "Seconds before it pops up", "min": 0, "max": 30, "step": 1, "unit": "s", "default": 4 },
+    { "type": "range", "id": "snooze_days", "label": "Days before showing it again to someone who closed it", "min": 1, "max": 30, "step": 1, "default": 7 },
+    { "type": "checkbox", "id": "show_teaser", "label": "Show a \"Spin to win\" tab after it's closed", "default": true },
+    { "type": "text", "id": "eyebrow", "label": "Small label", "default": "SPIN TO WIN" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Spin for a deal." },
+    { "type": "textarea", "id": "text", "label": "Text", "default": "Every slice wins something: up to 25% off, money off your order or free shipping. Spin, then pop in your email to unlock your code." },
+    { "type": "text", "id": "button", "label": "Button", "default": "Spin the wheel" },
+    { "type": "text", "id": "consent", "label": "Sign-up note", "default": "You'll also join the VEYA list for new drops and offers. Unsubscribe anytime." },
+    { "type": "textarea", "id": "terms", "label": "Small print", "default": "One spin per visitor. Each code works on one order per customer and can't be combined with other discounts." },
+    { "type": "paragraph", "content": "Add a slice for each deal, clockwise from the top. Every slice's code must be set up in Discounts first, or checkout will reject it." }
+  ],
+  "blocks": [
+    {
+      "type": "slice",
+      "name": "Slice",
+      "settings": [
+        { "type": "text", "id": "big", "label": "Big text", "default": "10%" },
+        { "type": "text", "id": "small", "label": "Small text", "default": "OFF" },
+        { "type": "text", "id": "title", "label": "Prize name", "info": "Shown after the spin, e.g. \"10% off your order\".", "default": "10% off your order" },
+        { "type": "text", "id": "code", "label": "Discount code", "info": "Must match a code in Shopify admin → Discounts.", "default": "SPIN10" },
+        { "type": "range", "id": "weight", "label": "Chance", "info": "Higher numbers win more often. 0 means this slice never wins.", "min": 0, "max": 50, "step": 1, "default": 10 },
+        {
+          "type": "select", "id": "style", "label": "Colour",
+          "options": [
+            { "value": "cream", "label": "Cream" }, { "value": "sand", "label": "Sand" },
+            { "value": "blue", "label": "Blue" }, { "value": "navy", "label": "Navy" }
+          ],
+          "default": "cream"
+        }
+      ]
+    }
+  ],
+  "default": {
+    "blocks": [
+      { "type": "slice", "settings": { "big": "10%", "small": "OFF", "title": "10% off your order", "code": "SPIN10", "weight": 15, "style": "cream" } },
+      { "type": "slice", "settings": { "big": "FREE", "small": "SHIPPING", "title": "Free shipping on your order", "code": "SHIPFREE", "weight": 18, "style": "sand" } },
+      { "type": "slice", "settings": { "big": "15%", "small": "OFF", "title": "15% off your order", "code": "SPIN15", "weight": 16, "style": "cream" } },
+      { "type": "slice", "settings": { "big": "$5", "small": "OFF", "title": "$5 off your order", "code": "TAKE5", "weight": 14, "style": "sand" } },
+      { "type": "slice", "settings": { "big": "20%", "small": "OFF", "title": "20% off your order", "code": "SPIN20", "weight": 8, "style": "blue" } },
+      { "type": "slice", "settings": { "big": "10%", "small": "OFF", "title": "10% off your order", "code": "SPIN10", "weight": 15, "style": "sand" } },
+      { "type": "slice", "settings": { "big": "$10", "small": "OFF $60+", "title": "$10 off orders of $60 or more", "code": "TAKE10", "weight": 10, "style": "cream" } },
+      { "type": "slice", "settings": { "big": "25%", "small": "OFF", "title": "25% off your order", "code": "SPIN25", "weight": 4, "style": "navy" } }
+    ]
+  }
+}
+{% endschema %}

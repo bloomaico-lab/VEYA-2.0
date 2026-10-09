@@ -80,11 +80,16 @@ describe('Shopify mode routes (fake Storefront client)', () => {
       },
     }));
     const qty = lines.reduce((n, l) => n + l.quantity, 0);
+    // The store has the wheel's shared codes set up; SPIN10 takes 10% off the order.
+    const codes = (cart.discountCodes || []).map((code) => ({ code, applicable: ['SPIN10', 'SHIPFREE'].includes(code) }));
+    const off = codes.some((c) => c.code === 'SPIN10' && c.applicable) ? 5.8 * qty : 0;
     return {
       id: cart.id,
       checkoutUrl: `https://veya.example/checkouts/${cart.id}`,
       totalQuantity: qty,
-      cost: { subtotalAmount: { amount: String(58 * qty), currencyCode: 'USD' }, totalAmount: { amount: String(58 * qty) } },
+      cost: { subtotalAmount: { amount: String(58 * qty), currencyCode: 'USD' }, totalAmount: { amount: String(58 * qty - off) } },
+      discountCodes: codes,
+      discountAllocations: off ? [{ discountedAmount: { amount: String(off) } }] : [],
       lines: { nodes: lines },
     };
   }
@@ -94,8 +99,8 @@ describe('Shopify mode routes (fake Storefront client)', () => {
     products: async () => [product],
     product: async (handle) => (handle === product.id ? product : null),
     getCart: async (id) => (carts.has(id) ? shape(carts.get(id)) : null),
-    createCart: async (lines) => {
-      const cart = { id: `cart-${carts.size + 1}`, lines: lines.map((l) => ({ ...l, id: `gid://shopify/CartLine/${nextLine++}` })) };
+    createCart: async (lines, discountCodes = []) => {
+      const cart = { id: `cart-${carts.size + 1}`, discountCodes, lines: lines.map((l) => ({ ...l, id: `gid://shopify/CartLine/${nextLine++}` })) };
       carts.set(cart.id, cart);
       return shape(cart);
     },
@@ -117,13 +122,18 @@ describe('Shopify mode routes (fake Storefront client)', () => {
       cart.lines = cart.lines.filter((l) => l.id !== lineId);
       return shape(cart);
     },
+    updateDiscountCodes: async (id, discountCodes) => {
+      carts.get(id).discountCodes = discountCodes;
+      return shape(carts.get(id));
+    },
     toSiteCart: (cart) => toSiteCart(cart, 75),
   };
 
   let server;
   let base;
   before(async () => {
-    server = createApp(openDb(':memory:'), { stripe: null, shopify: fake }).listen(0);
+    // random() = 0 lands the wheel on its first slice: 10% off (Shopify code SPIN10).
+    server = createApp(openDb(':memory:'), { stripe: null, shopify: fake, random: () => 0 }).listen(0);
     await new Promise((r) => server.once('listening', r));
     base = `http://127.0.0.1:${server.address().port}`;
   });
@@ -180,6 +190,33 @@ describe('Shopify mode routes (fake Storefront client)', () => {
 
     r = await api(`/api/cart/${lineId}`, { method: 'DELETE' });
     assert.equal(r.body.count, 0);
+  });
+
+  test('the wheel gives the shared Shopify code and puts it on the Shopify cart', async () => {
+    const api = client();
+    await api('/api/spin', { method: 'POST' });
+    const claim = await api('/api/spin/claim', { method: 'POST', body: { email: 'shop@example.com' } });
+    assert.equal(claim.status, 201);
+    assert.deepEqual(claim.body, { code: 'SPIN10', title: '10% off your order', expiresAt: null, existing: false, emailed: false });
+    // The bag was empty when they won, so the code goes on the cart when it's made.
+    let r = await api('/api/cart', { method: 'POST', body: { productId: 'heavyweight-hoodie', size: 'M', color: 'Black' } });
+    assert.deepEqual(r.body.discount, { code: 'SPIN10', title: '', amount: 5.8, freeShipping: false, applied: true, note: '' });
+    assert.equal(r.body.total, 52.2);
+    r = await api('/api/cart/discount', { method: 'DELETE' });
+    assert.equal(r.body.discount, null);
+    assert.equal(r.body.total, 58);
+    r = await api('/api/cart/discount', { method: 'POST', body: { code: 'bogus' } });
+    assert.equal(r.body.discount.applied, false);
+    assert.match(r.body.discount.note, /can't be used/);
+    r = await api('/api/cart/discount', { method: 'POST', body: { code: 'shipfree' } });
+    assert.equal(r.body.discount.code, 'SHIPFREE');
+    assert.equal(r.body.discount.note, 'Comes off at checkout.');
+    // A claim made while there is already a cart goes straight onto it.
+    const other = client();
+    await other('/api/cart', { method: 'POST', body: { productId: 'heavyweight-hoodie', size: 'M', color: 'Black' } });
+    await other('/api/spin', { method: 'POST' });
+    await other('/api/spin/claim', { method: 'POST', body: { email: 'shop2@example.com' } });
+    assert.equal((await other('/api/cart')).body.discount.code, 'SPIN10');
   });
 
   test('a cart that Shopify no longer returns (checked out) resets to empty', async () => {

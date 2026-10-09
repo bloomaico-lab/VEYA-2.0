@@ -63,6 +63,110 @@
         "footer": {
           "type": "footer",
           "settings": {}
+        },
+        "spin-wheel": {
+          "type": "spin-wheel",
+          "blocks": {
+            "slice-1": {
+              "type": "slice",
+              "settings": {
+                "big": "10%",
+                "small": "OFF",
+                "title": "10% off your order",
+                "code": "SPIN10",
+                "weight": 15,
+                "style": "cream"
+              }
+            },
+            "slice-2": {
+              "type": "slice",
+              "settings": {
+                "big": "FREE",
+                "small": "SHIPPING",
+                "title": "Free shipping on your order",
+                "code": "SHIPFREE",
+                "weight": 18,
+                "style": "sand"
+              }
+            },
+            "slice-3": {
+              "type": "slice",
+              "settings": {
+                "big": "15%",
+                "small": "OFF",
+                "title": "15% off your order",
+                "code": "SPIN15",
+                "weight": 16,
+                "style": "cream"
+              }
+            },
+            "slice-4": {
+              "type": "slice",
+              "settings": {
+                "big": "$5",
+                "small": "OFF",
+                "title": "$5 off your order",
+                "code": "TAKE5",
+                "weight": 14,
+                "style": "sand"
+              }
+            },
+            "slice-5": {
+              "type": "slice",
+              "settings": {
+                "big": "20%",
+                "small": "OFF",
+                "title": "20% off your order",
+                "code": "SPIN20",
+                "weight": 8,
+                "style": "blue"
+              }
+            },
+            "slice-6": {
+              "type": "slice",
+              "settings": {
+                "big": "10%",
+                "small": "OFF",
+                "title": "10% off your order",
+                "code": "SPIN10",
+                "weight": 15,
+                "style": "sand"
+              }
+            },
+            "slice-7": {
+              "type": "slice",
+              "settings": {
+                "big": "$10",
+                "small": "OFF $60+",
+                "title": "$10 off orders of $60 or more",
+                "code": "TAKE10",
+                "weight": 10,
+                "style": "cream"
+              }
+            },
+            "slice-8": {
+              "type": "slice",
+              "settings": {
+                "big": "25%",
+                "small": "OFF",
+                "title": "25% off your order",
+                "code": "SPIN25",
+                "weight": 4,
+                "style": "navy"
+              }
+            }
+          },
+          "block_order": [
+            "slice-1",
+            "slice-2",
+            "slice-3",
+            "slice-4",
+            "slice-5",
+            "slice-6",
+            "slice-7",
+            "slice-8"
+          ],
+          "settings": {}
         }
       }
     }

@@ -59,6 +59,7 @@
     el.setAttribute('aria-hidden', 'true');
     if (!$('.overlay.open')) document.body.style.overflow = '';
     if (restoreFocus && lastFocus) lastFocus.focus();
+    el.dispatchEvent(new CustomEvent('overlay:closed'));
   }
   document.addEventListener('click', (e) => {
     const opener = e.target.closest('[data-open]');
@@ -126,6 +127,7 @@
       </div>`;
     const subtotal = $('#bag-subtotal');
     if (subtotal) subtotal.textContent = formatMoney(cart.total_price);
+    renderSpinCartNote();
     const checkout = $('#checkout-btn');
     if (checkout) checkout.disabled = cart.item_count === 0;
     const note = $('#bag-shipping-note');
@@ -138,6 +140,23 @@
       if (bar) bar.style.width = `${Math.min(100, Math.round((cart.total_price / threshold) * 100))}%`;
     }
   }
+
+  // A code won on the spin-to-win wheel: say in the bag that it comes off at checkout.
+  const SPIN_KEY = 'veya-spin';
+  const spinMemory = () => { try { return JSON.parse(localStorage.getItem(SPIN_KEY)) || {}; } catch { return {}; } };
+  function renderSpinCartNote() {
+    const won = spinMemory();
+    $$('[data-spin-cart-note]').forEach((el) => {
+      const show = Boolean(won.claimed && won.spin?.code);
+      el.classList.toggle('hidden', !show);
+      el.classList.toggle('flex', show);
+      if (show) {
+        el.innerHTML = `<span class="material-symbols-outlined text-[16px]" aria-hidden="true">sell</span>
+          <span>Code <b class="font-label-md tracking-wider">${esc(won.spin.code)}</b> (${esc(won.spin.title)}) comes off at checkout.</span>`;
+      }
+    });
+  }
+  renderSpinCartNote();
 
   async function refreshCart() {
     try { renderCart(await cartFetch(`${routes.cart}.js`)); } catch (err) { /* keep server-rendered state */ }
@@ -484,6 +503,242 @@
       $('#hud-focus-title', section).textContent = card.dataset.focusTitle;
       $('#hud-focus-text', section).textContent = card.dataset.focusText;
     });
+  });
+
+  // ---------- spin to win ----------
+  // Set up in the theme editor (Spin to win section): each slice is a deal with its Shopify discount
+  // code and a chance of winning. New visitors see it after a few seconds; they spin, then enter
+  // their email (it goes to Shopify Customers through the customer form, tagged with the prize) to
+  // unlock the code, which is added to their cart so it comes off at checkout.
+  const WHEEL_COLORS = { cream: ['#F5EFE4', '#1B2A41'], sand: ['#E6DCCB', '#1B2A41'], blue: ['#34507A', '#F5EFE4'], navy: ['#1B2A41', '#F5EFE4'] };
+  const rememberSpin = (patch) => {
+    try { localStorage.setItem(SPIN_KEY, JSON.stringify({ ...spinMemory(), ...patch })); } catch { /* private browsing */ }
+  };
+
+  function wheelSvg(slices) {
+    const step = 360 / slices.length;
+    const R = 90;
+    const at = (deg, r) => {
+      const a = (deg * Math.PI) / 180;
+      return `${(Math.sin(a) * r).toFixed(2)} ${(-Math.cos(a) * r).toFixed(2)}`;
+    };
+    const wedges = slices.map((s, i) => {
+      const [fill, ink] = WHEEL_COLORS[s.style] || WHEEL_COLORS.cream;
+      const a0 = i * step;
+      return `<path d="M0 0 L${at(a0, R)} A${R} ${R} 0 0 1 ${at(a0 + step, R)}Z" fill="${fill}"/>
+        <g transform="rotate(${a0 + step / 2})" fill="${ink}" text-anchor="middle">
+          <text y="-58" font-family="'Bodoni Moda', Georgia, serif" font-size="15" font-weight="500">${esc(s.big)}</text>
+          <text y="-45" font-family="'JetBrains Mono', monospace" font-size="5.8" letter-spacing=".7">${esc(s.small)}</text>
+        </g>`;
+    }).join('');
+    const lines = slices.map((_, i) => `<path d="M0 0 L${at(i * step, R)}" stroke="#1B2A41" stroke-opacity=".18" stroke-width=".6"/>`).join('');
+    const bulbs = Array.from({ length: slices.length * 2 }, (_, i) => {
+      const [x, y] = at(i * (step / 2), 96).split(' ');
+      return `<circle cx="${x}" cy="${y}" r="1.7" fill="${i % 2 ? '#34507A' : '#1B2A41'}"/>`;
+    }).join('');
+    return `<svg viewBox="-102 -102 204 204" class="w-full h-full block" aria-hidden="true">
+      <circle r="101" fill="#F5EFE4"/><circle r="92.5" fill="#1B2A41"/>${wedges}${lines}${bulbs}
+      <circle r="18" fill="#1B2A41" stroke="#F5EFE4" stroke-width="1.6"/>
+      <text y="2.6" text-anchor="middle" font-family="'Bodoni Moda', Georgia, serif" font-size="7.4" fill="#F5EFE4" letter-spacing=".6">VEYA</text>
+      <circle cx="0" cy="8.2" r="1.2" fill="#34507A"/>
+    </svg>`;
+  }
+
+  function setupSpin(root) {
+    let slices = [];
+    try { slices = JSON.parse($('#spin-config').textContent); } catch { return; }
+    if (slices.length < 2) return;
+    root.dataset.ready = 'true';
+    const wheel = $('#spin-wheel', root);
+    const form = $('#spin-form', root);
+    form.noValidate = true; // our own message instead of the browser's bubble
+    const teaser = $('#spin-teaser');
+    const designMode = Boolean(window.Shopify && window.Shopify.designMode);
+    const touch = window.matchMedia('(pointer: coarse)').matches;
+    let spinning = false;
+    let note = '';
+
+    wheel.innerHTML = wheelSvg(slices);
+    wheel.setAttribute('aria-label', `Prize wheel with ${slices.length} deals: ${[...new Set(slices.map((s) => s.title))].join(', ')}`);
+
+    // Which slice a spin lands on, by each slice's chance.
+    function pickSlice() {
+      const weights = slices.map((slice) => Math.max(0, Number(slice.weight) || 0));
+      const total = weights.reduce((sum, w) => sum + w, 0);
+      if (!total) return 0;
+      let r = Math.random() * total;
+      for (let i = 0; i < weights.length; i += 1) {
+        r -= weights[i];
+        if (r < 0) return i;
+      }
+      return weights.length - 1;
+    }
+
+    // Turns the wheel so slice `index` stops under the pointer at the top.
+    function turnWheel(index, animate) {
+      const step = 360 / slices.length;
+      const land = 360 - (index * step + step / 2);
+      if (!animate) {
+        wheel.style.transition = 'none';
+        wheel.style.transform = `rotate(${land}deg)`;
+        void wheel.offsetWidth;
+        wheel.style.transition = '';
+        return Promise.resolve();
+      }
+      $('.spin-sway', root)?.classList.remove('spin-sway');
+      const target = 360 * 6 + land + (Math.random() - 0.5) * step * 0.6;
+      return new Promise((resolve) => {
+        let timer;
+        const done = () => { clearTimeout(timer); wheel.removeEventListener('transitionend', done); resolve(); };
+        timer = setTimeout(done, 6500);
+        wheel.addEventListener('transitionend', done);
+        requestAnimationFrame(() => { wheel.style.transform = `rotate(${target}deg)`; });
+      });
+    }
+
+    // The spin result is kept in this browser; a slice edited away since then is ignored.
+    function currentSpin() {
+      const { spin } = spinMemory();
+      return spin && slices[spin.slice] && slices[spin.slice].code === spin.code ? spin : null;
+    }
+
+    function render() {
+      const spin = currentSpin();
+      const claimed = spin && spinMemory().claimed;
+      const step = claimed ? 'claimed' : spin ? 'won' : 'intro';
+      $$('[data-spin-step]', root).forEach((el) => { el.hidden = el.dataset.spinStep !== step; });
+      if (spin) {
+        $('#spin-won-title', root).textContent = `${spin.title.charAt(0).toUpperCase()}${spin.title.slice(1)}!`;
+        $('#spin-claimed-title', root).textContent = spin.title;
+        $('#spin-code', root).textContent = spin.code;
+        $('#spin-claimed-note', root).textContent = `It's in your bag and comes off at checkout. ${note}`.trim();
+      }
+      renderTeaser();
+    }
+
+    // The corner tab: shown once the popup has been seen, until a code is claimed.
+    function renderTeaser() {
+      if (!teaser) return;
+      const spin = currentSpin();
+      const show = root.dataset.teaser === 'true' && !spinMemory().claimed && Boolean(spinMemory().seen) && !root.classList.contains('open');
+      teaser.hidden = !show;
+      const slice = spin && slices[spin.slice];
+      $('#spin-teaser-label').textContent = slice ? `Claim ${slice.big} ${String(slice.small).split(' ')[0]}` : 'Spin to win';
+    }
+
+    function open() {
+      rememberSpin({ seen: true });
+      render();
+      openOverlay(root.id);
+      if (teaser) teaser.hidden = true;
+      if (!touch) setTimeout(() => $('[data-spin-step]:not([hidden]) #spin-btn, [data-spin-step]:not([hidden]) input[type=email], [data-spin-step]:not([hidden]) #spin-copy', root)?.focus(), 80);
+    }
+
+    root.addEventListener('overlay:closed', () => {
+      if (!spinMemory().claimed) rememberSpin({ dismissedAt: Date.now() });
+      renderTeaser();
+    });
+    teaser?.addEventListener('click', open);
+
+    $('#spin-btn', root).addEventListener('click', async () => {
+      if (spinning) return;
+      spinning = true;
+      const btn = $('#spin-btn', root);
+      const label = $('#spin-btn-label', root);
+      const idle = label.textContent;
+      btn.disabled = true;
+      label.textContent = 'Good luck…';
+      const index = pickSlice();
+      await turnWheel(index, true);
+      rememberSpin({ spin: { slice: index, code: slices[index].code, title: slices[index].title } });
+      spinning = false;
+      btn.disabled = false;
+      label.textContent = idle;
+      render();
+      if (!touch) $('input[type=email]', form).focus();
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const spin = currentSpin();
+      if (!spin) return;
+      const email = $('input[type=email]', form).value.trim();
+      const error = $('#spin-error', root);
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { error.textContent = 'Please enter a valid email address.'; return; }
+      $('[data-spin-tags]', form).value = `spin-to-win, prize:${spin.code}`;
+      const btn = $('[type=submit]', form);
+      btn.disabled = true;
+      try {
+        // Shopify's customer form: adds them to Customers with email marketing turned on.
+        await fetch(form.action, { method: 'POST', body: new URLSearchParams(new FormData(form)), credentials: 'same-origin', headers: { Accept: 'text/html' } });
+      } catch {
+        error.textContent = "We couldn't reach the store. Check your connection and try again.";
+        btn.disabled = false;
+        return;
+      }
+      error.textContent = '';
+      rememberSpin({ claimed: true });
+      note = 'Copy it somewhere safe in case you shop on another device.';
+      // Put the code on their cart; Shopify applies it at checkout.
+      await fetch(`/discount/${encodeURIComponent(spin.code)}?redirect=${encodeURIComponent(`${routes.cart}.js`)}`, { credentials: 'same-origin' }).catch(() => {});
+      await cartFetch(`${routes.cart}/update.js`, { discount: spin.code }).catch(() => {});
+      btn.disabled = false;
+      render();
+      renderSpinCartNote();
+    });
+
+    $('#spin-copy', root).addEventListener('click', async () => {
+      const btn = $('#spin-copy', root);
+      try {
+        await navigator.clipboard.writeText($('#spin-code', root).textContent);
+        btn.textContent = 'Copied';
+      } catch {
+        const range = document.createRange();
+        range.selectNodeContents($('#spin-code', root));
+        getSelection().removeAllRanges();
+        getSelection().addRange(range);
+        btn.textContent = 'Selected';
+      }
+      setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+    });
+
+    const spin = currentSpin();
+    if (spin) {
+      $('.spin-sway', root)?.classList.remove('spin-sway');
+      turnWheel(spin.slice, false);
+    }
+    render();
+
+    // In the theme editor the wheel opens when its section is selected instead of on a timer.
+    if (designMode) {
+      document.addEventListener('shopify:section:select', (e) => { if (e.detail.sectionId === root.dataset.sectionId) open(); });
+      document.addEventListener('shopify:section:deselect', (e) => { if (e.detail.sectionId === root.dataset.sectionId) closeOverlay(root.id, false); });
+      return;
+    }
+    // Pop up for visitors who haven't claimed a code, unless they closed it recently. If something
+    // else is open (the bag, search), wait for it to close.
+    const memory = spinMemory();
+    const snoozeDays = Number(root.dataset.snooze) || 7;
+    const snoozed = memory.dismissedAt && Date.now() - memory.dismissedAt < snoozeDays * 864e5;
+    if (memory.claimed || snoozed) return;
+    let waited = 0;
+    const tryOpen = () => {
+      if ($('.overlay.open')) {
+        waited += 2000;
+        if (waited < 60000) setTimeout(tryOpen, 2000);
+        return;
+      }
+      open();
+    };
+    setTimeout(tryOpen, (Number(root.dataset.delay) || 0) * 1000);
+  }
+
+  const spinRoot = $('#spin-overlay[data-spin]');
+  if (spinRoot) setupSpin(spinRoot);
+  // The theme editor re-renders the section when its settings change.
+  document.addEventListener('shopify:section:load', () => {
+    const root = $('#spin-overlay[data-spin]');
+    if (root && !root.dataset.ready) setupSpin(root);
   });
 
   // Keep the bag count right when coming back with the browser's back button.

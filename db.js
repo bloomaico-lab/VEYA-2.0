@@ -97,7 +97,27 @@ function openDb(file = process.env.DB_FILE || path.join(__dirname, 'data', 'veya
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
       finished_at TEXT
     );
+    -- Codes won on the spin-to-win wheel: one per email, single use, valid for a limited time.
+    CREATE TABLE IF NOT EXISTS discount_codes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      code TEXT NOT NULL UNIQUE,
+      email TEXT NOT NULL,
+      prize TEXT NOT NULL,
+      kind TEXT NOT NULL,
+      value INTEGER NOT NULL DEFAULT 0,
+      min_subtotal_cents INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      expires_at TEXT NOT NULL,
+      used_at TEXT,
+      order_number TEXT
+    );
+    CREATE INDEX IF NOT EXISTS discount_codes_email ON discount_codes (email);
   `);
+  const addColumn = (table, name, type) => {
+    if (!db.prepare(`PRAGMA table_info(${table})`).all().some((c) => c.name === name)) {
+      db.exec(`ALTER TABLE ${table} ADD COLUMN ${name} ${type}`);
+    }
+  };
 
   // Columns added after the first release; add them to databases created before then.
   const orderCols = db.prepare('PRAGMA table_info(orders)').all().map((c) => c.name);
@@ -117,6 +137,12 @@ function openDb(file = process.env.DB_FILE || path.join(__dirname, 'data', 'veya
   if (!db.prepare('PRAGMA table_info(products)').all().some((c) => c.name === 'gender')) {
     db.exec("ALTER TABLE products ADD COLUMN gender TEXT NOT NULL DEFAULT ''");
   }
+  // Spin to win: the slice a visitor landed on, the code they claimed, and the code on their bag.
+  addColumn('sessions', 'spin_slice', 'INTEGER');
+  addColumn('sessions', 'spin_code', 'TEXT');
+  addColumn('sessions', 'discount_code', 'TEXT');
+  addColumn('orders', 'discount_code', 'TEXT');
+  addColumn('orders', 'discount_cents', 'INTEGER NOT NULL DEFAULT 0');
 
   // Products taken out of the range: remove them (and any bags holding them) from older databases.
   // Past orders keep their own copy of the name and price, so order history is unaffected.

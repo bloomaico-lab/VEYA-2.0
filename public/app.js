@@ -72,6 +72,7 @@
     el.setAttribute('aria-hidden', 'true');
     if (!$('.overlay.open')) document.body.style.overflow = '';
     if (restoreFocus && lastFocus) lastFocus.focus();
+    if (id === 'spin-overlay') spinClosed();
   }
 
   document.addEventListener('click', (e) => {
@@ -333,7 +334,8 @@
     $('#checkout-btn').disabled = cart.count === 0;
     const remaining = cart.freeShippingThreshold - cart.subtotal;
     $('#bag-shipping-note').textContent = !cart.count || cart.shippingAtCheckout ? ''
-      : remaining > 0 ? `${money(remaining)} away from free shipping` : 'You get free shipping';
+      : remaining > 0 && !cart.discount?.freeShipping ? `${money(remaining)} away from free shipping` : 'You get free shipping';
+    renderBagDiscount(cart.discount);
 
     $('#bag-items').innerHTML = cart.items.length ? cart.items.map((i) => `
       <div class="flex gap-4 p-3 rounded-lg border border-outline-variant/20 bg-surface-container-lowest/50" data-item="${esc(i.id)}">
@@ -360,6 +362,41 @@
           <button type="button" data-close data-filter="all" class="font-label-md text-secondary uppercase tracking-widest hover:underline">Start shopping</button>
         </div>`;
   }
+
+  // The discount code on the bag (from the wheel or typed in), or the "Have a code?" field when there isn't one.
+  function renderBagDiscount(d) {
+    $('#bag-discount-row').classList.toggle('hidden', !d);
+    $('#bag-code').classList.toggle('hidden', Boolean(d));
+    $('#checkout-discount').classList.toggle('hidden', !d?.applied);
+    if (!d) return;
+    $('#bag-discount-code').textContent = d.code;
+    $('#bag-discount').textContent = !d.applied ? '' : d.amount ? `−${money(d.amount)}` : d.freeShipping ? 'Free shipping' : 'At checkout';
+    const note = $('#bag-discount-note');
+    note.textContent = d.note || d.title;
+    note.classList.toggle('text-error', !d.applied);
+    note.classList.toggle('text-on-surface-variant', d.applied);
+    $('#checkout-discount').textContent = d.amount ? `Includes ${money(d.amount)} off with ${d.code}` : `Code ${d.code} applied`;
+  }
+
+  $('#bag-code-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const input = $('#bag-code-input');
+    const err = $('#bag-code-error');
+    if (!input.value.trim()) { err.textContent = 'Please enter a code.'; return; }
+    try {
+      state.cart = await api('/api/cart/discount', { method: 'POST', body: { code: input.value } });
+      input.value = '';
+      err.textContent = '';
+      renderBag();
+    } catch (error) { err.textContent = error.message; }
+  });
+
+  $('#bag-discount-remove').addEventListener('click', async () => {
+    try {
+      state.cart = await api('/api/cart/discount', { method: 'DELETE' });
+      renderBag();
+    } catch (err) { toast(err.message); }
+  });
 
   async function loadCart() {
     try { state.cart = await api('/api/cart'); renderBag(); } catch { /* bag stays at 0 */ }
@@ -441,6 +478,7 @@
       await showOrderConfirmed(order);
     } catch (err) {
       $('#checkout-error').textContent = err.message;
+      loadCart(); // e.g. a code that expired was taken off: show the new total
     }
     btn.disabled = false;
   });
@@ -687,11 +725,220 @@
     }
   });
 
+  // ---------- spin to win ----------
+  // New visitors see the wheel after a few seconds. The server decides where it lands; every slice is
+  // a real deal. Entering an email unlocks the code, which goes straight on the bag. Closing it leaves a
+  // small tab in the corner to come back to it.
+
+  const SPIN_KEY = 'veya-spin';
+  const SPIN_DELAY_MS = 4000;
+  const SPIN_SNOOZE_DAYS = 7;
+  const spin = { slices: [], result: null, spinning: false, note: '' };
+  const spinMemory = () => { try { return JSON.parse(localStorage.getItem(SPIN_KEY)) || {}; } catch { return {}; } };
+  const rememberSpin = (patch) => {
+    try { localStorage.setItem(SPIN_KEY, JSON.stringify({ ...spinMemory(), ...patch })); } catch { /* private browsing */ }
+  };
+
+  const WHEEL_COLORS = { cream: ['#F5EFE4', '#1B2A41'], sand: ['#E6DCCB', '#1B2A41'], blue: ['#34507A', '#F5EFE4'], navy: ['#1B2A41', '#F5EFE4'] };
+
+  function wheelSvg(slices) {
+    const step = 360 / slices.length;
+    const R = 90;
+    const at = (deg, r) => {
+      const a = (deg * Math.PI) / 180;
+      return `${(Math.sin(a) * r).toFixed(2)} ${(-Math.cos(a) * r).toFixed(2)}`;
+    };
+    const wedges = slices.map((s, i) => {
+      const [fill, ink] = WHEEL_COLORS[s.style] || WHEEL_COLORS.cream;
+      const a0 = i * step;
+      return `<path d="M0 0 L${at(a0, R)} A${R} ${R} 0 0 1 ${at(a0 + step, R)}Z" fill="${fill}"/>
+        <g transform="rotate(${a0 + step / 2})" fill="${ink}" text-anchor="middle">
+          <text y="-58" font-family="'Bodoni Moda', Georgia, serif" font-size="15" font-weight="500">${esc(s.big)}</text>
+          <text y="-45" font-family="'JetBrains Mono', monospace" font-size="5.8" letter-spacing=".7">${esc(s.small)}</text>
+        </g>`;
+    }).join('');
+    const lines = slices.map((_, i) => `<path d="M0 0 L${at(i * step, R)}" stroke="#1B2A41" stroke-opacity=".18" stroke-width=".6"/>`).join('');
+    const bulbs = Array.from({ length: slices.length * 2 }, (_, i) => {
+      const [x, y] = at(i * (step / 2), 96).split(' ');
+      return `<circle cx="${x}" cy="${y}" r="1.7" fill="${i % 2 ? '#34507A' : '#1B2A41'}"/>`;
+    }).join('');
+    return `<svg viewBox="-102 -102 204 204" class="w-full h-full block" aria-hidden="true">
+      <circle r="101" fill="#F5EFE4"/><circle r="92.5" fill="#1B2A41"/>${wedges}${lines}${bulbs}
+      <circle r="18" fill="#1B2A41" stroke="#F5EFE4" stroke-width="1.6"/>
+      <text y="2.6" text-anchor="middle" font-family="'Bodoni Moda', Georgia, serif" font-size="7.4" fill="#F5EFE4" letter-spacing=".6">VEYA</text>
+      <circle cx="0" cy="8.2" r="1.2" fill="#34507A"/>
+    </svg>`;
+  }
+
+  // Turns the wheel so slice `index` stops under the pointer at the top.
+  function turnWheel(index, animate) {
+    const wheel = $('#spin-wheel');
+    const step = 360 / spin.slices.length;
+    const land = 360 - (index * step + step / 2);
+    if (!animate) {
+      wheel.style.transition = 'none';
+      wheel.style.transform = `rotate(${land}deg)`;
+      void wheel.offsetWidth; // apply now, then restore the transition
+      wheel.style.transition = '';
+      return Promise.resolve();
+    }
+    $('.spin-sway')?.classList.remove('spin-sway');
+    const target = 360 * 6 + land + (Math.random() - 0.5) * step * 0.6; // six turns, then stop inside the slice
+    return new Promise((resolve) => {
+      let timer;
+      const done = () => { clearTimeout(timer); wheel.removeEventListener('transitionend', done); resolve(); };
+      timer = setTimeout(done, 6500); // in case transitionend never fires
+      wheel.addEventListener('transitionend', done);
+      requestAnimationFrame(() => { wheel.style.transform = `rotate(${target}deg)`; });
+    });
+  }
+
+  function showSpinStep(step) {
+    $$('[data-spin-step]').forEach((el) => { el.hidden = el.dataset.spinStep !== step; });
+  }
+
+  function renderSpin() {
+    const r = spin.result;
+    if (r?.claimed) {
+      $('#spin-claimed-title').textContent = r.title;
+      $('#spin-code').textContent = r.claimed.code;
+      const until = r.claimed.expiresAt
+        ? ` Valid until ${new Date(`${r.claimed.expiresAt.replace(' ', 'T')}Z`).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}.` : '';
+      $('#spin-claimed-note').textContent = `It's in your bag and comes off at checkout.${until} ${spin.note}`.trim();
+      showSpinStep('claimed');
+    } else if (r) {
+      $('#spin-won-title').textContent = `${r.title.charAt(0).toUpperCase()}${r.title.slice(1)}!`;
+      showSpinStep('won');
+    } else {
+      showSpinStep('intro');
+    }
+    renderSpinTeaser();
+  }
+
+  // The corner tab: shown once the popup has been seen, until a code is claimed.
+  function renderSpinTeaser() {
+    const r = spin.result;
+    const show = spin.slices.length > 0 && !r?.claimed && Boolean(spinMemory().seen) && !$('#spin-overlay').classList.contains('open');
+    $('#spin-teaser').hidden = !show;
+    const slice = r && spin.slices[r.slice];
+    $('#spin-teaser-label').textContent = slice ? `Claim ${slice.big} ${slice.small.split(' ')[0]}` : 'Spin to win';
+  }
+
+  function openSpin() {
+    rememberSpin({ seen: true });
+    renderSpin();
+    openOverlay('spin-overlay');
+    $('#spin-teaser').hidden = true;
+    // Focus the step's main action (Spin, the email field or Copy) for keyboard users; on touch
+    // screens that would only pop up the keyboard or draw a focus ring.
+    if (!window.matchMedia('(pointer: coarse)').matches) {
+      setTimeout(() => $('[data-spin-step]:not([hidden]) #spin-btn, [data-spin-step]:not([hidden]) input, [data-spin-step]:not([hidden]) #spin-copy')?.focus(), 80);
+    }
+  }
+
+  function spinClosed() {
+    if (!spin.result?.claimed) rememberSpin({ dismissedAt: Date.now() });
+    renderSpinTeaser();
+  }
+
+  $('#spin-teaser').addEventListener('click', openSpin);
+
+  $('#spin-btn').addEventListener('click', async () => {
+    if (spin.spinning) return;
+    spin.spinning = true;
+    const btn = $('#spin-btn');
+    btn.disabled = true;
+    $('#spin-btn-label').textContent = 'Good luck…';
+    try {
+      const result = await api('/api/spin', { method: 'POST' });
+      await turnWheel(result.slice, true);
+      spin.result = result;
+      renderSpin();
+      if (!window.matchMedia('(pointer: coarse)').matches) $('#spin-form').email.focus();
+    } catch (err) {
+      toast(err.message);
+    } finally {
+      spin.spinning = false;
+      btn.disabled = false;
+      $('#spin-btn-label').textContent = 'Spin the wheel';
+    }
+  });
+
+  $('#spin-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const email = form.email.value.trim();
+    const error = $('#spin-error');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { error.textContent = 'Please enter a valid email address.'; return; }
+    const btn = form.querySelector('[type=submit]');
+    btn.disabled = true;
+    try {
+      const claim = await api('/api/spin/claim', { method: 'POST', body: { email } });
+      spin.result = { ...spin.result, title: claim.title, claimed: { code: claim.code, expiresAt: claim.expiresAt } };
+      spin.note = claim.existing ? 'You already had a code with this email, so here it is again.'
+        : claim.emailed ? `We've emailed it to ${email} too.` : 'Copy it somewhere safe in case you shop on another device.';
+      error.textContent = '';
+      rememberSpin({ claimedAt: Date.now() });
+      renderSpin();
+      loadCart();
+    } catch (err) {
+      error.textContent = err.message;
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  $('#spin-copy').addEventListener('click', async () => {
+    const btn = $('#spin-copy');
+    try {
+      await navigator.clipboard.writeText($('#spin-code').textContent);
+      btn.textContent = 'Copied';
+    } catch {
+      const range = document.createRange();
+      range.selectNodeContents($('#spin-code'));
+      getSelection().removeAllRanges();
+      getSelection().addRange(range);
+      btn.textContent = 'Selected';
+    }
+    setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+  });
+
+  async function initSpin() {
+    try {
+      const data = await api('/api/spin');
+      spin.slices = data.slices;
+      spin.result = data.result;
+    } catch { return; } // no wheel if it can't load
+    $('#spin-wheel').innerHTML = wheelSvg(spin.slices);
+    $('#spin-wheel').setAttribute('aria-label', `Prize wheel with ${spin.slices.length} deals: ${[...new Set(spin.slices.map((s) => s.title))].join(', ')}`);
+    if (spin.result) {
+      $('.spin-sway')?.classList.remove('spin-sway');
+      turnWheel(spin.result.slice, false);
+    }
+    renderSpin();
+    // Pop up for visitors who haven't claimed a code, unless they closed it in the last week or are
+    // just back from paying. If something else is open, wait for it to close.
+    const memory = spinMemory();
+    const snoozed = memory.dismissedAt && Date.now() - memory.dismissedAt < SPIN_SNOOZE_DAYS * 864e5;
+    if (spin.result?.claimed || snoozed || new URLSearchParams(window.location.search).has('checkout')) return;
+    let waited = 0;
+    const tryOpen = () => {
+      if ($('.overlay.open')) {
+        waited += 2000;
+        if (waited < 60000) setTimeout(tryOpen, 2000);
+        return;
+      }
+      openSpin();
+    };
+    setTimeout(tryOpen, SPIN_DELAY_MS);
+  }
+
   // ---------- boot ----------
 
   loadProducts();
   loadCart();
   loadConfig();
   handleCheckoutReturn();
+  initSpin();
   api('/api/auth/me').then(({ user }) => { state.user = user; renderAccount(); }).catch(() => {});
 })();

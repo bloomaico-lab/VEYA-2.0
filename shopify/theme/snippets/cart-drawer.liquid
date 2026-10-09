@@ -17,6 +17,7 @@
       </div>
       <div class="flex justify-between font-headline-sm text-headline-sm text-primary pt-2"><span>Subtotal</span><span id="bag-subtotal">{{ cart.total_price | money }}</span></div>
       <p class="font-body-sm text-body-sm text-on-surface-variant">Shipping, taxes and discount codes are added at checkout.</p>
+      <p class="hidden font-body-sm text-body-sm text-secondary items-center gap-2" data-spin-cart-note></p>
       <form action="{{ routes.cart_url }}" method="post" id="bag-checkout-form">
         <button id="checkout-btn" type="submit" name="checkout" class="w-full h-[52px] rounded-full bg-primary text-on-primary font-headline-sm text-headline-sm flex items-center justify-center gap-2 hover:bg-secondary transition-colors duration-300 amber-glow-hover disabled:opacity-40 disabled:pointer-events-none" {% if cart.item_count == 0 %}disabled{% endif %}>
           <span>Checkout</span><span class="material-symbols-outlined text-[18px]" aria-hidden="true">lock</span>

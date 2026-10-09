@@ -35,6 +35,15 @@ html { scroll-behavior: smooth; }
 @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 @media (prefers-reduced-motion: reduce) { .ticker-track { animation-duration: 80s; } }
 
+/* Spin to win: the wheel eases to a stop over ~5s (under a second with reduced motion). */
+.spin-wheel { transition: transform 5.4s cubic-bezier(0.12, 0.66, 0.07, 1); }
+.spin-sway { animation: spin-sway 3.2s ease-in-out infinite; }
+@keyframes spin-sway { 0%, 100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } }
+@media (prefers-reduced-motion: reduce) { .spin-wheel { transition-duration: 0.9s; } .spin-sway { animation: none; } }
+.spin-pointer { filter: drop-shadow(0 3px 4px rgba(17, 26, 40, 0.45)); }
+.spin-code { border: 1.5px dashed #34507A; }
+.spin-step[hidden], #spin-teaser[hidden] { display: none !important; }
+
 /* Toast */
 #toast { transition: opacity 250ms, transform 250ms; }
 

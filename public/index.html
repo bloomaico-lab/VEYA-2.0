@@ -58,6 +58,15 @@
     .ticker-group a { padding: 0 1.75rem; }
     .ticker-dot { width: 4px; height: 4px; border-radius: 50%; background: currentColor; opacity: 0.5; }
     @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+    /* Spin to win: the wheel eases to a stop over ~5s (under a second with reduced motion). */
+    .spin-wheel { transition: transform 5.4s cubic-bezier(0.12, 0.66, 0.07, 1); }
+    .spin-sway { animation: spin-sway 3.2s ease-in-out infinite; }
+    @keyframes spin-sway { 0%, 100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } }
+    @media (prefers-reduced-motion: reduce) { .spin-wheel { transition-duration: 0.9s; } .spin-sway { animation: none; } }
+    .spin-pointer { filter: drop-shadow(0 3px 4px rgba(17, 26, 40, 0.45)); }
+    .spin-code { border: 1.5px dashed #34507A; }
+    .spin-step[hidden], #spin-teaser[hidden] { display: none !important; }
+    #bag-code > summary::-webkit-details-marker { display: none; }
     @media (prefers-reduced-motion: reduce) { .ticker-track { animation-duration: 80s; } }
   </style>
 </head>
@@ -510,7 +519,23 @@
 <div id="bag-items" class="flex-grow overflow-y-auto px-6 py-4 space-y-4"></div>
 <div class="px-6 py-5 border-t border-outline-variant/20 space-y-3 bg-surface-container-lowest/60">
 <p id="bag-shipping-note" class="font-label-sm text-secondary uppercase tracking-widest"></p>
+<details id="bag-code">
+<summary class="cursor-pointer list-none font-label-sm text-on-surface-variant uppercase tracking-widest hover:text-primary flex items-center gap-1"><span class="material-symbols-outlined text-[16px]" aria-hidden="true">sell</span>Have a discount code?</summary>
+<form id="bag-code-form" class="flex gap-2 mt-3" novalidate>
+<input id="bag-code-input" name="code" class="field !h-11 uppercase" placeholder="Enter code" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Discount code"/>
+<button type="submit" class="shrink-0 h-11 px-5 rounded-full border border-primary/30 text-primary font-label-md uppercase tracking-widest hover:bg-primary hover:text-on-primary transition-colors">Apply</button>
+</form>
+<p id="bag-code-error" class="font-label-sm text-error mt-1 min-h-[14px]" aria-live="polite"></p>
+</details>
 <div class="flex justify-between font-body-md text-body-md text-on-surface-variant"><span>Subtotal</span><span id="bag-subtotal">$0</span></div>
+<div id="bag-discount-row" class="hidden">
+<div class="flex justify-between items-center gap-3 font-body-md text-body-md text-secondary">
+<span class="flex items-center gap-2 min-w-0"><span class="material-symbols-outlined text-[16px]" aria-hidden="true">sell</span><span id="bag-discount-code" class="font-label-md tracking-wider truncate"></span>
+<button type="button" id="bag-discount-remove" class="font-label-sm uppercase tracking-widest text-on-surface-variant hover:text-error underline underline-offset-2">Remove</button></span>
+<span id="bag-discount" class="whitespace-nowrap"></span>
+</div>
+<p id="bag-discount-note" class="font-body-sm text-body-sm text-on-surface-variant mt-1"></p>
+</div>
 <div class="flex justify-between font-body-md text-body-md text-on-surface-variant"><span>Shipping</span><span id="bag-shipping">$0</span></div>
 <div class="flex justify-between font-headline-sm text-headline-sm text-primary pt-2 border-t border-outline-variant/20"><span>Total</span><span id="bag-total">$0</span></div>
 <button id="checkout-btn" type="button" class="w-full h-[52px] rounded-full bg-primary text-on-primary font-headline-sm text-headline-sm flex items-center justify-center gap-2 hover:bg-secondary transition-colors duration-300 amber-glow-hover disabled:opacity-40 disabled:pointer-events-none">
@@ -591,6 +616,7 @@
 <span class="font-label-md text-on-surface-variant uppercase tracking-widest">Order total</span>
 <span id="checkout-total" class="font-headline-sm text-headline-sm text-primary">$0</span>
 </div>
+<p id="checkout-discount" class="hidden font-label-sm text-secondary uppercase tracking-widest"></p>
 <p id="checkout-mode-note" class="font-label-sm text-outline tracking-wider uppercase">Demo mode — no card is charged.</p>
 <p id="checkout-error" class="font-label-md text-error min-h-[16px]" aria-live="polite"></p>
 <button type="submit" class="w-full h-[52px] rounded-full bg-primary text-on-primary font-headline-sm text-headline-sm flex items-center justify-center gap-2 hover:bg-secondary transition-colors duration-300 amber-glow-hover disabled:opacity-40">
@@ -676,6 +702,59 @@
 </div>
 </div>
 <!-- Toast -->
+<!-- Spin to win: shown once to new visitors (app.js). Every slice is a real deal; the email unlocks the code. -->
+<div id="spin-overlay" class="overlay" aria-hidden="true">
+<div class="overlay-backdrop" data-close></div>
+<div class="relative h-full w-full flex items-center justify-center p-4 pointer-events-none">
+<div class="pointer-events-auto relative w-full max-w-3xl max-h-full overflow-y-auto rounded-xl bg-surface-container-low border border-outline-variant/30 grid grid-cols-1 md:grid-cols-2" role="dialog" aria-modal="true" aria-labelledby="spin-title">
+<button type="button" data-close aria-label="Close" class="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-surface-container-low/90 border border-outline-variant/40 flex items-center justify-center text-primary hover:border-secondary hover:text-secondary transition-colors"><span class="material-symbols-outlined text-[18px]">close</span></button>
+<div class="bg-primary flex items-center justify-center px-6 pt-10 pb-8 md:p-10">
+<div class="relative w-full max-w-[250px] md:max-w-[330px]">
+<div class="spin-sway"><div id="spin-wheel" class="spin-wheel aspect-square" role="img" aria-label="Prize wheel"></div></div>
+<svg class="spin-pointer absolute left-1/2 -top-5 -translate-x-1/2 w-9 h-11" viewBox="0 0 36 44" aria-hidden="true"><path d="M18 43 4.6 16.5A15 15 0 1 1 31.4 16.5Z" fill="#F5EFE4" stroke="#1B2A41" stroke-width="2"/><circle cx="18" cy="15" r="5" fill="#34507A"/></svg>
+</div>
+</div>
+<div class="p-6 md:p-10 flex flex-col justify-center gap-5">
+<div class="spin-step flex flex-col gap-4" data-spin-step="intro">
+<span class="font-label-sm text-secondary uppercase tracking-[0.2em]">SPIN TO WIN</span>
+<h2 id="spin-title" class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary">Spin for a deal.</h2>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">Every slice wins something: up to 25% off, money off your order or free shipping. Spin, then pop in your email to unlock your code.</p>
+<button id="spin-btn" type="button" class="w-full h-[52px] rounded-full bg-primary text-on-primary font-headline-sm text-headline-sm flex items-center justify-center gap-2 hover:bg-secondary transition-colors duration-300 amber-glow-hover disabled:opacity-60">
+<span id="spin-btn-label">Spin the wheel</span><span class="material-symbols-outlined text-[18px]" aria-hidden="true">autorenew</span>
+</button>
+<button type="button" data-close class="self-center font-label-sm text-on-surface-variant uppercase tracking-widest hover:text-primary">No thanks</button>
+</div>
+<form id="spin-form" class="spin-step flex flex-col gap-4" data-spin-step="won" novalidate hidden>
+<span class="font-label-sm text-secondary uppercase tracking-[0.2em]">YOU WON</span>
+<h2 id="spin-won-title" class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary"></h2>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">Enter your email to unlock your code. We'll add it to your bag so it comes off at checkout.</p>
+<label class="block"><span class="field-label">Email</span><input class="field" name="email" type="email" autocomplete="email" required placeholder="you@example.com"/></label>
+<p id="spin-error" class="font-label-md text-error min-h-[16px] -mt-2" aria-live="polite"></p>
+<button type="submit" class="w-full h-[52px] rounded-full bg-primary text-on-primary font-headline-sm text-headline-sm flex items-center justify-center gap-2 hover:bg-secondary transition-colors duration-300 amber-glow-hover disabled:opacity-60">
+<span>Unlock my code</span><span class="material-symbols-outlined text-[18px]" aria-hidden="true">lock_open</span>
+</button>
+<p class="font-body-sm text-body-sm text-outline">You'll also join the VEYA list for new drops and offers. Unsubscribe anytime.</p>
+</form>
+<div class="spin-step flex flex-col gap-4" data-spin-step="claimed" hidden>
+<span class="font-label-sm text-secondary uppercase tracking-[0.2em]">YOUR CODE</span>
+<h2 id="spin-claimed-title" class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary"></h2>
+<div class="spin-code rounded-lg bg-surface-container-lowest px-4 py-3 flex items-center justify-between gap-3">
+<span id="spin-code" class="font-label-lg text-label-lg text-primary tracking-[0.12em] select-all break-all"></span>
+<button id="spin-copy" type="button" class="shrink-0 h-9 px-4 rounded-full border border-primary/30 text-primary font-label-md uppercase tracking-widest hover:bg-primary hover:text-on-primary transition-colors">Copy</button>
+</div>
+<p id="spin-claimed-note" class="font-body-md text-body-md text-on-surface-variant leading-relaxed" aria-live="polite"></p>
+<button type="button" data-close data-filter="all" class="w-full h-[52px] rounded-full bg-primary text-on-primary font-headline-sm text-headline-sm flex items-center justify-center gap-2 hover:bg-secondary transition-colors duration-300 amber-glow-hover">
+<span>Start shopping</span><span class="material-symbols-outlined text-[18px]" aria-hidden="true">arrow_forward</span>
+</button>
+</div>
+<p class="font-body-sm text-body-sm text-outline border-t border-outline-variant/20 pt-4">One spin per visitor and one code per email. Codes work once, are valid for 14 days and can't be combined with other codes.</p>
+</div>
+</div>
+</div>
+</div>
+<button id="spin-teaser" type="button" hidden class="fixed left-4 bottom-4 z-50 h-11 pl-3 pr-4 rounded-full bg-primary text-on-primary font-label-md uppercase tracking-widest shadow-lg flex items-center gap-2 hover:bg-secondary transition-colors">
+<span class="material-symbols-outlined text-[18px]" aria-hidden="true">redeem</span><span id="spin-teaser-label">Spin to win</span>
+</button>
 <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[70] px-5 py-3 rounded-full bg-surface-container-high border border-secondary/40 font-label-md text-primary tracking-wider opacity-0 pointer-events-none translate-y-2" role="status" aria-live="polite"></div>
 <!-- Mobile Menu -->
 <div id="menu-overlay" class="overlay" aria-hidden="true">

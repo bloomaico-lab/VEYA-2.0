@@ -30,6 +30,7 @@
       <div class="mt-8 flex flex-col items-end gap-3">
         <p class="font-headline-sm text-headline-sm text-primary">Subtotal {{ cart.total_price | money }}</p>
         <p class="font-body-sm text-body-sm text-on-surface-variant">Shipping, taxes and discount codes are added at checkout.</p>
+        <p class="hidden font-body-sm text-body-sm text-secondary items-center gap-2" data-spin-cart-note></p>
         <div class="flex gap-3">
           <button type="submit" name="update" class="h-[52px] px-6 rounded-full border border-outline-variant/40 text-primary font-label-md uppercase tracking-widest hover:border-secondary">Update</button>
           <button type="submit" name="checkout" class="h-[52px] px-8 rounded-full bg-primary text-on-primary font-headline-sm text-headline-sm hover:bg-secondary transition-colors amber-glow-hover inline-flex items-center gap-2">Checkout <span class="material-symbols-outlined text-[18px]" aria-hidden="true">lock</span></button>

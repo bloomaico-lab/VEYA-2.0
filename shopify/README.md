@@ -150,13 +150,52 @@ column to `Email`, add an `Accepts Email Marketing` column set to `yes`, and imp
 Turn on **Marketing → Automations → Recover abandoned checkout**. Shopify then emails people who
 reached checkout but didn't pay, with a link straight back to their bag.
 
+### 11b. Spin to win: create the wheel's discount codes
+The theme shows a prize wheel to new visitors a few seconds after they arrive. They spin, then
+enter their email to unlock a discount code. Their email goes to **Customers**, subscribed to
+email marketing and tagged `spin-to-win` and `prize:CODE`, so you can see who won what. The code is
+added to their cart and comes off at checkout.
+
+**Each slice's code has to exist in Shopify**, or checkout will say it isn't valid. Go to Shopify
+admin → **Discounts → Create discount** and make these seven:
+
+| Code | Type | Value | Minimum | Slices |
+|---|---|---|---|---|
+| `SPIN10` | Amount off order | 10% | none | 2 of 8 |
+| `SPIN15` | Amount off order | 15% | none | 1 |
+| `SPIN20` | Amount off order | 20% | none | 1 |
+| `SPIN25` | Amount off order | 25% | none | 1 |
+| `TAKE5` | Amount off order | $5.00 fixed amount | none | 1 |
+| `TAKE10` | Amount off order | $10.00 fixed amount | Minimum purchase $60 | 1 |
+| `SHIPFREE` | Free shipping | All countries you ship to | none | 1 |
+
+For each code: choose **Discount code**, type the code exactly as shown, and under **Maximum
+discount uses** tick **Limit to one use per customer**. Leave the combinations unticked, so wheel codes
+can't stack with other discounts, then **Save**.
+
+**Changing the wheel:** go to **Online Store → Themes → Customize** and open **Spin to win** in the
+section list. From there you can:
+- edit each slice's text, discount code, chance and colour
+- add or remove slices (up to 12)
+- change the heading and the small print
+- change the delay before it pops up, or turn it off
+
+A slice's **Chance** sets how often it wins: the defaults add up to 100, so 25% off wins 4 spins in 100.
+Any new code you put on a slice must also be created under Discounts.
+
+To email winners their code as well, turn on **Marketing → Automations → Welcome new subscribers**.
+It's sent to everyone who joins the list. Mention that their spin-to-win code is already in their bag.
+
 ### 12. Place a test order
 1. **Settings → Payments → Shopify Payments → Manage → Test mode** → turn it on.
 2. On your store, add something to the bag and check out with card **4242 4242 4242 4242**, any
    future expiry date, any 3-digit CVC and any name.
 3. Check: the order appears in **Orders** (marked as a test), the confirmation email arrives with
    the VEYA logo, and the express checkout buttons show on a product page once a size is chosen.
-4. Turn **Test mode off** again, then switch on Printful's automatic order confirmation (step 10).
+4. Spin to win: open the store in a private window, wait for the wheel, spin and enter an email.
+   Check that the code comes off at checkout, and that the email appears in **Customers** with the
+   `spin-to-win` tag.
+5. Turn **Test mode off** again, then switch on Printful's automatic order confirmation (step 10).
 
 ### 13. Go live
 1. **Settings → Plan** → choose a plan. A paid plan is needed to open the store to the public.
@@ -169,7 +208,7 @@ in Printful before it prints, and refund it in Shopify, if you don't want it.
 ## Editing the look
 **Online Store → Themes → Customize** lets you change the hero photo and text, the banner
 messages (Header → add or edit "Banner message" blocks), the Men/Women and category photos,
-the fabric cards, and the email sign-up text, all without code.
+the fabric cards, the email sign-up text and the spin-to-win wheel (step 11b), all without code.
 
 ## For developers
 - `npm run build:theme` compiles `shopify/src/veya.css` with Tailwind (same tokens as the site)
