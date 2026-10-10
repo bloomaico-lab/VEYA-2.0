@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Small text (the label styles) is set in Hanken Grotesk, small and airy. Text with its own text-*
+   size class keeps that size; these are the sizes for the rest. */
+@layer base {
+  .font-label-sm { font-size: 10.5px; line-height: 15px; }
+  .font-label-md { font-size: 12px; line-height: 17px; }
+  .font-label-lg { font-size: 13px; line-height: 18px; }
+}
+
 /* Shared VEYA styles (same as the standalone site). */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: #F5EFE4; }
@@ -19,7 +27,7 @@ html { scroll-behavior: smooth; }
 .overlay.open .drawer-panel { transform: translateX(0); }
 .field { width: 100%; height: 48px; padding: 0 1rem; border-radius: 0.5rem; background: #FBF8F2; border: 1px solid #CFC5B2; color: #1B2A41; font-family: "Hanken Grotesk"; font-size: 14px; outline: none; }
 .field:focus { border-color: #34507A; box-shadow: none; }
-.field-label { display: block; margin-bottom: 6px; font-family: "JetBrains Mono"; font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: #4A5568; }
+.field-label { display: block; margin-bottom: 6px; font-family: "Hanken Grotesk"; font-size: 10px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: #4A5568; }
 .chip-active { color: #F5EFE4 !important; background: #1B2A41; border-color: #1B2A41 !important; }
 .swatch-active { outline: 1px solid #1B2A41; outline-offset: 2px; }
 .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24; }
@@ -82,4 +90,4 @@ html { scroll-behavior: smooth; }
 .shopify-payment-button__button { width: 100%; min-height: 52px; border-radius: 9999px !important; overflow: hidden; }
 .shopify-payment-button__button--unbranded { background: #FBF8F2 !important; color: #1B2A41 !important; border: 1px solid #1B2A41 !important; font-family: "Hanken Grotesk"; font-size: 16px; font-weight: 600; }
 .shopify-payment-button__button--unbranded:hover:not([disabled]) { background: #EFE7DA !important; }
-.shopify-payment-button__more-options { display: block; width: 100%; text-align: center; background: none; border: 0; cursor: pointer; margin-top: 10px; font-family: "JetBrains Mono"; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: #34507A; text-decoration: underline; }
+.shopify-payment-button__more-options { display: block; width: 100%; text-align: center; background: none; border: 0; cursor: pointer; margin-top: 10px; font-family: "Hanken Grotesk"; font-size: 11px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: #34507A; text-decoration: underline; }

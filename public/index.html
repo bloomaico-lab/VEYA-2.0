@@ -4,10 +4,10 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>VEYA — Everyday Essentials | Tees, Hoodies &amp; Layers</title>
-<!-- Google Fonts: Bodoni Moda (Editorial Display), Hanken Grotesk (Body & Headings), JetBrains Mono (Technical Spec) -->
+<!-- Google Fonts: Bodoni Moda (Editorial Display), Hanken Grotesk (body, headings and all small text) -->
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..700&amp;family=Hanken+Grotesk:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..700&amp;family=Hanken+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <!-- Material Symbols Outlined -->
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <!-- Compiled Tailwind (theme tokens in tailwind.config.js; rebuild with npm run build:css) -->
@@ -45,7 +45,7 @@
     .overlay.open .drawer-panel { transform: translateX(0); }
     .field { width: 100%; height: 48px; padding: 0 1rem; border-radius: 0.5rem; background: #FBF8F2; border: 1px solid #CFC5B2; color: #1B2A41; font-family: "Hanken Grotesk"; font-size: 14px; outline: none; }
     .field:focus { border-color: #34507A; box-shadow: none; }
-    .field-label { display: block; margin-bottom: 6px; font-family: "JetBrains Mono"; font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: #4A5568; }
+    .field-label { display: block; margin-bottom: 6px; font-family: "Hanken Grotesk"; font-size: 10px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: #4A5568; }
     .chip-active { color: #F5EFE4 !important; background: #1B2A41; border-color: #1B2A41 !important; }
     .swatch-active { outline: 1px solid #1B2A41; outline-offset: 2px; }
     #toast { transition: opacity 250ms, transform 250ms; }
@@ -99,7 +99,7 @@
 <a class="text-on-surface-variant hover:text-primary tracking-widest font-label-md uppercase transition-colors duration-200 nav-link border-b border-transparent pb-1" href="#collections" data-filter="layers">Layers</a>
 <a class="text-on-surface-variant hover:text-primary tracking-widest font-label-md uppercase transition-colors duration-200 nav-link border-b border-transparent pb-1" href="#collections" data-filter="bottoms">Bottoms</a>
 <a class="hidden xl:inline text-on-surface-variant hover:text-primary tracking-widest font-label-md uppercase transition-colors duration-200 border-b border-transparent pb-1" href="#collective">Collective</a>
-<a class="text-on-surface-variant hover:text-primary tracking-widest font-label-md uppercase transition-colors duration-200" href="#shipping" data-page="shipping">Help</a>
+<a class="text-on-surface-variant hover:text-primary tracking-widest font-label-md uppercase transition-colors duration-200 border-b border-transparent pb-1" href="#shipping" data-page="shipping">Help</a>
 </nav>
 <div class="flex items-center gap-5 xl:gap-6 whitespace-nowrap">
 <button id="menu-btn" type="button" aria-label="Open menu" class="lg:hidden text-on-surface-variant hover:text-secondary transition-colors duration-200 flex items-center"><span class="material-symbols-outlined text-[22px]">menu</span></button>
@@ -575,37 +575,37 @@
 <div>
 <h4 class="text-headline-sm font-headline-sm text-primary mb-4">Shop</h4>
 <ul class="space-y-3">
-<li><a class="text-label-sm font-label-sm text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#collections" data-filter="all">Shop All</a></li>
-<li><a class="text-label-sm font-label-sm text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#collections" data-filter="all" data-gender="men">Men</a></li>
-<li><a class="text-label-sm font-label-sm text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#collections" data-filter="all" data-gender="women">Women</a></li>
-<li><a class="text-label-sm font-label-sm text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#collections" data-filter="tops">Tops</a></li>
-<li><a class="text-label-sm font-label-sm text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#collections" data-filter="layers">Layers</a></li>
-<li><a class="text-label-sm font-label-sm text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#collections" data-filter="bottoms">Bottoms</a></li>
+<li><a class="font-label-md text-[13px] text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#collections" data-filter="all">Shop All</a></li>
+<li><a class="font-label-md text-[13px] text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#collections" data-filter="all" data-gender="men">Men</a></li>
+<li><a class="font-label-md text-[13px] text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#collections" data-filter="all" data-gender="women">Women</a></li>
+<li><a class="font-label-md text-[13px] text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#collections" data-filter="tops">Tops</a></li>
+<li><a class="font-label-md text-[13px] text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#collections" data-filter="layers">Layers</a></li>
+<li><a class="font-label-md text-[13px] text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#collections" data-filter="bottoms">Bottoms</a></li>
 </ul>
 </div>
 <div>
 <h4 class="text-headline-sm font-headline-sm text-primary mb-4">Help</h4>
 <ul class="space-y-3">
-<li><a class="text-label-sm font-label-sm text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#shipping" data-page="shipping">Shipping &amp; Returns</a></li>
-<li><a class="text-label-sm font-label-sm text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#size-guide" data-page="size-guide">Size Guide</a></li>
-<li><a class="text-label-sm font-label-sm text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#lab-documentation" data-page="lab-documentation">Fabrics &amp; Care</a></li>
-<li><a class="text-label-sm font-label-sm text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#privacy" data-page="privacy">Privacy Policy</a></li>
+<li><a class="font-label-md text-[13px] text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#shipping" data-page="shipping">Shipping &amp; Returns</a></li>
+<li><a class="font-label-md text-[13px] text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#size-guide" data-page="size-guide">Size Guide</a></li>
+<li><a class="font-label-md text-[13px] text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#lab-documentation" data-page="lab-documentation">Fabrics &amp; Care</a></li>
+<li><a class="font-label-md text-[13px] text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#privacy" data-page="privacy">Privacy Policy</a></li>
 </ul>
 </div>
 <div>
 <h4 class="text-headline-sm font-headline-sm text-primary mb-4">About</h4>
 <ul class="space-y-3">
-<li><a class="text-label-sm font-label-sm text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#manifesto">Who We're For</a></li>
-<li><a class="text-label-sm font-label-sm text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#sustainability" data-page="sustainability">Our Approach</a></li>
-<li><a class="text-label-sm font-label-sm text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#fabric-lab">The Fabrics</a></li>
-<li><a class="text-label-sm font-label-sm text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#collective">The Collective</a></li>
-<li><a class="text-label-sm font-label-sm text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#vote">Members' Vote</a></li>
+<li><a class="font-label-md text-[13px] text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#manifesto">Who We're For</a></li>
+<li><a class="font-label-md text-[13px] text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#sustainability" data-page="sustainability">Our Approach</a></li>
+<li><a class="font-label-md text-[13px] text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#fabric-lab">The Fabrics</a></li>
+<li><a class="font-label-md text-[13px] text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#collective">The Collective</a></li>
+<li><a class="font-label-md text-[13px] text-on-surface-variant hover:text-secondary transition-colors duration-200" href="#vote">Members' Vote</a></li>
 </ul>
 </div>
 </div>
 </div>
 <div class="pt-8 border-t border-outline-variant/20 flex flex-col sm:flex-row items-center justify-between gap-4">
-<p class="text-label-sm font-label-sm text-on-surface-variant">© 2026 VEYA. All rights reserved.</p>
+<p class="font-label-md text-on-surface-variant">© 2026 VEYA. All rights reserved.</p>
 <span class="font-label-sm text-secondary uppercase tracking-widest flex items-center gap-1.5">
 <span class="material-symbols-outlined text-[14px]" data-icon="lock">lock</span>Secure checkout
 </span>
@@ -673,7 +673,7 @@
 </div>
 <button type="button" data-close aria-label="Close" class="shrink-0 w-9 h-9 rounded-full border border-outline-variant/40 flex items-center justify-center text-primary hover:border-secondary hover:text-secondary transition-colors"><span class="material-symbols-outlined text-[18px]">close</span></button>
 </div>
-<p id="pd-price" class="font-label-lg text-label-lg text-primary"></p>
+<p id="pd-price" class="font-label-lg text-[18px] font-medium tracking-wide text-primary"></p>
 <p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-secondary">schedule</span>Made to order · Ships in 3–7 business days</p>
 <p id="pd-description" class="font-body-md text-body-md text-on-surface-variant leading-relaxed"></p>
 <div>

@@ -107,7 +107,7 @@
         <div class="flex-grow min-w-0">
           <div class="flex justify-between gap-2">
             <a href="${esc(item.url)}" class="font-headline-sm text-[15px] text-primary truncate">${esc(item.product_title)}</a>
-            <span class="font-label-md text-primary whitespace-nowrap">${formatMoney(item.final_line_price)}</span>
+            <span class="font-label-md text-[14px] font-medium tracking-wide text-primary whitespace-nowrap">${formatMoney(item.final_line_price)}</span>
           </div>
           ${item.product_has_only_default_variant ? '' : `<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest mt-1">${esc(item.variant_title || '')}</p>`}
           <div class="flex items-center justify-between mt-3">
@@ -476,7 +476,7 @@
               <span class="block font-label-sm text-secondary uppercase tracking-widest">${esc(p.type || '')}</span>
               <span class="block font-headline-sm text-[15px] text-primary">${esc(p.title)}</span>
             </span>
-            <span class="font-label-md text-primary">${p.price ? formatMoney(Math.round(parseFloat(p.price) * 100)) : ''}</span>
+            <span class="font-label-md text-[13px] font-medium text-primary">${p.price ? formatMoney(Math.round(parseFloat(p.price) * 100)) : ''}</span>
           </a>`).join('') + `<a href="${esc(routes.search)}?q=${encodeURIComponent(q)}&type=product" class="block px-3 py-3 font-label-md text-secondary uppercase tracking-widest hover:underline">See all results</a>`
           : `<p class="px-3 py-2 font-body-md text-on-surface-variant">No pieces match “${esc(q)}”.</p>`;
       } catch (err) {
@@ -528,7 +528,7 @@
       return `<path d="M0 0 L${at(a0, R)} A${R} ${R} 0 0 1 ${at(a0 + step, R)}Z" fill="${fill}"/>
         <g transform="rotate(${a0 + step / 2})" fill="${ink}" text-anchor="middle">
           <text y="-58" font-family="'Bodoni Moda', Georgia, serif" font-size="15" font-weight="500">${esc(s.big)}</text>
-          <text y="-45" font-family="'JetBrains Mono', monospace" font-size="5.8" letter-spacing=".7">${esc(s.small)}</text>
+          <text y="-45" font-family="'Hanken Grotesk', sans-serif" font-size="5.6" font-weight="600" letter-spacing=".9">${esc(s.small)}</text>
         </g>`;
     }).join('');
     const lines = slices.map((_, i) => `<path d="M0 0 L${at(i * step, R)}" stroke="#1B2A41" stroke-opacity=".18" stroke-width=".6"/>`).join('');

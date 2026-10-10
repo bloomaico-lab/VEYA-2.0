@@ -122,7 +122,7 @@
             ${p.material ? `<p class="hidden md:block font-label-md text-on-surface-variant font-normal">${esc(p.material)}</p>` : ''}
           </div>
           <div class="mt-3 md:mt-4 pt-3 border-t border-outline-variant/20 flex flex-wrap gap-2 items-center justify-between">
-            <span class="font-label-md text-primary">${p.inStock ? price(p.price, p.currency) : 'SOLD OUT'}</span>
+            <span class="font-label-md text-[14px] font-medium tracking-wide text-primary">${p.inStock ? price(p.price, p.currency) : 'SOLD OUT'}</span>
             <div class="flex items-center gap-1.5">${swatches}</div>
           </div>
         </div>
@@ -353,7 +353,7 @@
               <span class="font-label-md text-primary w-4 text-center">${i.qty}</span>
               <button type="button" data-qty="${i.qty + 1}" aria-label="Increase quantity" class="w-7 h-7 rounded-full border border-outline-variant/40 flex items-center justify-center text-primary hover:border-secondary"><span class="material-symbols-outlined text-[14px]">add</span></button>
             </div>
-            <span class="font-label-md text-primary">${money(i.lineTotal)}</span>
+            <span class="font-label-md text-[14px] font-medium tracking-wide text-primary">${money(i.lineTotal)}</span>
           </div>
         </div>
         <button type="button" data-remove aria-label="Remove ${esc(i.name)}" class="self-start text-on-surface-variant hover:text-error"><span class="material-symbols-outlined text-[18px]">close</span></button>
@@ -643,7 +643,7 @@
             <span class="block font-label-sm text-secondary uppercase tracking-widest">${esc(p.tagline)}</span>
             <span class="block font-headline-sm text-[15px] text-primary">${esc(p.name)}</span>
           </span>
-          <span class="font-label-md text-primary">${money(p.price)}</span>
+          <span class="font-label-md text-[13px] font-medium text-primary">${money(p.price)}</span>
         </button>`).join('')
         : `<p class="px-3 py-2 font-body-md text-on-surface-variant">No pieces match “${esc(q)}”.</p>`;
     } catch (err) {
@@ -896,7 +896,7 @@
       return `<path d="M0 0 L${at(a0, R)} A${R} ${R} 0 0 1 ${at(a0 + step, R)}Z" fill="${fill}"/>
         <g transform="rotate(${a0 + step / 2})" fill="${ink}" text-anchor="middle">
           <text y="-58" font-family="'Bodoni Moda', Georgia, serif" font-size="15" font-weight="500">${esc(s.big)}</text>
-          <text y="-45" font-family="'JetBrains Mono', monospace" font-size="5.8" letter-spacing=".7">${esc(s.small)}</text>
+          <text y="-45" font-family="'Hanken Grotesk', sans-serif" font-size="5.6" font-weight="600" letter-spacing=".9">${esc(s.small)}</text>
         </g>`;
     }).join('');
     const lines = slices.map((_, i) => `<path d="M0 0 L${at(i * step, R)}" stroke="#1B2A41" stroke-opacity=".18" stroke-width=".6"/>`).join('');

@@ -1,5 +1,5 @@
 {%- assign all_url = routes.all_products_collection_url -%}
-{%- assign link = 'text-label-sm font-label-sm text-on-surface-variant hover:text-secondary transition-colors duration-200' -%}
+{%- assign link = 'font-label-md text-[13px] text-on-surface-variant hover:text-secondary transition-colors duration-200' -%}
 <footer class="bg-surface-container-lowest border-t border-outline-variant/20">
   <div class="w-full px-6 md:px-12 py-16 max-w-7xl mx-auto flex flex-col gap-12">
     <div class="grid grid-cols-1 md:grid-cols-12 gap-12">
@@ -53,7 +53,7 @@
       </div>
     </div>
     <div class="pt-8 border-t border-outline-variant/20 flex flex-col sm:flex-row items-center justify-between gap-4">
-      <p class="text-label-sm font-label-sm text-on-surface-variant">&copy; {{ 'now' | date: '%Y' }} {{ shop.name }}. All rights reserved.</p>
+      <p class="font-label-md text-on-surface-variant">&copy; {{ 'now' | date: '%Y' }} {{ shop.name }}. All rights reserved.</p>
       <div class="flex items-center gap-4">
         {%- for type in shop.enabled_payment_types limit: 6 -%}
           {{ type | payment_type_svg_tag: class: 'h-5 w-auto opacity-80' }}

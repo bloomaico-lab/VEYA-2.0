@@ -1,3 +1,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Small text (the label styles) is set in Hanken Grotesk, small and airy. Text with its own text-*
+   size class keeps that size; these are the sizes for the rest. */
+@layer base {
+  .font-label-sm { font-size: 10.5px; line-height: 15px; }
+  .font-label-md { font-size: 12px; line-height: 17px; }
+  .font-label-lg { font-size: 13px; line-height: 18px; }
+}

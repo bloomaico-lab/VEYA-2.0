@@ -87,7 +87,7 @@
         <h1 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary">{{ product.title | escape }}</h1>
         {%- if material != blank -%}<p class="font-label-md text-on-surface-variant mt-1">{{ material | escape }}</p>{%- endif -%}
       </div>
-      <p class="font-label-lg text-label-lg text-primary" id="pd-price">
+      <p class="font-label-lg text-[18px] font-medium tracking-wide text-primary" id="pd-price">
         {%- if current.available -%}{{ current.price | money }}{%- else -%}SOLD OUT{%- endif -%}
         {%- if current.compare_at_price > current.price -%}
           <s class="ml-2 text-on-surface-variant">{{ current.compare_at_price | money }}</s>
@@ -128,7 +128,7 @@
         <div class="flex items-center gap-3">
           <div class="flex items-center rounded-full border border-outline-variant/40 h-[52px]">
             <button id="pd-minus" type="button" aria-label="Decrease quantity" class="w-11 h-full flex items-center justify-center text-primary hover:text-secondary"><span class="material-symbols-outlined text-[18px]" aria-hidden="true">remove</span></button>
-            <input id="pd-qty" type="number" name="quantity" value="1" min="1" max="10" class="w-10 text-center bg-transparent border-0 focus:ring-0 font-label-lg text-primary [appearance:textfield]" aria-label="Quantity">
+            <input id="pd-qty" type="number" name="quantity" value="1" min="1" max="10" class="w-10 px-0 text-center bg-transparent border-0 focus:ring-0 font-label-lg text-[15px] font-medium text-primary [appearance:textfield]" aria-label="Quantity">
             <button id="pd-plus" type="button" aria-label="Increase quantity" class="w-11 h-full flex items-center justify-center text-primary hover:text-secondary"><span class="material-symbols-outlined text-[18px]" aria-hidden="true">add</span></button>
           </div>
           <button id="pd-add" type="submit" name="add" class="flex-grow h-[52px] rounded-full bg-primary text-on-primary font-headline-sm text-headline-sm flex items-center justify-center gap-2 hover:bg-secondary transition-colors duration-300 amber-glow-hover disabled:opacity-40" {% unless product.available %}disabled{% endunless %}>

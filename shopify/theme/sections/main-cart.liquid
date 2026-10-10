@@ -23,7 +23,7 @@
                 <a href="{{ item.url_to_remove }}" class="font-label-sm text-label-sm uppercase tracking-widest text-on-surface-variant hover:text-error">Remove</a>
               </div>
             </div>
-            <span class="font-label-lg text-primary">{{ item.final_line_price | money }}</span>
+            <span class="font-label-lg text-[15px] font-medium tracking-wide text-primary">{{ item.final_line_price | money }}</span>
           </li>
         {%- endfor -%}
       </ul>
